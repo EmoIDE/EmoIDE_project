@@ -12,29 +12,14 @@ gazetracker = gazepoint.GazePoint()
 # (1, 1) is the lower rigth corner
 x, y = gazetracker.get_gaze_position()
 
-print(x, y)
 # You can query gaze position as fast as desired
 # Here for 5 seconds at 10Hz
-# start = time.time()
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
+start = time.time()
+while time.time() - start < 20:
+    print(gazetracker.get_gaze_position())
+    time.sleep(0.1)
+
+
 
 # Once done think of stopping the gazetracker, 
 # It closes the connection properly and can take a few seconds
