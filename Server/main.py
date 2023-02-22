@@ -64,7 +64,7 @@ def eyetracker_connection():
     #connect to eyetracker watch & read data
     while True:
         time.sleep(2)
-        print("reading E4")
+        print("reading eyetracker")
         
 
 if __name__ == "__main__":
