@@ -1,8 +1,8 @@
 import time
 import threading
 
-from gazepoint.tools import OpenGazeTracker
-
+from .tools import OpenGazeTracker
+ 
 
 class GazePoint(threading.Thread):
     def __init__(self, ip='127.0.0.1', port=4242):

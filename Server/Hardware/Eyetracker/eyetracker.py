@@ -1,41 +1,55 @@
-import gazepoint
+from .gazepoint import gazepoint
 import time
-import threading
-# Create a GazePoint Instance
-# This will start a calibration procedure after a few seconds
-# Make sure the user is ready and the device is set before runnign this line
-gazetracker = gazepoint.GazePoint()
 
-# Get the gaze position
-# x and y and relative coordinate to the screen
-# (0, 0) is the upper left corner
-# (1, 1) is the lower rigth corner
-x, y = gazetracker.get_gaze_position()
+class EyeTracker:
+    def __init__(self, frequency):
+        self.eye_tracker = None
+        self.recording = False
+        self.cache = {
+            "x": int,
+            "y": int
+        }
+        self.frequency = frequency
 
-print(x, y)
-# You can query gaze position as fast as desired
-# Here for 5 seconds at 10Hz
-# start = time.time()
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
-# time.sleep(1)
-# while time.time() - start < 20:
-#     print(gazetracker.get_gaze_position())
-#     time.sleep(0.1)
+    def setup(self):
+        # Initializes default values and start calibration for use, may take 10 seconds
+        self.eye_tracker = gazepoint.GazePoint()
+        # self.cache = {
+        #     "x": -1,
+        #     "y": -1
+        # }
 
-# Once done think of stopping the gazetracker, 
-# It closes the connection properly and can take a few seconds
-gazetracker.stop()
+    def start_recording(self, dict):
+        # Start recording data to cache
+        self.recording = True
+        while self.recording:
+            self.store_to_cache(self.eye_tracker.get_gaze_position(), dict)
+            time.sleep(self.frequency)
+
+    def get_recording(self):
+        # Return cache with most recent coordinate
+        return self.cache
+
+    def stop_recording(self):
+        # Stop recording data and return most recent coordinate
+        self.recording = False
+        return self.get_recording()
+
+    def store_to_cache(self, coordinate, dict):
+        # Store given coordinate to cahce
+        dict["x"] = coordinate[0]
+        dict["y"] = coordinate[1]
+
+    def stop(self):
+        # Clear cache, stop eyetracker may take 5 seconds
+        self.cache.clear()
+        self.eye_tracker.stop()
+
+
+if __name__ == "__main__":
+    eyetracker = EyeTracker()
+    eyetracker.setup()
+    eyetracker.start_recording()
+    time.sleep(10)
+    print(eyetracker.get_recording())
+    eyetracker.stop()
