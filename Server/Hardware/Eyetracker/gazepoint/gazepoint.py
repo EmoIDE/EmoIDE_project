@@ -31,7 +31,7 @@ class GazePoint(threading.Thread):
     def open(self, ip, port):
         print('Setting Up Gaze Point device, this takes about 10 seconds')
         self.tracker = OpenGazeTracker(ip=ip, port=port)
-        self.tracker.calibrate()
+        # self.tracker.calibrate()
         self.tracker.enable_send_data(True)
 
     def close(self):

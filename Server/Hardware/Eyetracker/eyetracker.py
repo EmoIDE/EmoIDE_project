@@ -14,6 +14,7 @@ class EyeTracker:
     def setup(self):
         # Initializes default values and start calibration for use, may take 10 seconds
         self.eye_tracker = gazepoint.GazePoint()
+        return
         # self.cache = {
         #     "x": -1,
         #     "y": -1
@@ -21,10 +22,15 @@ class EyeTracker:
 
     def start_recording(self, dict):
         # Start recording data to cache
-        self.recording = True
-        while self.recording:
+        print("EYE TRACKER START RECORDING...")
+        start = time.time()
+        while time.time() - start < 10:
             self.store_to_cache(self.eye_tracker.get_gaze_position(), dict)
             time.sleep(self.frequency)
+        # self.recording = True
+        # while self.recording:
+        #     self.store_to_cache(self.eye_tracker.get_gaze_position(), dict)
+        #     time.sleep(self.frequency)
 
     def get_recording(self):
         # Return cache with most recent coordinate
