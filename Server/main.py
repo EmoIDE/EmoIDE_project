@@ -39,7 +39,7 @@ eye_calibration_done = False
 settings = {
     "extension": False,
     "Server connect": False,
-    "EEG": True,
+    "EEG": False,
     "Eye tracker": True,
     "E4": False,
     "Garmin": False
@@ -63,11 +63,7 @@ def extension_connection():
             if not data:
                 break
  
-<<<<<<< HEAD
 #
-=======
-# yo 
->>>>>>> fe00d38d59e19d78f6fa68f44e3d044fd1af77b3
 def get_EEG_data():
     global eeg_data_dict
     while True:
@@ -146,6 +142,10 @@ def update_dataframe():
             print(f"{full_df}\n--------------------------------")
 
 
+def save_df(df, path):
+    df.to_csv(path)
+
+
 if __name__ == "__main__":
     init_df()
     extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
@@ -169,7 +169,6 @@ if __name__ == "__main__":
         # eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
 
-    print("Jag sker")
     # once every second time values are stored                                  ####### ADDERA LOOP
     df_thread = threading.Thread(target=update_dataframe)
     # df_thread = threading.Thread(target=update_dataframe, daemon=True)
@@ -182,6 +181,8 @@ if __name__ == "__main__":
     print("--------------- WAITING FOR DF THREAD TO JOIN --------------- ")
     df_thread.join()
     print("DF Thread Done...")
+
+    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Data.csv")
 
     # print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
     # eeg_thread.join()
