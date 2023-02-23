@@ -20,7 +20,7 @@ def get_EEG_data_print(arr):
         
         
 def get_EEG_data():
-    data_file = open("data.txt", "r")
+    data_file = open("C:\Users\sebastian.johanss11\Desktop\Python grejer\Faktisk EmoIDE\EmoIDE_project-1\Server\Hardware\EEG\data.txt", "r")
 
     data_arr = data_file.read().split(",")
 
@@ -36,6 +36,7 @@ def get_EEG_data():
 
     return data_dict
 
+get_EEG_data_print(get_EEG_data())
 
 #data_arr = [met=["eng.isActive","eng","exc.isActive","exc","lex","str.isActive","str",
 #"rel.isActive","rel","int.isActive","int","foc.isActive","foc"]]
