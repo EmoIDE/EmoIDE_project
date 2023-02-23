@@ -2,7 +2,7 @@
 ## MEMES
 # #(╯°□°)╯︵ ┻━┻ :^) ┬─┬ノ( º _ ºノ)
 # (╯°Д°)╯︵/(.□ . \)
-#HAHAHAHAHHA
+#HAHAHAHAHHA123
 # ( ͡° ͜ʖ ͡°)
 #
 ## THE VOICES
@@ -55,7 +55,7 @@ def extension_connection():
             if not data:
                 break
  
-## 
+# yo 
 def get_EEG_data():
     global eeg_data_dict
     while True:
