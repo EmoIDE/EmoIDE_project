@@ -10,7 +10,6 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 
 
-
 const INFO_ID = 2
 const USER_LOGGED_IN_ID = 3
 const REQUEST_ACCESS_ID = 4
@@ -131,6 +130,7 @@ let user = {
 
 //connect to api through websocket
 const cortex = new socket(socketUrl)
+cortex.setMaxListeners(0)
 
 
 const connected = new Promise((resolve, reject) => {
