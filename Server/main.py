@@ -8,10 +8,11 @@
 ## THE VOICES
 #Wake up
 #  Local imports
-from Hardware.EEG import get_EEG_data
+from Hardware.EEG import eeg
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
 # imports
+import os
 import pandas as pd
 import threading
 import time
@@ -33,16 +34,20 @@ full_data_dict = {}
 
 full_df = pd.DataFrame()
 
-eye_calibration_done = False
-
 #extension settings
 settings = {
     "extension": False,
     "Server connect": False,
-    "EEG": False,
+    "EEG": True,
     "Eye tracker": True,
     "E4": False,
     "Garmin": False
+    }
+
+calibration_done = {
+    "Eye tracker": False,
+    "EEG": False,
+    "Dataframe": False
     }
 
 
@@ -64,20 +69,37 @@ def extension_connection():
                 break
  
 #
-def get_EEG_data():
+def import_EEG_data():
     global eeg_data_dict
-    while True:
-        eeg_data_dict = get_EEG_data.get_EEG_data()
+    global calibration_done
+    
+    calibration_done["EEG"] = True
+
+    all_done = False
+    while not all_done:
+        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+            all_done = True
+    
+    start = time.time()
+    while time.time() - start < 40:
+        time.sleep(1)
+        eeg_data_dict = eeg.get_EEG_data()
+
+        #print(f"In get_EEG_data() dict is:{eeg_data_dict}")
 
 def get_eye_tracker_data():
-    global eye_calibration_done
+    global calibration_done
+    global eye_data_dict
+
     eye_tracker = EyeTracker(1)
     eye_tracker.setup()
-    eye_calibration_done = True
     print("setup done")
-    # eye_tracker.start_recording() 
-    
-    global eye_data_dict
+    calibration_done["Eye tracker"] = True
+
+    all_done = False
+    while not all_done:
+        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+            all_done = True
     
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
@@ -119,27 +141,37 @@ def update_dataframe():
     global full_df
     global eye_data_dict
     global eeg_data_dict
-    global eye_calibration_done
 
-    print("Starting df update loop")
+    calibration_done["Dataframe"] = True
+
+    all_done = False
+    while not all_done:
+        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+            all_done = True
+
+
+
     start = time.time()
-    while time.time() - start < 100:
+    while time.time() - start < 35:
         full_data_dic = {}
         time.sleep(1)
-        if eye_calibration_done:
-            # Eye tracker
-            print(f"eyetracker dict:{eye_data_dict}\n")
-            full_data_dic.update(eye_data_dict)
-            
-            # Eeg
-            print(f"eeg dict:{eeg_data_dict}\n")
-            full_data_dic.update(eeg_data_dict)
-            
-            # dataframe
-            print(f"dict: {full_data_dic}\n")
-            full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
-            print(f"{full_df}\n--------------------------------")
+        # Clear terminal
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+        # Eye tracker
+        # print(f"eyetracker dict:{eye_data_dict}\n")
+        full_data_dic.update(eye_data_dict)
+        
+        # Eeg
+        # print(f"eeg dict:{eeg_data_dict}\n")
+        full_data_dic.update(eeg_data_dict)
+        
+        # dataframe
+        # print(f"dict: {full_data_dic}\n")
+        full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
+
+        print(f"{full_df}\n--------------------------------")
 
 
 def save_df(df, path):
@@ -160,19 +192,21 @@ if __name__ == "__main__":
 
     if settings["EEG"] == True:
         #start thread/-s needed for EEG
-        eeg_thread = threading.Thread(target=get_EEG_data)
-        # eeg_thread = threading.Thread(target=get_EEG_data, daemon=True)
+        print("EEG thread starts")
+        eeg_thread = threading.Thread(target=import_EEG_data)
+        eeg_thread.start()
     
     if settings["Eye tracker"] == True:
-        #start thread/-s needed for EEG
-        eye_thread = threading.Thread(target=get_eye_tracker_data)
-        # eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True)
+        #start thread/-s needed for Eye tracker
+        print("Eye thread starts")
+        eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
 
     # once every second time values are stored                                  ####### ADDERA LOOP
     df_thread = threading.Thread(target=update_dataframe)
     # df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
+    print("Dataframe thread starts")
 
     print("--------------- WAITING FOR EYE THREAD TO JOIN --------------- ")
     eye_thread.join()
@@ -184,9 +218,9 @@ if __name__ == "__main__":
 
     save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Data.csv")
 
-    # print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
-    # eeg_thread.join()
-    # print("EEG Thread Done...")
+    print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
+    eeg_thread.join()
+    print("EEG Thread Done...")
 
     exit()
     # print("Before joining DF Thread: ")
