@@ -1,5 +1,6 @@
 from re import S
 import socket
+import time
 
 
 #Hur man skriver pause eller unpause
@@ -10,7 +11,7 @@ import socket
 # Create a connection to the server application
 # Connection
 server_ip = '127.0.0.1'
-server_port = 27100
+server_port = 28000
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)       # tcp socket är en steam of data
 # '\r\n' !!!! End with newline: '\n'
 
@@ -47,7 +48,7 @@ finally:
 #requests = ['device_subscribe gsr ON', 'device_subscribe bvp ON', 'device_subscribe ibi ON', 'device_subscribe acc ON', 'device_subscribe bat ON']
 # data requests
 #requests = ['device_subscribe gsr ON\n', 'device_subscribe bvp ON\n', 'device_subscribe ibi ON\n', 'device_subscribe acc ON\n', 'device_subscribe bat ON\n']
-requests = ['device_subscribe bvp ON\n']
+requests = ['device_subscribe acc ON\n']
 try:
     for i in requests:
         # send
@@ -66,7 +67,7 @@ finally:
 # Data collection
 i = 0
 while (i < 10):
-    data = client_socket.recv(256)
+    data = client_socket.recv(256).decode("utf-8")
     print(data)
     print("-----------------------------------------------\n")
     if len(data) > 0:
