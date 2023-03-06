@@ -218,7 +218,7 @@ def save_df(df, path, save_as_ext = '.csv'):
         text_file.write(html)
         text_file.close()
 
-# FUNKAR KANSKE
+# FUNKAR 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
         with pd.ExcelWriter(str(path + "/" + filename)) as writer:
@@ -237,8 +237,7 @@ def save_df(df, path, save_as_ext = '.csv'):
         # excel_file = pd.ExcelWriter(str(path + "/" + filename))
         # df.to_excel(excel_file, index=False)
         # df.save()
-        with pd.ExcelWriter(str(path + "/" + filename)) as writer:
-            df.to_excel(writer) 
+        df.to_excel(str(path + "/" + filename))
         
     else:
         filename = filename + '.csv'
@@ -320,7 +319,7 @@ def TEST_create_mock_dataframe():
 
 if __name__ == "__main__":
     df = TEST_create_mock_dataframe()
-    save_df(df, 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server', '.csv')                ################# LÄGG TILL EGEN PATH
+    save_df(df, 'C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server', '.xlsx')                ################# LÄGG TILL EGEN PATH
     
     
     exit()  # (!) EXIT FOR TESTING
