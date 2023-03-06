@@ -122,6 +122,10 @@ def init_df():
     global eye_data_dict
     global eeg_data_dict
 
+    time = {
+        "time":0
+    }
+
     eye_data_dict = {
     "x":0,
     "y":0
@@ -137,6 +141,7 @@ def init_df():
         "Focus":0
         }
 
+    full_data_dict.update(time)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
 
