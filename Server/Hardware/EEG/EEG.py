@@ -107,7 +107,7 @@ class EEG:
     }
 
 
-    def __init__(self, client_id, client_secret):
+    def __init__(self, client_id="PdLqy2A8a5ukYTU6eaJki38hlZoVS5IzJaVi4G3p", client_secret="CeFlg0Hqd5QltDtdbDr78whwNJqG2oyblzsPSbR4gFZ6mFXwHwdgW7UthZSF2Dfacp4JMah5BrRLpJXQLwZvWsAdF59SsdhkriO8g157e5ghz4IPo8vsnqlWV5TNQ7rR"):
         self.client_id = "PdLqy2A8a5ukYTU6eaJki38hlZoVS5IzJaVi4G3p"
         self.client_secret = "CeFlg0Hqd5QltDtdbDr78whwNJqG2oyblzsPSbR4gFZ6mFXwHwdgW7UthZSF2Dfacp4JMah5BrRLpJXQLwZvWsAdF59SsdhkriO8g157e5ghz4IPo8vsnqlWV5TNQ7rR"
         self.cortex_token = ""
@@ -206,8 +206,6 @@ class EEG:
         }
 
         #print(EEG_data_dict)
-        print(EEG_data_dict)
-        print(EEG_data_dict)
         return EEG_data_dict
             
 
