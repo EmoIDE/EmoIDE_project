@@ -208,62 +208,62 @@ def update_dataframe():
         print(f"{full_df}\n--------------------------------")
 
 
-# def save_df(df, path, save_as_ext = '.csv'):
-#     filename = 'output_data'    # get last part of path
+def save_df(df, path, save_as_ext = '.csv'):
+    filename = 'output_data'    # get last part of path
 
-#     if save_as_ext == '.pdf':
-#         filename = filename + save_as_ext
+    if save_as_ext == '.pdf':
+        filename = filename + save_as_ext
 
-#         #Skapar ett table från dataframe
-#         fig, ax =plt.subplots(figsize=(12,4))
-#         ax.axis('tight')
-#         ax.axis('off') 
-#         # osäker på vad denna gör men fungerar inte utan
-#         the_table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
+        #Skapar ett table från dataframe
+        fig, ax =plt.subplots(figsize=(12,4))
+        ax.axis('tight')
+        ax.axis('off') 
+        # osäker på vad denna gör men fungerar inte utan
+        the_table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
 
-#         #Skapar ett tomt pdf dokument och sparar sedan figuren i det
-#         pp = PdfPages(filename = str(path + "/" + filename))
-#         pp.savefig(fig, bbox_inches='tight')
-#         pp.close()
+        #Skapar ett tomt pdf dokument och sparar sedan figuren i det
+        pp = PdfPages(filename = str(path + "/" + filename))
+        pp.savefig(fig, bbox_inches='tight')
+        pp.close()
         
-#     elif save_as_ext == '.tsv':
-#         filename = filename + save_as_ext
-#         df.to_csv(str(path + "/" + filename), sep="\t")
+    elif save_as_ext == '.tsv':
+        filename = filename + save_as_ext
+        df.to_csv(str(path + "/" + filename), sep="\t")
     
-# # GER OK OUTPUT -> dock inte snygg
-#     elif save_as_ext == '.html':
-#         filename = filename + save_as_ext
-#         html = df.to_html()
+# GER OK OUTPUT -> dock inte snygg
+    elif save_as_ext == '.html':
+        filename = filename + save_as_ext
+        html = df.to_html()
   
-#         # write html to file
-#         text_file = open(str(path + "/" + filename), "w")
-#         text_file.write(html)
-#         text_file.close()
+        # write html to file
+        text_file = open(str(path + "/" + filename), "w")
+        text_file.write(html)
+        text_file.close()
 
-# # FUNKAR 
-#     elif save_as_ext == '.ods':
-#         filename = filename + save_as_ext
-#         with pd.ExcelWriter(str(path + "/" + filename)) as writer:
-#             df.to_excel(writer) 
+# FUNKAR 
+    elif save_as_ext == '.ods':
+        filename = filename + save_as_ext
+        with pd.ExcelWriter(str(path + "/" + filename)) as writer:
+            df.to_excel(writer) 
 
-# ## FUNKAR INTE
-#     elif save_as_ext == '.xlsx':
-#         filename = filename + save_as_ext
-#         # to excel file
-#         """ från geeks4geeks
-#         # saving xlsx file
-#         GFG = pd.ExcelWriter('Names.xlsx')
-#         df_new.to_excel(GFG, index=False)
-#         GFG.save()
-#         """
-#         # excel_file = pd.ExcelWriter(str(path + "/" + filename))
-#         # df.to_excel(excel_file, index=False)
-#         # df.save()
-#         df.to_excel(str(path + "/" + filename))
+## FUNKAR INTE
+    elif save_as_ext == '.xlsx':
+        filename = filename + save_as_ext
+        # to excel file
+        """ från geeks4geeks
+        # saving xlsx file
+        GFG = pd.ExcelWriter('Names.xlsx')
+        df_new.to_excel(GFG, index=False)
+        GFG.save()
+        """
+        # excel_file = pd.ExcelWriter(str(path + "/" + filename))
+        # df.to_excel(excel_file, index=False)
+        # df.save()
+        df.to_excel(str(path + "/" + filename))
         
-#     else:
-#         filename = filename + '.csv'
-#         df.to_csv(str(path + "/" + filename))
+    else:
+        filename = filename + '.csv'
+        df.to_csv(str(path + "/" + filename))
 
 
 #### TESTFUNKTION
@@ -382,7 +382,7 @@ if __name__ == "__main__":
     print("Dataframe thread starts")
 
     print("--------------- WAITING FOR EYE THREAD TO JOIN --------------- ")
-    #eye_thread.join()
+    eye_thread.join()
     print("EYE Thread Done...")
 
     print("--------------- WAITING FOR DF THREAD TO JOIN --------------- ")

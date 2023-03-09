@@ -93,7 +93,7 @@ class EEG:
             self.headset_id = json.loads(msg)["result"][0]["id"]
             return
         else:
-            print("Please connect the headset")
+            print("Connect the headset")
             headset_ok = False
             while not headset_ok:
                 
@@ -220,5 +220,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    #main()
+    
     
