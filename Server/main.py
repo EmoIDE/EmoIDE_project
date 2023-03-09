@@ -86,12 +86,13 @@ async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
 
+
     cortex_api = EEG.EEG()
     await cortex_api.connect()
     await cortex_api.setup()
     
     #wait for first message
-    await cortex_api.get_eeg_data()
+    #await cortex_api.get_eeg_data()
 
     calibration_done["EEG"] = True
 

@@ -23,90 +23,6 @@ class EEG:
     SUBSCRIBE_ID = 12
 
 
-    
-  
-
-    requestAccess_json ={
-        "id": REQUEST_ACCESS_ID,
-        "jsonrpc": "2.0",
-        "method": "requestAccess",
-        "params": {
-            "clientId": "",
-            "clientSecret": ""
-        }
-    } 
-
-    hasAccessRightJson = {
-        "id": HASACCESSRIGHT_ID,
-        "jsonrpc": "2.0",
-        "method": "hasAccessRight",
-        "params": {
-            "clientId": "",
-            "clientSecret": ""
-        }
-    }
-    queryHeadsets_json= {
-        "id": QUERY_HEADSET_ID,
-        "jsonrpc": "2.0",
-        "method": "queryHeadsets"
-    }
-    controlDevice_json = {
-        "id": CONTROL_HEADST_ID,
-        "jsonrpc": "2.0",
-        "method": "controlDevice",
-        "params": {
-            "command": "connect",
-            "headset": ""
-        }
-    }
-    authorize_json = {
-        "id": AUTHORIZE_ID,
-        "jsonrpc": "2.0",
-        "method": "authorize",
-        "params": {
-            "clientId": "",
-            "clientSecret": ""
-        }   
-    }
-    hasAccessRightJson = {
-        "id": HASACCESSRIGHT_ID,
-        "jsonrpc": "2.0",
-        "method": "hasAccessRight",
-        "params": {
-            "clientId": "",
-            "clientSecret": ""
-        }
-    }
-    createSession_json = {
-        "id": CREATE_SESSION_ID,
-        "jsonrpc": "2.0",
-        "method": "createSession",
-        "params": {
-            "cortexToken": "",
-            "headset": "",
-            "status": "open"
-        }
-    }
-    querySession_json = {
-        "id": QUERY_SESSION_ID,
-        "jsonrpc": "2.0",
-        "method": "querySessions",
-        "params": {
-            "cortexToken": ""
-        }
-    }
-    subscribe_json = {
-        "id": SUBSCRIBE_ID,
-        "jsonrpc": "2.0",
-        "method": "subscribe",
-        "params": {
-            "cortexToken":"",
-            "session": "",
-            "streams": ["met"]
-        }
-    }
-
-
     def __init__(self, client_id="PdLqy2A8a5ukYTU6eaJki38hlZoVS5IzJaVi4G3p", client_secret="CeFlg0Hqd5QltDtdbDr78whwNJqG2oyblzsPSbR4gFZ6mFXwHwdgW7UthZSF2Dfacp4JMah5BrRLpJXQLwZvWsAdF59SsdhkriO8g157e5ghz4IPo8vsnqlWV5TNQ7rR"):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -171,17 +87,20 @@ class EEG:
 
         await self.cortex.send(json.dumps(query_headsets_json))
         msg = await self.cortex.recv()
-        if (json.dumps(msg)["result"].length() >0):
-            self.headset_id = json.dumps(msg)["result"][0]["id"]
+        
+        if (len(json.loads(msg)["result"]) >0):
+            
+            self.headset_id = json.loads(msg)["result"][0]["id"]
             return
         else:
             print("Please connect the headset")
             headset_ok = False
             while not headset_ok:
+                
                 await self.cortex.send(json.dumps(query_headsets_json))
                 msg = await self.cortex.recv()
                 if (json.dumps(msg)["result"].length() >0):
-                    self.headset_id = json.dumps(msg)["result"][0]["id"]
+                    self.headset_id = json.loads(msg)["result"][0]["id"]
                     headset_ok = True
 
             return
@@ -203,17 +122,17 @@ class EEG:
         
 
     async def create_session(self):
-        createSession_json = {
+        create_session_json = {
             "id": self.CREATE_SESSION_ID,
             "jsonrpc": "2.0",
             "method": "createSession",
             "params": {
-                "cortexToken": "",
-                "headset": "",
+                "cortexToken": self.cortex_token,
+                "headset": self.headset_id,
                 "status": "open"
                 }
             }
-        await self.cortex.send(json.dumps(self.createSession_json))
+        await self.cortex.send(json.dumps(create_session_json))
         msg = await self.cortex.recv()
         self.session_id = json.loads(msg)["result"]["id"]
         
@@ -229,9 +148,9 @@ class EEG:
                 "streams": ["met"]
                 }
             }
-        await self.cortex.send(json.dumps(self.subscribe_json))
+        await self.cortex.send(json.dumps(subscribe_json))
         msg = await self.cortex.recv()
-        print(json.loads(msg))
+        #print(json.loads(msg))
 
 
 
@@ -240,26 +159,21 @@ class EEG:
     async def setup(self):
         
         #check access rights
-
         await self.request_access()
-
 
         #get headset id
         await self.get_headset_id()
 
-
-
         #authorize(get token)
         await self.authorize()
-
 
         #create session
         await self.create_session()
 
-        
+        #subscribe to data stream        
         await self.subscribe()
 
-        print("Setup done")
+        #print("Setup done")
 
 
     async def get_eeg_data(self):
