@@ -52,6 +52,11 @@ settings = {
     "Garmin": False
     }
 
+eeg_settings = {
+    "client_id": "",
+    "client_secret": ""
+}
+
 calibration_done = {
     "Eye tracker": False,
     "EEG": False,
