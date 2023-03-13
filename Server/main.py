@@ -8,7 +8,7 @@
 ## THE VOICES
 #Wake up
 #  Local imports
-# from Hardware.EEG import eeg
+from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
 # imports
@@ -18,13 +18,14 @@ import threading
 import time
 import datetime
 import socket
+import asyncio
 
 # FOR TESTING
 import random
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_pdf import PdfPages
 
 
 HOST = "127.0.0.1"
@@ -45,11 +46,16 @@ full_df = pd.DataFrame()
 settings = {
     "extension": False,
     "Server connect": False,
-    "EEG": False,
+    "EEG": True,
     "Eye tracker": False,
     "E4": False,
     "Garmin": False
     }
+
+eeg_settings = {
+    "client_id": "",
+    "client_secret": ""
+}
 
 calibration_done = {
     "Eye tracker": False,
@@ -76,23 +82,39 @@ def extension_connection():
                 break
  
 #
-def import_EEG_data():
+async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
+
+
+    cortex_api = EEG.EEG()
+    await cortex_api.connect()
+    await cortex_api.setup()
     
+    #wait for first message
+    #await cortex_api.get_eeg_data()
+
     calibration_done["EEG"] = True
 
-    all_done = False
+    all_done = True
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     
+        
+
     start = time.time()
     while time.time() - start < 40:
         time.sleep(1)
-        # eeg_data_dict = eeg.get_EEG_data()
+        eeg_data_dict = await cortex_api.get_eeg_data()
 
-        #print(f"In get_EEG_data() dict is:{eeg_data_dict}")                    ####################################
+        #print(f"In get_EEG_data() dict is:{eeg_data_dict}")    
+        
+                        ####################################
+
+def start_eeg():
+    asyncio.run(import_EEG_data())
+
 
 def get_eye_tracker_data():
     global calibration_done
@@ -156,7 +178,7 @@ def update_dataframe():
 
     calibration_done["Dataframe"] = True
 
-    all_done = False
+    all_done = True
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -218,7 +240,7 @@ def save_df(df, path, save_as_ext = '.csv'):
         text_file.write(html)
         text_file.close()
 
-# FUNKAR KANSKE
+# FUNKAR 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
         with pd.ExcelWriter(str(path + "/" + filename)) as writer:
@@ -237,8 +259,7 @@ def save_df(df, path, save_as_ext = '.csv'):
         # excel_file = pd.ExcelWriter(str(path + "/" + filename))
         # df.to_excel(excel_file, index=False)
         # df.save()
-        with pd.ExcelWriter(str(path + "/" + filename)) as writer:
-            df.to_excel(writer) 
+        df.to_excel(str(path + "/" + filename))
         
     else:
         filename = filename + '.csv'
@@ -323,14 +344,18 @@ if __name__ == "__main__":
     save_df(df, 'PATH', '.csv')                ################# LÄGG TILL EGEN PATH
     
     
-    exit()  # (!) EXIT FOR TESTING
+    #df = TEST_create_mock_dataframe()
+    #save_df(df, 'C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server', '.xlsx')                ################# LÄGG TILL EGEN PATH
+    
+    
+    #exit()  # (!) EXIT FOR TESTING
 
 
 
 
     init_df()
-    extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
-    extensionCon_thread.start()
+    #extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
+    #extensionCon_thread.start()
 
     # waiting for extension to connect to the server
     if settings["Server connect"] == True:
@@ -342,7 +367,7 @@ if __name__ == "__main__":
     if settings["EEG"] == True:
         #start thread/-s needed for EEG
         print("EEG thread starts")
-        eeg_thread = threading.Thread(target=import_EEG_data)
+        eeg_thread = threading.Thread(target=start_eeg)
         eeg_thread.start()
     
     if settings["Eye tracker"] == True:
@@ -354,7 +379,7 @@ if __name__ == "__main__":
     
     # once every second time values are stored                                  ####### ADDERA LOOP
     df_thread = threading.Thread(target=update_dataframe)
-    # df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
     print("Dataframe thread starts")
 
@@ -366,7 +391,7 @@ if __name__ == "__main__":
     df_thread.join()
     print("DF Thread Done...")
 
-    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Data.csv")
+    #save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Data.csv")
 
     print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
     eeg_thread.join()
