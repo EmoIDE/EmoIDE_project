@@ -48,7 +48,7 @@ finally:
 #requests = ['device_subscribe gsr ON', 'device_subscribe bvp ON', 'device_subscribe ibi ON', 'device_subscribe acc ON', 'device_subscribe bat ON']
 # data requests
 #requests = ['device_subscribe gsr ON\n', 'device_subscribe bvp ON\n', 'device_subscribe ibi ON\n', 'device_subscribe acc ON\n', 'device_subscribe bat ON\n']
-requests = ['device_subscribe acc ON\n']
+requests = ['device_subscribe bvp ON\n']
 try:
     for i in requests:
         # send

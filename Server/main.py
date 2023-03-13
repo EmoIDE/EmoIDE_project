@@ -320,7 +320,7 @@ def TEST_create_mock_dataframe():
 
 if __name__ == "__main__":
     df = TEST_create_mock_dataframe()
-    save_df(df, 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server', '.csv')                ################# LÄGG TILL EGEN PATH
+    save_df(df, 'PATH', '.csv')                ################# LÄGG TILL EGEN PATH
     
     
     exit()  # (!) EXIT FOR TESTING
