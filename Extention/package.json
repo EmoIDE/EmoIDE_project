@@ -86,7 +86,7 @@
     {
       "command": "statusWindow.open",
       "title": "Open status window",
-      "icon": "Icons/StatsIcon.png"
+      "icon": "$(graph-line)"
     },
     {
       "command": "EmoIDE.showSettings",

@@ -1,13 +1,13 @@
 //Custom Icons
 let StatusGreen = "StatusActive.png"
 let StatusRed =	"StatusInactive.png"
-
+let statusbarPulse;
 
 const { debug } = require('console');
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-var net = require('net');
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 
@@ -15,7 +15,6 @@ var net = require('net');
  * @param {vscode.ExtensionContext} context
  */
 
-var client = new net.Socket();
 class DataProvider {
 	constructor() {
 	  // Define the items to display in the tree view
@@ -23,17 +22,20 @@ class DataProvider {
 		{
 		  id: 'wristBand',
 		  label: 'Empatica E4',
-		  active: false
+		  active: false,
+		  iconPath: "Icons/Logo.png"
 		},
 		{
 			id: 'Eyetracker',
 			label: 'Eyetracker thing',
-			active: false
+			active: false,
+			iconPath: "Icons/Logo.png"
 		},
 		{
 			id: 'BrainTracker',
 			label: 'Brainscanner',
-			active: false
+			active: false,
+			iconPath: "Icons/Logo.png"
 		}
 	  ];
 	  this.settingsItem = {
@@ -63,7 +65,8 @@ class DataProvider {
 			id: element.id,
 			label: element.label,
 			collapsibleState: element.children ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
-			command: element.command
+			command: element.command,
+			iconPath: element.iconPath
 		  };
 
 		if (!element) {
@@ -80,11 +83,17 @@ class DataProvider {
 			}
 			treeItem.iconPath = "Icons/Logo.png";
 		}
-		  treeItem.iconPath = "Icons/Logo.png";
 		  return treeItem;
 		}
   }
 function activate(context) {
+
+	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
+	statusbarPulse.command = "statusWindow.open";
+	statusbarPulse.text = "$(pulse) 0";
+	statusbarPulse.color = "#42f551";
+	statusbarPulse.show();
+
 	vscode.workspace.getConfiguration('')
 	const dataProvider = new DataProvider();
 	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:dataProvider})
