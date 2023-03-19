@@ -95,8 +95,8 @@
     },
     {
       "command": "EmoIDE.connectToServer",
-      "title": "Open User Settings",
-      "icon": "Icons/settingsIcon"
+      "title": "Connect to the server",
+      "icon": "Icons/connectIcon"
     }]
   },
   "scripts": {
