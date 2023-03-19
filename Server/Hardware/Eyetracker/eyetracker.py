@@ -12,7 +12,7 @@ class EyeTracker:
         
         self.frequency = frequency
 
-        zones = [
+        self.zones = [
             {'x': (0, 0.2), 'y': (0, 1), 'zone': "Explorer", 'count' : 0},
             {'x': (0.2, 1), 'y': (0, 0.8), 'zone': "Code", 'count' : 0},
             {'x': (0.2, 1), 'y': (0.8, 1), 'zone': "Terminal", 'count' : 0}
@@ -58,10 +58,11 @@ class EyeTracker:
         self.cache["x"].append(coordinate[0])
 
         dict["y"] = coordinate[1]
-        self.cahce["y"].append(coordinate[1])
+        self.cache["y"].append(coordinate[1])
         
         for zone in self.zones:
             if(self.check(coordinate[0],zone['x']) and self.check(coordinate[1],zone['y'])):
+                print("LUKA TIM")
                 zone['count'] += 1
         
 

@@ -19,6 +19,7 @@ import time
 import datetime
 import socket
 import asyncio
+import json
 
 # FOR TESTING
 import random
@@ -28,7 +29,8 @@ import numpy as np
 # from matplotlib.backends.backend_pdf import PdfPages
 
 
-HOST = "127.0.0.1"
+#socket settings
+HOST = "127.0.0.1" #lokala IPN
 PORT = 6969 #lustigt. najs.
 extension_connected = False
 
@@ -77,9 +79,23 @@ def extension_connection():
     with conn:
         print(f"Connected by {addr}")
         while True:
-            data = conn.recv(1024)
-            if not data:
+            data_received = conn.recv(1024)
+            if not data_received:
                 break
+            json_data = json.loads(data_received)
+            function = json_data["function"]
+            #mest för att testa så klienten och servern kan kommunicera
+            if function == "ping":
+                data = {
+                    "function": "pong",
+                    }
+                data_json = json.dumps(data)
+                conn.sendall(data_json)
+                print("Received a ping from the client & responded with pong.")
+            elif function == "get_eeg_data":
+                #skicka eeg_datan till klienten, klienten har ansvar att begära data.
+                
+                
  
 #
 async def import_EEG_data():
