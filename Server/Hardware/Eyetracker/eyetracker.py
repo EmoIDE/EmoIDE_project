@@ -31,7 +31,8 @@ class EyeTracker:
     def get_zone_destribution(self):
         zone_destribution = {}
         for zone in self.zones:
-            zone_destribution[zone['zone']] = round(zone['count']/sum([z['count'] for z in self.zones]),2)*100
+            if sum([z['count'] for z in self.zones]) != 0:
+                zone_destribution[zone['zone']] = round(zone['count']/sum([z['count'] for z in self.zones]),2)*100
 
         return zone_destribution
 
@@ -63,6 +64,8 @@ class EyeTracker:
         for zone in self.zones:
             if(self.check(coordinate[0],zone['x']) and self.check(coordinate[1],zone['y'])):
                 zone['count'] += 1
+        
+        dict.update(self.get_zone_destribution())
         
 
     def stop(self):
