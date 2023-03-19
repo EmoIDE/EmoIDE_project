@@ -86,17 +86,12 @@
     {
       "command": "statusWindow.open",
       "title": "Open status window",
-      "icon": "Icons/StatsIcon.png"
+      "icon": "$(graph-line)"
     },
     {
       "command": "EmoIDE.showSettings",
       "title": "Open User Settings",
-      "icon": "Icons/settingsIcon"
-    },
-    {
-      "command": "EmoIDE.connectToServer",
-      "title": "Connect to the server",
-      "icon": "Icons/connectIcon"
+      "icon": "$(gear)"
     }]
   },
   "scripts": {

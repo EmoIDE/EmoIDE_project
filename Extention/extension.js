@@ -1,13 +1,13 @@
 //Custom Icons
 let StatusGreen = "StatusActive.png"
 let StatusRed =	"StatusInactive.png"
-
+let statusbarPulse;
 
 const { debug } = require('console');
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-var net = require('net');
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 
@@ -15,7 +15,6 @@ var net = require('net');
  * @param {vscode.ExtensionContext} context
  */
 
-var client = new net.Socket();
 class DataProvider {
 	constructor() {
 	  // Define the items to display in the tree view
@@ -23,17 +22,20 @@ class DataProvider {
 		{
 		  id: 'wristBand',
 		  label: 'Empatica E4',
-		  active: false
+		  active: false,
+		  iconPath: "Icons/Logo.png"
 		},
 		{
 			id: 'Eyetracker',
 			label: 'Eyetracker thing',
-			active: false
+			active: false,
+			iconPath: "Icons/Logo.png"
 		},
 		{
 			id: 'BrainTracker',
 			label: 'Brainscanner',
-			active: false
+			active: false,
+			iconPath: "Icons/Logo.png"
 		}
 	  ];
 	  this.settingsItem = {
@@ -63,7 +65,8 @@ class DataProvider {
 			id: element.id,
 			label: element.label,
 			collapsibleState: element.children ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
-			command: element.command
+			command: element.command,
+			iconPath: element.iconPath
 		  };
 
 		if (!element) {
@@ -80,11 +83,17 @@ class DataProvider {
 			}
 			treeItem.iconPath = "Icons/Logo.png";
 		}
-		  treeItem.iconPath = "Icons/Logo.png";
 		  return treeItem;
 		}
   }
 function activate(context) {
+
+	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
+	statusbarPulse.command = "statusWindow.open";
+	statusbarPulse.text = "$(pulse) 0";
+	statusbarPulse.color = "#42f551";
+	statusbarPulse.show();
+
 	vscode.workspace.getConfiguration('')
 	const dataProvider = new DataProvider();
 	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:dataProvider})
@@ -111,13 +120,6 @@ function activate(context) {
 			vscode.commands.executeCommand('workbench.action.openSettings', '@ext:EmoIDETeam.EmoIDE');
 		})
 	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
-			connect_to_server();
-		})
-	);
-
 	let disposable = vscode.commands.registerCommand('emoide.BreakNotif', function () {
 		// The code you place here will be executed every time your command is executed
 
@@ -142,24 +144,6 @@ function getWebviewContent() {
   </html>`;
   }
   
-  function connect_to_server(){
-	client.connect(6969, '127.0.0.1', function() {
-		console.log('Connected');
-		var json_data = {"function": "ping"}
-		client.write(JSON.stringify(json_data));
-	});
-};
-client.on('data', function(data){
-	var json_data = JSON.parse(data.toString());
-	var type_of_data = json_data["function"]
-	if (type_of_data == "nånting") {
-		//gör något med infon som servern skickar
-	}
-
-});
-client.on('close', function() {
-	console.log('Connection closed');
-});
 // This method is called when your extension is deactivated
 function deactivate() {}
 
