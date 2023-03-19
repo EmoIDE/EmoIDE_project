@@ -93,11 +93,13 @@ def extension_connection():
                 conn.sendall(data_json)
                 print("Received a ping from the client & responded with pong.")
             elif function == "get_eeg_data":
+                pass
                 #skicka eeg_datan till klienten, klienten har ansvar att begära data.
                 
-                
+
  
-#
+# guiad
+
 async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
@@ -283,7 +285,7 @@ def save_df(df, path, save_as_ext = '.csv'):
 
 
 #### TESTFUNKTION
-def TEST_create_mock_dataframe():    
+def TEST_create_mock_dataframe(test_time):    
     mock_full_df = pd.DataFrame()
 
     # Init dataframe
@@ -317,7 +319,7 @@ def TEST_create_mock_dataframe():
     mock_full_df = mock_full_df.append(full_data_dict, ignore_index = True)
 
     start = time.time()
-    while time.time() - start < 11:
+    while time.time() - start < test_time:
         time.sleep(1)
 
         rand_x = random.randint(0,10)
@@ -354,19 +356,15 @@ def TEST_create_mock_dataframe():
 
     return mock_full_df
 
+def full_mock_test(path, format, test_time):
+    df = TEST_create_mock_dataframe(test_time=10)
+    save_df(df, path, format)                ################# LÄGG TILL EGEN PATH
+
+    exit()
+
 
 if __name__ == "__main__":
-    df = TEST_create_mock_dataframe()
-    save_df(df, 'PATH', '.csv')                ################# LÄGG TILL EGEN PATH
-    
-    
-    #df = TEST_create_mock_dataframe()
-    #save_df(df, 'C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server', '.xlsx')                ################# LÄGG TILL EGEN PATH
-    
-    
-    #exit()  # (!) EXIT FOR TESTING
-
-
+    full_mock_test("C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output", '.csv', 11)          ################ Startar och avslutar ett test
 
 
     init_df()
