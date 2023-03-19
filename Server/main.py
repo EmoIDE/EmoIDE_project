@@ -25,12 +25,12 @@ import json
 import random
 
 import numpy as np
-# import matplotlib.pyplot as plt
-# from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 
 #socket settings
-HOST = "127.0.0.1" #lokala IPN
+HOST = "127.0.0.1" #lokala IPN, localhost
 PORT = 6969 #lustigt. najs.
 extension_connected = False
 
@@ -364,7 +364,7 @@ def full_mock_test(path, format, test_time):
 
 
 if __name__ == "__main__":
-    full_mock_test("C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
+    # full_mock_test("C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
 
     init_df()

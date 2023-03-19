@@ -25,26 +25,32 @@ function activate(context) {
 		vscode.window.showInformationMessage('Hello World from emoIDE!');
 	});
 
-	// fattar inte alls hur man ska göra i det här trashspråket :') -Anton
-	vscode.commands.registerCommand('emoideclient.connectToServer', () => {
-		client.connect(6969, '127.0.0.1', function() {
-			console.log('Connected');
-			var json_data = {"function": "ping"}
-			client.write(JSON.stringify(json_data));
-		});
+	vscode.commands.registerCommand('emoide.connectToServer', () => {
+		connect_to_server();
 	})
+	vscode.commands.registerCommand('emoide.requestEEGData', () => {
+
+	});
 
 	context.subscriptions.push(disposable);
+}
+
+function connect_to_server(){
+	client.connect(6969, '127.0.0.1', function() {
+		console.log('Connected');
+		var json_data = {"function": "ping"}
+		client.write(JSON.stringify(json_data));
+	});
 }
 
 client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]
 	if (type_of_data == "nånting") {
-		//gör något baserad på vad klienten får
+		//gör något med infon som servern skickar
 	}
 
-})
+});
 client.on('close', function() {
 	console.log('Connection closed');
 });
