@@ -1,6 +1,7 @@
 {
   "name": "emoide",
   "displayName": "emoIDE",
+  "publisher": "emoIDETeam",
   "description": "An emotional status tool",
   "version": "0.0.1",
   "engines": {
@@ -9,46 +10,99 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:emoide.fuku"
-  ],
   "main": "./extension.js",
   "contributes": {
+    "configuration":{
+      "title": "EmoIDE",
+      "properties": {
+        "Age":
+        {
+          "type": "string",
+          "default": "NA",
+          "description": "The age of the user"
+        },
+        "Base Pulse":
+        {
+          "type": "integer",
+          "default":100,
+          "description": "Resting pulse of user as point of reference"
+        },
+        "File Format":
+        {
+          "type": "string",
+          "default": "null",
+          "description": "Format of file when data is saved"
+      }
+    }
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command":"EmoIDE.showSettings",
+          "when": "view == Devices",
+          "group": "navigation"
+        },
+        {
+          "command":"statusWindow.open",
+          "when": "view == DataWindow",
+          "group": "navigation"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "package-explorer",
+          "id": "EmoIDE",
           "title": "EmoIDE",
           "icon": "Icons/Logo.png"
         }
       ]
     },
     "views":{
-      "package-explorer": [
+      "EmoIDE": [
         {
-          "id": "package-dependencies",
-          "name": "Dependencies"
+          "id": "DataWindow",
+          "name": "Data"
         },
         {
-          "id": "package-outline",
-          "name": "Outline"
+          "id": "Devices",
+          "name": "Devices",
+          "icon": "Icons/Logo.png",
+          "canToggleVisibility": true
         }
       ],
       "explorer": [
         {"id": "deviceExplorer",
          "name":  "EmoIDE",
-         "icon": "./Icons/Logo.svg",
+         "command":"statusWindow.open",
          "contextualTitle": "Package Explorer"
-        }
-        ]
+        }]
       },
-
     "commands": [{
-      "command": "emoide.helloWorld",
-      "title": "Hello World"
+      "command": "emoide.BreakNotif",
+      "title": "take a break!",
+      "category": "notification" 
+    },
+    {
+      "command": "statusWindow.open",
+      "title": "Open status window",
+      "icon": "Icons/StatsIcon.png"
+    },
+    {
+      "command": "EmoIDE.showSettings",
+      "title": "Open User Settings",
+      "icon": "Icons/settingsIcon"
+    },
+    {
+      "command": "EmoIDE.connectToServer",
+      "title": "Open User Settings",
+      "icon": "Icons/settingsIcon"
     }]
   },
   "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "eslint .",
     "pretest": "npm run lint",
     "test": "node ./test/runTest.js"
