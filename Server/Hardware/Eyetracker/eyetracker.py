@@ -62,7 +62,6 @@ class EyeTracker:
         
         for zone in self.zones:
             if(self.check(coordinate[0],zone['x']) and self.check(coordinate[1],zone['y'])):
-                print("LUKA TIM")
                 zone['count'] += 1
         
 

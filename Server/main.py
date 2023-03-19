@@ -364,7 +364,7 @@ def full_mock_test(path, format, test_time):
 
 
 if __name__ == "__main__":
-    # full_mock_test("C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
+    # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
 
     init_df()
@@ -390,10 +390,10 @@ if __name__ == "__main__":
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
 
-    
+
     # once every second time values are stored                                  ####### ADDERA LOOP
     df_thread = threading.Thread(target=update_dataframe)
-    df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    # df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
     print("Dataframe thread starts")
 
@@ -405,7 +405,7 @@ if __name__ == "__main__":
     df_thread.join()
     print("DF Thread Done...")
 
-    #save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Data.csv")
+    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Output/Data.tsv")
 
     print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
     eeg_thread.join()
