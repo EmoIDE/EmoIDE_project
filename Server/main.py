@@ -248,7 +248,6 @@ def save_df(df, path, save_as_ext = '.csv'):
         filename = filename + save_as_ext
         df.to_csv(str(path + "/" + filename), sep="\t")
     
-# GER OK OUTPUT -> dock inte snygg
     elif save_as_ext == '.html':
         filename = filename + save_as_ext
         html = df.to_html()
@@ -258,27 +257,14 @@ def save_df(df, path, save_as_ext = '.csv'):
         text_file.write(html)
         text_file.close()
 
-# FUNKAR 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
         with pd.ExcelWriter(str(path + "/" + filename)) as writer:
             df.to_excel(writer) 
 
-## FUNKAR INTE
     elif save_as_ext == '.xlsx':
         filename = filename + save_as_ext
-        # to excel file
-        """ från geeks4geeks
-        # saving xlsx file
-        GFG = pd.ExcelWriter('Names.xlsx')
-        df_new.to_excel(GFG, index=False)
-        GFG.save()
-        """
-        # excel_file = pd.ExcelWriter(str(path + "/" + filename))
-        # df.to_excel(excel_file, index=False)
-        # df.save()
         df.to_excel(str(path + "/" + filename))
-        
     else:
         filename = filename + '.csv'
         df.to_csv(str(path + "/" + filename))
@@ -405,7 +391,7 @@ if __name__ == "__main__":
     df_thread.join()
     print("DF Thread Done...")
 
-    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Output/Data.tsv")
+    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Output/Data.tsv", '.tsv')
 
     print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
     eeg_thread.join()
