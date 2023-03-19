@@ -16,7 +16,7 @@ import os
 import pandas as pd
 import threading
 import time
-import datetime
+from datetime import datetime
 import socket
 import asyncio
 import json
@@ -34,9 +34,8 @@ HOST = "127.0.0.1" #lokala IPN, localhost
 PORT = 6969 #lustigt. najs.
 extension_connected = False
 
-eeg_data_dict = {}
-
-
+# init global variables
+time_dict = {}
 eeg_data_dict = {}
 eye_data_dict = {}
 
@@ -49,7 +48,7 @@ settings = {
     "extension": False,
     "Server connect": False,
     "EEG": True,
-    "Eye tracker": False,
+    "Eye tracker": True,
     "E4": False,
     "Garmin": False
     }
@@ -61,11 +60,9 @@ eeg_settings = {
 
 calibration_done = {
     "Eye tracker": False,
-    "EEG": False,
-    "Dataframe": False
+    "EEG": True,
+    "Dataframe": True
     }
-
-
 
 #handles the connection to the extension
 def extension_connection():
@@ -87,18 +84,15 @@ def extension_connection():
             #mest för att testa så klienten och servern kan kommunicera
             if function == "ping":
                 data = {
-                    "function": "pong",
+                    "function": "ping",
                     }
                 data_json = json.dumps(data)
                 conn.sendall(data_json)
                 print("Received a ping from the client & responded with pong.")
-            elif function == "get_eeg_data":
+            elif function == "get_eye_data":
                 pass
-                #skicka eeg_datan till klienten, klienten har ansvar att begära data.
+                #skicka eye_datan till klienten, klienten har ansvar att begära data.
                 
-
- 
-# guiad
 
 async def import_EEG_data():
     global eeg_data_dict
@@ -159,16 +153,20 @@ def get_eye_tracker_data():
 def init_df():
     global full_df
     global full_data_dict
+    global time_dict
     global eye_data_dict
     global eeg_data_dict
 
-    time = {
-        "time":0
+    time_dict = {
+        "time":"startTime"
     }
 
     eye_data_dict = {
     "x":0,
-    "y":0
+    "y":0,
+    "Explorer": 0,
+    "Terminal": 0,
+    "Code": 0
     }
 
     eeg_data_dict = {
@@ -180,8 +178,9 @@ def init_df():
         "Interest/Affinity":0,
         "Focus":0
         }
+    
 
-    full_data_dict.update(time)
+    full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
 
@@ -191,12 +190,13 @@ def init_df():
 
 def update_dataframe():
     global full_df
+    global time_dict
     global eye_data_dict
     global eeg_data_dict
 
     calibration_done["Dataframe"] = True
 
-    all_done = True
+    all_done = False
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -204,15 +204,22 @@ def update_dataframe():
 
 
     start = time.time()
-    while time.time() - start < 35:
+    while time.time() - start < 15:
         full_data_dic = {}
         time.sleep(1)
 
         # Clear terminal
         os.system('cls' if os.name == 'nt' else 'clear')
-        
+
+        # time
+        # time_dict["time"] = time.localtime()
+        now = datetime.now()
+        time_dict["time"] = now.strftime("%d/%m/%Y %H:%M:%S")
+        full_data_dict.update(time_dict)
+
         # Eye tracker
         # print(f"eyetracker dict:{eye_data_dict}\n")
+        # print(eye_data_dict)
         full_data_dic.update(eye_data_dict)
         
         # Eeg
@@ -350,6 +357,7 @@ def full_mock_test(path, format, test_time):
 
 
 if __name__ == "__main__":
+    time_dict = {}
     # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
 
@@ -381,6 +389,7 @@ if __name__ == "__main__":
     df_thread = threading.Thread(target=update_dataframe)
     # df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
+
     print("Dataframe thread starts")
 
     print("--------------- WAITING FOR EYE THREAD TO JOIN --------------- ")
@@ -389,16 +398,14 @@ if __name__ == "__main__":
 
     print("--------------- WAITING FOR DF THREAD TO JOIN --------------- ")
     df_thread.join()
-    print("DF Thread Done...")
+    print("DF Thread Done...")      
 
-    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/Python grejer/Faktisk EmoIDE/EmoIDE_project-1/Server/Output/Data.tsv", '.tsv')
-
+    
     print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
     eeg_thread.join()
     print("EEG Thread Done...")
 
+    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/Output", '.tsv')
+    
     exit()
-    # print("Before joining DF Thread: ")
-    # eeg_thread.join()
-    # print("EEG Thread Done...")
 

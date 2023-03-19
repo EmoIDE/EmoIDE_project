@@ -97,6 +97,11 @@
       "command": "EmoIDE.connectToServer",
       "title": "Connect to the server",
       "icon": "Icons/connectIcon"
+    },
+    {
+      "command": "EmoIDE.requestEyeData",
+      "title": "Requests eye data from the server every x seconds.",
+      "icon": "Icons/eyeDataIcon"
     }]
   },
   "scripts": {

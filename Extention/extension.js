@@ -114,7 +114,12 @@ function activate(context) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
-			connect_to_server();
+			connectToServer();
+		})
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('EmoIDE.requestEyeData', () => {
+			const gettingEyeData = setInterval(getEyeData, 1000);
 		})
 	);
 
@@ -142,18 +147,24 @@ function getWebviewContent() {
   </html>`;
   }
   
-  function connect_to_server(){
+  function connectToServer(){
 	client.connect(6969, '127.0.0.1', function() {
 		console.log('Connected');
 		var json_data = {"function": "ping"}
 		client.write(JSON.stringify(json_data));
 	});
 };
+
+function getEyeData(){
+	var json_data = {"function": "getEyeData"}
+	client.write(JSON.stringify(json_data));
+}
 client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]
-	if (type_of_data == "nånting") {
+	if (type_of_data == "eyeData") {
 		//gör något med infon som servern skickar
+		//sparar/visar data på något snyggt sätt
 	}
 
 });
