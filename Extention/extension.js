@@ -1,13 +1,14 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-
+var net = require('net');
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 
 /**
  * @param {vscode.ExtensionContext} context
  */
+var client = new net.Socket();
 function activate(context) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -24,9 +25,29 @@ function activate(context) {
 		vscode.window.showInformationMessage('Hello World from emoIDE!');
 	});
 
+	// fattar inte alls hur man ska göra i det här trashspråket :') -Anton
+	vscode.commands.registerCommand('emoideclient.connectToServer', () => {
+		client.connect(6969, '127.0.0.1', function() {
+			console.log('Connected');
+			var json_data = {"function": "ping"}
+			client.write(JSON.stringify(json_data));
+		});
+	})
+
 	context.subscriptions.push(disposable);
 }
 
+client.on('data', function(data){
+	var json_data = JSON.parse(data.toString());
+	var type_of_data = json_data["function"]
+	if (type_of_data == "nånting") {
+		//gör något baserad på vad klienten får
+	}
+
+})
+client.on('close', function() {
+	console.log('Connection closed');
+});
 // This method is called when your extension is deactivated
 function deactivate() {}
 
