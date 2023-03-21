@@ -38,6 +38,7 @@ extension_connected = False
 time_dict = {}
 eeg_data_dict = {}
 eye_data_dict = {}
+e4_data_dict = {}
 
 full_data_dict = {}
 
@@ -149,6 +150,12 @@ def get_eye_tracker_data():
     #     eye_tracker.store_to_cache(eye_tracker.eye_tracker.get_gaze_position())
     #     eye_data_dict = eye_tracker.get_recording()
         
+def get_e4_data():
+    global e4_data_dict
+
+    # add data from function in E4/E4SS_client.py
+    pass
+
 
 def init_df():
     global full_df
@@ -156,6 +163,7 @@ def init_df():
     global time_dict
     global eye_data_dict
     global eeg_data_dict
+    global e4_data_dict
 
     time_dict = {
         "time":"startTime"
@@ -179,10 +187,14 @@ def init_df():
         "Focus":0
         }
     
+    e4_data_dict = {
+        "Pulse":0
+    }
 
     full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
+    # full_data_dict.update(e4_data_dict)                           ####################### Lägg till när e4 redo
 
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
@@ -349,22 +361,53 @@ def TEST_create_mock_dataframe(test_time):
 
     return mock_full_df
 
-def full_mock_test(path, format, test_time):
+def TEST_full_mock(path, format, test_time):
     df = TEST_create_mock_dataframe(test_time=10)
     save_df(df, path, format)                ################# LÄGG TILL EGEN PATH
 
     exit()
 
+def start_threads():
+    global settings
+    threads = []
 
-if __name__ == "__main__":
-    time_dict = {}
-    # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
+    if settings["EEG"] == True:
+        #start thread/-s needed for EEG
+        print("EEG thread starts")
+        eeg_thread = threading.Thread(target=start_eeg)
+        eeg_thread.start()
+        threads.append(eeg_thread)
+    
+    if settings["Eye tracker"] == True:
+        #start thread/-s needed for Eye tracker
+        print("Eye thread starts")
+        eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
+        eye_thread.start()
+        threads.append(eye_thread)
+    
+    if settings["E4"] == True:
+         #start thread/-s needed for Empatica E4
+        print("E4 thread starts")
+        e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
+        e4_thread.start()
+        threads.append(e4_thread)
+
+    print("Dataframe thread starts")
+    df_thread = threading.Thread(target=update_dataframe)
+    # df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    df_thread.start()
+    threads.append(df_thread)
+
+    return threads
+
+def join_threads(threads):
+    for t in threads:
+        print(f"----------  Joining {str(t)}  --------------") 
+        t.join()
+        print(f"{str(t)} is now closed")
 
 
-    init_df()
-    #extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
-    #extensionCon_thread.start()
-
+def connect_to_server():
     # waiting for extension to connect to the server
     if settings["Server connect"] == True:
         while extension_connected == False:
@@ -372,39 +415,28 @@ if __name__ == "__main__":
             print("waiting for connection")
         print("extension connected")
 
-    if settings["EEG"] == True:
-        #start thread/-s needed for EEG
-        print("EEG thread starts")
-        eeg_thread = threading.Thread(target=start_eeg)
-        eeg_thread.start()
-    
-    if settings["Eye tracker"] == True:
-        #start thread/-s needed for Eye tracker
-        print("Eye thread starts")
-        eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
-        eye_thread.start()
 
 
-    # once every second time values are stored                                  ####### ADDERA LOOP
-    df_thread = threading.Thread(target=update_dataframe)
-    # df_thread = threading.Thread(target=update_dataframe, daemon=True)
-    df_thread.start()
+if __name__ == "__main__":
+    time_dict = {}
+    # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
-    print("Dataframe thread starts")
+    # initiate empty dataframe
+    init_df()
 
-    print("--------------- WAITING FOR EYE THREAD TO JOIN --------------- ")
-    eye_thread.join()
-    print("EYE Thread Done...")
+    #extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
+    #extensionCon_thread.start()
 
-    print("--------------- WAITING FOR DF THREAD TO JOIN --------------- ")
-    df_thread.join()
-    print("DF Thread Done...")      
+    # connect to server
+    connect_to_server()
 
-    
-    print("--------------- WAITING FOR EEG THREAD TO JOIN --------------- ")
-    eeg_thread.join()
-    print("EEG Thread Done...")
+    # start all available hardware threads and return array of activated threads
+    threads = start_threads()
 
+    # closing all the active threads
+    join_threads(threads)  
+
+    # Save dataframe to a path and with specified format
     save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/Output", '.tsv')
     
     exit()
