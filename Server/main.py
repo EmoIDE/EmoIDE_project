@@ -29,27 +29,26 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-#socket settings
-HOST = "127.0.0.1" #lokala IPN, localhost
+
+# global variables
+# socket settings
+HOST_IP = "127.0.0.1" #lokala IPN, localhost
 PORT = 6969 #lustigt. najs.
 extension_connected = False
-
-# init global variables
 time_dict = {}
 eeg_data_dict = {}
 eye_data_dict = {}
 e4_data_dict = {}
-
 full_data_dict = {}
-
 full_df = pd.DataFrame()
+max_time = 20
 
 #extension settings
 settings = {
     "extension": False,
     "Server connect": False,
-    "EEG": True,
-    "Eye tracker": True,
+    "EEG": False,
+    "Eye tracker": False,
     "E4": False,
     "Garmin": False
     }
@@ -65,32 +64,41 @@ calibration_done = {
     "Dataframe": True
     }
 
+
+# start serverside with a tcp socket. AF - Address Family (IPv4). Sock_stream - type (TCP)
+def setup_server():
+    global tcp_socket
+    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_socket.bind((HOST_IP, PORT))
+    tcp_socket.listen()
+    print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")  
+
 #handles the connection to the extension
-def extension_connection():
+def tcp_communication():
     global extension_connected
-    s = socket.socket()
-    s.bind((HOST, PORT))
-    s.listen()
-    conn, addr = s.accept()
+    conn, addr = tcp_socket.accept()
     print(f"Connected by {addr}")
     extension_connected = True
+    start = time.time()
+    delta = 0
     with conn:
         print(f"Connected by {addr}")
-        while True:
+        while delta <= max_time:
+            delta = time.time() - start
             data_received = conn.recv(1024)
             if not data_received:
                 break
             json_data = json.loads(data_received)
-            function = json_data["function"]
+            recived_msg = json_data["function"]
             #mest för att testa så klienten och servern kan kommunicera
-            if function == "ping":
+            if recived_msg == "ping":
                 data = {
                     "function": "ping",
                     }
                 data_json = json.dumps(data)
                 conn.sendall(data_json)
                 print("Received a ping from the client & responded with pong.")
-            elif function == "get_eye_data":
+            elif recived_msg == "get_eye_data":
                 pass
                 #skicka eye_datan till klienten, klienten har ansvar att begära data.
                 
@@ -208,7 +216,7 @@ def update_dataframe():
 
     calibration_done["Dataframe"] = True
 
-    all_done = False
+    all_done = True
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -216,7 +224,9 @@ def update_dataframe():
 
 
     start = time.time()
-    while time.time() - start < 15:
+    delta = 0
+    while delta <= max_time:
+        delta = time.time() - start
         full_data_dic = {}
         time.sleep(1)
 
@@ -247,6 +257,12 @@ def update_dataframe():
 
 def save_df(df, path, save_as_ext = '.csv'):
     filename = 'output_data'    # get last part of path
+    full_path = str(path + "/" + filename)
+
+    # checks if path exists on comupter
+    if not (os.path.exists(full_path)):
+        print("Filepath does not exist")
+        return 0
 
     if save_as_ext == '.pdf':
         filename = filename + save_as_ext
@@ -368,7 +384,6 @@ def TEST_full_mock(path, format, test_time):
     exit()
 
 def start_threads():
-    global settings
     threads = []
 
     if settings["EEG"] == True:
@@ -391,6 +406,11 @@ def start_threads():
         e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         e4_thread.start()
         threads.append(e4_thread)
+
+    print("Server thread starts")
+    com_thread = threading.Thread(target=tcp_communication)
+    com_thread.start()
+    threads.append(com_thread)
 
     print("Dataframe thread starts")
     df_thread = threading.Thread(target=update_dataframe)
@@ -416,22 +436,24 @@ def connect_to_server():
         print("extension connected")
 
 
-
 if __name__ == "__main__":
-    time_dict = {}
     # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
-    # initiate empty dataframe
+    # initiate global empty dataframe
     init_df()
 
     #extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
     #extensionCon_thread.start()
 
-    # connect to server
+    # connect to server         # Vi är i servern? Det är inget att connecta till då denna main functionen hostar. Detta ska också alltid göras när programmet startar.
     connect_to_server()
+
+    setup_server()
 
     # start all available hardware threads and return array of activated threads
     threads = start_threads()
+
+    time.sleep(max_time+4)
 
     # closing all the active threads
     join_threads(threads)  

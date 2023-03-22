@@ -35,8 +35,10 @@ class EEG:
 
 
     async def connect(self):
-        self.cortex = await websockets.connect(self.socket_url)
-
+        try:
+            self.cortex = await websockets.connect(self.socket_url)
+        except:
+            print("[ERROR] EEG connection failed. Check if application is running on the computer")
 
 
     async def request_access(self):
@@ -61,9 +63,11 @@ class EEG:
             }
 
 
-        
-        await self.cortex.send(json.dumps(has_access_rights_json))
-        msg = await self.cortex.recv()
+        try:
+            await self.cortex.send(json.dumps(has_access_rights_json))
+            msg = await self.cortex.recv()
+        except:
+            print("[ERROR] EEG request_access")
 
         if (json.loads(msg)["result"]["accessGranted"] == True):
             return
@@ -157,29 +161,35 @@ class EEG:
 
 
     async def setup(self):
-        
-        #check access rights
-        await self.request_access()
+        try:
+            #check access rights
+            await self.request_access()
 
-        #get headset id
-        await self.get_headset_id()
+            #get headset id
+            await self.get_headset_id()
 
-        #authorize(get token)
-        await self.authorize()
+            #authorize(get token)
+            await self.authorize()
 
-        #create session
-        await self.create_session()
+            #create session
+            await self.create_session()
 
-        #subscribe to data stream        
-        await self.subscribe()
+            #subscribe to data stream        
+            await self.subscribe()
 
-        #print("Setup done")
+            #print("Setup done")
+        except:
+            print("[ERROR] EEG setup")
 
 
     async def get_eeg_data(self):
-
-        data = await self.cortex.recv()
-        data_arr = json.loads(data)["met"]
+        data_arr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        try:
+            data = await self.cortex.recv()
+            data_arr = json.loads(data)["met"]
+        except:
+            pass
+            
         EEG_data_dict = {
             "Engagement": data_arr[1],
             "Excitement": data_arr[3],
@@ -206,10 +216,12 @@ async def main():
     await cortex_api.connect()        
     await cortex_api.setup()
     
-
     while True:
-        await cortex_api.get_eeg_data()
-
+        try:
+            await cortex_api.get_eeg_data()
+        except:
+            print("[ERROR] EEG main - get_eeg_data")
+            break
 
 
 

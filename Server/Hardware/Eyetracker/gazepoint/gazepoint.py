@@ -20,9 +20,12 @@ class GazePoint(threading.Thread):
         return self.gaze_position
 
     def run(self):
-        self.interrupted.acquire()
-        while self.interrupted.locked():
-            self.gaze_position = self.tracker.sample()
+        try:
+            self.interrupted.acquire()
+            while self.interrupted.locked():
+                self.gaze_position = self.tracker.sample()
+        except:
+            print("Gazepoint failed in gazepoint.py - run()")
 
     def stop(self):
         self.interrupted.release()
@@ -30,14 +33,20 @@ class GazePoint(threading.Thread):
 
     def open(self, ip, port):
         print('Setting Up Gaze Point device, this takes about 10 seconds')
-        self.tracker = OpenGazeTracker(ip=ip, port=port)
-        self.tracker.calibrate()
-        self.tracker.enable_send_data(True)
+        try:
+            self.tracker = OpenGazeTracker(ip=ip, port=port)
+            self.tracker.calibrate()
+            self.tracker.enable_send_data(True)
+        except:
+            print("Gazepoint failed")
 
     def close(self):
-        print('Closing connection to Gaze Point device, this takes about 5 seconds')
-        self.tracker.enable_send_data(False)
-        self.tracker.close()
+        try:
+            print('Closing connection to Gaze Point device, this takes about 5 seconds')
+            self.tracker.enable_send_data(False)
+            self.tracker.close()
+        except:
+            print("[EROR] Gazepoint close")
 
     def __del__(self):
         self.close()
