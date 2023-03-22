@@ -4,10 +4,10 @@ let StatusRed =	"StatusInactive.png"
 let statusbarPulse;
 
 const { debug } = require('console');
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const fs = require('fs');
 
+const DevicesStatus = {"wristBand":false,"Eyetracker":false,"BrainTracker":false}
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 
@@ -15,7 +15,8 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 
-class DataProvider {
+
+class DevicesDataProvider {
 	constructor() {
 	  // Define the items to display in the tree view
 	  this.items = [
@@ -27,22 +28,20 @@ class DataProvider {
 		},
 		{
 			id: 'Eyetracker',
+			contextValue: "Eyetracker",
 			label: 'Eyetracker thing',
 			active: false,
 			iconPath: "Icons/Logo.png"
 		},
 		{
 			id: 'BrainTracker',
+			contextValue: "BrainTracker",
 			label: 'Brainscanner',
 			active: false,
 			iconPath: "Icons/Logo.png"
 		}
 	  ];
-	  this.settingsItem = {
-		id: 'settings',
-		label: 'Settings',
-		command: 'myExtension.showSettings'
-	};
+
 	}
   
 	getChildren(element) {
@@ -65,8 +64,11 @@ class DataProvider {
 			id: element.id,
 			label: element.label,
 			collapsibleState: element.children ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
-			command: element.command,
-			iconPath: element.iconPath
+			command: {
+				command: "EmoIDE.ConnectToDevice",
+				title: "Connect to Device",
+				arguments: [element.id]
+			  }
 		  };
 
 		if (!element) {
@@ -81,11 +83,12 @@ class DataProvider {
 			} else {
 			  selectedIcon = StatusRed;
 			}
-			treeItem.iconPath = "Icons/Logo.png";
 		}
 		  return treeItem;
 		}
   }
+
+const devices = new DevicesDataProvider();
 function activate(context) {
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
@@ -95,8 +98,8 @@ function activate(context) {
 	statusbarPulse.show();
 
 	vscode.workspace.getConfiguration('')
-	const dataProvider = new DataProvider();
-	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:dataProvider})
+	
+	const devicesTreeView = vscode.window.createTreeView("Devices",{treeDataProvider:devices})
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -110,27 +113,59 @@ function activate(context) {
 			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
 			{} // Webview options. More on these later.
 		  );
-		  panel.webview.html = getWebviewContent();
-		  
-		})
-	  );
-	context.subscriptions.push(
+			
+		  //Local file path converted to Uri
+		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Output/output_data.html");
+		  const fileUri = vscode.Uri.file(onDiskPath.path);
+
+		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
+		}),
+
 		vscode.commands.registerCommand('EmoIDE.showSettings', () => {
 			// Open the settings editor
 			vscode.commands.executeCommand('workbench.action.openSettings', '@ext:EmoIDETeam.EmoIDE');
+		}),
+		
+		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
+			//Insert command for connecting to server here
+
+			//If connection sucessfull, set value to True
+			if (devices[deviceId] == true)
+			{
+				vscode.window.showInformationMessage('Device "'+deviceId+'"Is now off');
+				devices[deviceId] = false
+			}
+			else
+			{
+				//Try connection through server
+				devices[deviceId] = true
+
+				//If connection was successful:
+				if (devices[deviceId] == true)
+				{
+					vscode.window.showInformationMessage('Device "'+deviceId+'"Sucessfully connected!')
+				}
+				else
+				{
+					//if connection has failed
+					vscode.window.showInformationMessage('Device "'+deviceId+'"failed to connect');
+				}
+			}
+			
+			
+		}),
+
+		vscode.commands.registerCommand("EmoIDE.BreakNotif",() =>	{
+			vscode.window.showInformationMessage('We recommend taking a break ☕');
 		})
-	);
-	let disposable = vscode.commands.registerCommand('emoide.BreakNotif', function () {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('We recommend taking a break ☕');
-	});
-
-	context.subscriptions.push(disposable);
+	  );
+	context.subscriptions.push();
 }
 function getWebviewContent() {
-	return `<!DOCTYPE html>
+	return null
+	//Andvänd som placeholder tillsvidare
+
+	/*`<!DOCTYPE html>
   <html lang="en">
   <head>
 	  <meta charset="UTF-8">
@@ -142,6 +177,7 @@ function getWebviewContent() {
 	  <h1>LOOK AT THIS CAT WOAW</h1>
   </body>
   </html>`;
+  */
   }
   
 // This method is called when your extension is deactivated

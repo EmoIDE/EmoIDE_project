@@ -13,7 +13,7 @@
   "main": "./extension.js",
   "contributes": {
     "configuration":{
-      "title": "EmoIDE",
+      "title": "EmoIDE User settings",
       "properties": {
         "Age":
         {
@@ -27,12 +27,13 @@
           "default":100,
           "description": "Resting pulse of user as point of reference"
         },
-        "File Format":
+        "File Save Directory":
         {
           "type": "string",
           "default": "null",
-          "description": "Format of file when data is saved"
+          "description": "Location for the file when saved"
       }
+      
     }
     },
     "menus": {
@@ -47,6 +48,7 @@
           "when": "view == DataWindow",
           "group": "navigation"
         }
+
       ]
     },
     "viewsContainers": {
@@ -70,16 +72,10 @@
           "icon": "Icons/Logo.png",
           "canToggleVisibility": true
         }
-      ],
-      "explorer": [
-        {"id": "deviceExplorer",
-         "name":  "EmoIDE",
-         "command":"statusWindow.open",
-         "contextualTitle": "Package Explorer"
-        }]
+      ]
       },
     "commands": [{
-      "command": "emoide.BreakNotif",
+      "command": "EmoIDE.BreakNotif",
       "title": "take a break!",
       "category": "notification" 
     },
@@ -91,7 +87,13 @@
     {
       "command": "EmoIDE.showSettings",
       "title": "Open User Settings",
-      "icon": "$(gear)"
+      "icon": "$(gear)",
+      "order": 0
+    },
+    {
+      "command": "EmoIDE.ConnectToDevice",
+      "title": "Connect to device specified in parameter", 
+      "icon": "$(plug)"
     }]
   },
   "scripts": {
