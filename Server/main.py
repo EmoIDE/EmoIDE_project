@@ -157,7 +157,7 @@ def get_eye_tracker_data():
 
 # GETTERS
 
-def get_eye__coordinates_in_time_range(start_time, end_time):
+def get_eye_coordinates_in_time_range(start_time, end_time):
     range_mask = (full_df["Time"] > start_time) & (full_df["Time"] <= end_time)
     return full_df.loc[range_mask]
 
@@ -244,7 +244,9 @@ def update_dataframe():
         # time
         # time_dict["time"] = time.localtime()
 
-        time_dict["time"] = time.gmtime()
+        # time_dict["time"] = time.gmtime()
+        # This gives the format - dd/mm/yy-HH:MM:SS
+        time_dict["time"] = datetime.now().strftime("%d/%m/%Y-%H:%M:%S")
 
         # 
         full_data_dic.update(time_dict)
