@@ -43,12 +43,11 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 120
+max_time = 10
 
 #extension settings
 settings = {
     "extension": False,
-    "Server connect": False,
     "EEG": False,
     "Eye tracker": False,
     "E4": False,
@@ -78,37 +77,36 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
-    conn, addr = tcp_socket.accept()
-    print(f"Connected by {addr}")
+    tcp_socket.settimeout(5)
+    conn, client = tcp_socket.accept()
+    print(f"Connected to {client}")
     extension_connected = True
     start = time.time()
     delta = 0
-    with conn:
-        print(f"Connected by {addr}")
-        while delta <= max_time:
-            delta = time.time() - start
-            data_received = conn.recv(1024)
-            if not data_received:
-                break
-            json_data = json.loads(data_received)
-            recived_msg = json_data["function"]
-            #mest för att testa så klienten och servern kan kommunicera
-            if recived_msg == "ping":
-                data = {
-                    "function": "ping",
-                    }
-                data_json = json.dumps(data)
-                conn.sendall(data_json)
-                print("Received a ping from the client & responded with pong.")
-            elif recived_msg == "get_eye_data":
-                pass
-                #skicka eye_datan till klienten, klienten har ansvar att begära data.
-                
+    print(f"Connected to {client}")
+    while delta <= max_time:
+        delta = time.time() - start
+        data_received = conn.recv(1024).decode('utf-8')
+        if not data_received.strip():
+            break
+        json_data = json.loads(data_received)
+        recived_msg = json_data["function"]
+        # mest för att testa så klienten och servern kan kommunicera
+        if recived_msg == "ping":
+            data = {
+                "function": "ping",
+                }
+            data_json = json.dumps(data)
+            conn.sendall(data_json.encode('utf-8'))
+            print("Received a ping from the client & responded with pong.")
+        elif recived_msg == "get_eye_data":
+            pass
+            #skicka eye_datan till klienten, klienten har ansvar att begära data.
+    conn.close()
 
 async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
-
 
     cortex_api = EEG.EEG()
     await cortex_api.connect()
@@ -233,8 +231,6 @@ def update_dataframe():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
 
-
-
     start = time.time()
     delta = 0
     while delta <= max_time:
@@ -248,10 +244,10 @@ def update_dataframe():
         # time
         # time_dict["time"] = time.localtime()
 
-        time_dict["time"] = delta
-        #full_data_dict.update({
-        #    "TAJM": df_time
-        #})
+        time_dict["time"] = time.gmtime()
+
+        # 
+        full_data_dic.update(time_dict)
 
         # Eye tracker
         # print(f"eyetracker dict:{eye_data_dict}\n")
@@ -266,6 +262,9 @@ def update_dataframe():
         
         # dataframe
         # print(f"dict: {full_data_dic}\n")
+        #delta_decimaler = (delta - int(delta))
+        #time.sleep(delta_decimaler)
+        # time.sleep(1 - (1-((time.time() - start) - delta)))
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
         print(f"{full_df}\n--------------------------------")
@@ -431,7 +430,7 @@ def start_threads():
 
     print("Dataframe thread starts")
     df_thread = threading.Thread(target=update_dataframe)
-    # df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
     threads.append(df_thread)
 
@@ -439,7 +438,7 @@ def start_threads():
 
 def join_threads(threads):
     for t in threads:
-        print(f"----------  Joining {str(t)}  --------------") 
+        print(f"----------  Joining {str(t)}  --------------")
         t.join()
         print(f"{str(t)} is now closed")
 

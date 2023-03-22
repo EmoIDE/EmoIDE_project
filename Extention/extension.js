@@ -38,6 +38,7 @@ class DevicesDataProvider {
 			iconPath: "Icons/Logo.png"
 		}
 	  ];
+	  icon: "StatusGreen"
 	}
   
 	getChildren(element) {
@@ -109,7 +110,7 @@ function activate(context) {
 		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
 		  
 		}),
-		
+
 		vscode.commands.registerCommand('EmoIDE.showSettings', () => {
 			// Open the settings editor
 			vscode.commands.executeCommand('workbench.action.openSettings', '@ext:EmoIDETeam.EmoIDE');
@@ -196,14 +197,15 @@ function getEyeData(){
 client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]
-	if (type_of_data == "eyeData") {
+	if (type_of_data == "ping") {
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
+		vscode.window.showInformationMessage('received ping');
 	}
 
 });
 client.on('close', function() {
-	console.log('Connection closed');
+	vscode.window.showInformationMessage('Connection closed');
 });
 // This method is called when your extension is deactivated
 function deactivate() {}
