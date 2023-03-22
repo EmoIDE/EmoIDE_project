@@ -427,15 +427,6 @@ def join_threads(threads):
         print(f"{str(t)} is now closed")
 
 
-def connect_to_server():
-    # waiting for extension to connect to the server
-    if settings["Server connect"] == True:
-        while extension_connected == False:
-            time.sleep(1)
-            print("waiting for connection")
-        print("extension connected")
-
-
 if __name__ == "__main__":
     # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
@@ -446,7 +437,7 @@ if __name__ == "__main__":
     #extensionCon_thread.start()
 
     # connect to server         # Vi är i servern? Det är inget att connecta till då denna main functionen hostar. Detta ska också alltid göras när programmet startar.
-    connect_to_server()
+    #connect_to_server()
 
     setup_server()
 
