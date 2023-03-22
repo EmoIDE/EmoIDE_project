@@ -71,18 +71,11 @@ class DevicesDataProvider {
 			  }
 		  };
 
-		if (!element) {
-			treeItem.description = 'settings';
-			treeItem.contextValue = 'header';
-		  }
-		  else {
-			// Determine which icon to use based on the item's state
-			let selectedIcon = '';
-			if (element.functional) {
-			  selectedIcon = StatusGreen;
-			} else {
-			  selectedIcon = StatusRed;
-			}
+		let selectedIcon = '';
+		if (devices[element.id] == true) {
+			selectedIcon = StatusGreen;
+		} else {
+			selectedIcon = StatusRed;
 		}
 		  return treeItem;
 		}
