@@ -166,12 +166,6 @@ def get_e4_data():
 
 
 def init_df():
-    global full_df
-    global full_data_dict
-    global time_dict
-    global eye_data_dict
-    global eeg_data_dict
-    global e4_data_dict
 
     time_dict = {
         "time":"startTime"
@@ -385,6 +379,11 @@ def TEST_full_mock(path, format, test_time):
 
 def start_threads():
     threads = []
+    
+    print("Server thread starts")
+    com_thread = threading.Thread(target=tcp_communication)
+    com_thread.start()
+    threads.append(com_thread)
 
     if settings["EEG"] == True:
         #start thread/-s needed for EEG
@@ -407,10 +406,6 @@ def start_threads():
         e4_thread.start()
         threads.append(e4_thread)
 
-    print("Server thread starts")
-    com_thread = threading.Thread(target=tcp_communication)
-    com_thread.start()
-    threads.append(com_thread)
 
     print("Dataframe thread starts")
     df_thread = threading.Thread(target=update_dataframe)
@@ -426,16 +421,6 @@ def join_threads(threads):
         t.join()
         print(f"{str(t)} is now closed")
 
-
-def connect_to_server():
-    # waiting for extension to connect to the server
-    if settings["Server connect"] == True:
-        while extension_connected == False:
-            time.sleep(1)
-            print("waiting for connection")
-        print("extension connected")
-
-
 if __name__ == "__main__":
     # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
 
@@ -446,7 +431,6 @@ if __name__ == "__main__":
     #extensionCon_thread.start()
 
     # connect to server         # Vi är i servern? Det är inget att connecta till då denna main functionen hostar. Detta ska också alltid göras när programmet startar.
-    connect_to_server()
 
     setup_server()
 
