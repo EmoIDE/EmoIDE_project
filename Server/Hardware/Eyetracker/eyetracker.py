@@ -20,12 +20,18 @@ class EyeTracker:
 
     def setup(self):
         # Initializes default values and start calibration for use, may take 10 seconds
-        self.eye_tracker = gazepoint.GazePoint()
+        try:
+            self.eye_tracker = gazepoint.GazePoint()
+        except:
+            print("ERROR Gazepoint setup")
         return
 
     def check(self, value, value_range):
-        if value_range[0] <= value <= value_range[1] and round(value,2)==value:
-            return True
+        try:
+            if value_range[0] <= value <= value_range[1]:
+                return True
+        except:
+            print("ERROR gazepoint check")
         return False
     
     def get_zone_destribution(self):
@@ -61,12 +67,23 @@ class EyeTracker:
         dict["y"] = coordinate[1]
         self.cache["y"].append(coordinate[1])
         
+        # self.zones = [
+        #     {'x': (0, 0.2), 'y': (0, 1), 'zone': "Explorer", 'count' : 0},
+        #     {'x': (0.2, 1), 'y': (0, 0.8), 'zone': "Code", 'count' : 0},
+        #     {'x': (0.2, 1), 'y': (0.8, 1), 'zone': "Terminal", 'count' : 0}
+        # ]
+
         for zone in self.zones:
             if(self.check(coordinate[0],zone['x']) and self.check(coordinate[1],zone['y'])):
                 zone['count'] += 1
-        
-        dict.update(self.get_zone_destribution())
-        
+                break
+
+        for zone in self.zones:
+            try:
+                # print(zone['zone'], " : ", zone['count'], " / ", sum([z['count'] for z in self.zones]), " = ", round((zone['count']/sum([z['count'] for z in self.zones]))*100,2))
+                dict[zone['zone']] = round((zone['count']/sum([z['count'] for z in self.zones]))*100,2)
+            except:
+                print("ERROR zone = 0")
 
     def stop(self):
         # Clear cache, stop eyetracker may take 5 seconds

@@ -44,8 +44,12 @@ class OpenGazeTracker:
         # Start a new TCP/IP socket. It is curcial that it has a timeout,
         # as timeout exceptions will be handled gracefully, and are in fact
         # necessary to prevent the incoming Thread from freezing.
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._sock.connect((self.host, self.port))
+        try:
+            self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._sock.connect((self.host, self.port))
+        except:
+            print("Gazepoint connection failed. Check if application is running")
+            return 0
         self._sock.settimeout(1.0)
         self._maxrecvsize = 4096
         # Create a socket Lock to prevent simultaneous access.

@@ -13,7 +13,7 @@
   "main": "./extension.js",
   "contributes": {
     "configuration":{
-      "title": "EmoIDE User settings",
+      "title": "EmoIDE",
       "properties": {
         "Age":
         {
@@ -27,13 +27,12 @@
           "default":100,
           "description": "Resting pulse of user as point of reference"
         },
-        "File Save Directory":
+        "File Format":
         {
           "type": "string",
           "default": "null",
-          "description": "Location for the file when saved"
+          "description": "Format of file when data is saved"
       }
-      
     }
     },
     "menus": {
@@ -48,7 +47,6 @@
           "when": "view == DataWindow",
           "group": "navigation"
         }
-
       ]
     },
     "viewsContainers": {
@@ -72,10 +70,16 @@
           "icon": "Icons/Logo.png",
           "canToggleVisibility": true
         }
-      ]
+      ],
+      "explorer": [
+        {"id": "deviceExplorer",
+         "name":  "EmoIDE",
+         "command":"statusWindow.open",
+         "contextualTitle": "Package Explorer"
+        }]
       },
     "commands": [{
-      "command": "EmoIDE.BreakNotif",
+      "command": "emoide.BreakNotif",
       "title": "take a break!",
       "category": "notification" 
     },
@@ -87,13 +91,17 @@
     {
       "command": "EmoIDE.showSettings",
       "title": "Open User Settings",
-      "icon": "$(gear)",
-      "order": 0
+      "icon": "Icons/settingsIcon"
     },
     {
-      "command": "EmoIDE.ConnectToDevice",
-      "title": "Connect to device specified in parameter", 
-      "icon": "$(plug)"
+      "command": "EmoIDE.connectToServer",
+      "title": "Connect to the server",
+      "icon": "Icons/connectIcon"
+    },
+    {
+      "command": "EmoIDE.requestEyeData",
+      "title": "Requests eye data from the server every x seconds.",
+      "icon": "Icons/eyeDataIcon"
     }]
   },
   "scripts": {
