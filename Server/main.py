@@ -42,8 +42,8 @@ eeg_data_dict = {}
 eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
-full_df = pd.DataFrame()
-max_time = 20
+full_df = pd.DataFrame(dtype='object')
+max_time = 120
 
 #extension settings
 settings = {
@@ -124,8 +124,7 @@ async def import_EEG_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     
-        
-
+    
     start = time.time()
     while time.time() - start < 40:
         time.sleep(1)
@@ -138,6 +137,8 @@ async def import_EEG_data():
 def start_eeg():
     asyncio.run(import_EEG_data())
 
+
+# -------------- EYE TRACKER -------------- #
 
 def get_eye_tracker_data():
     global calibration_done
@@ -155,11 +156,14 @@ def get_eye_tracker_data():
     
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
-    
-    # while True:
-    #     eye_tracker.store_to_cache(eye_tracker.eye_tracker.get_gaze_position())
-    #     eye_data_dict = eye_tracker.get_recording()
-        
+
+# GETTERS
+
+def get_eye__coordinates_in_time_range(start_time, end_time):
+    range_mask = (full_df["Time"] > start_time) & (full_df["Time"] <= end_time)
+    return full_df.loc[range_mask]
+
+# ----------------------------------------- #
 def get_e4_data():
     global e4_data_dict
 
@@ -177,9 +181,17 @@ def get_e4_data():
 
 
 def init_df():
+    global time_dict
+    global eeg_data_dict
+    global eeg_data_dict
+    global e4_data_dict
+    global full_data_dict
+    global full_df
+
+    full_df = pd.DataFrame(dtype='object')
 
     time_dict = {
-        "time":"startTime"
+        "time":0
     }
 
     eye_data_dict = {
@@ -212,15 +224,10 @@ def init_df():
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
 
-
+    
 def update_dataframe():
     global full_df
-    global time_dict
-    global eye_data_dict
-    global eeg_data_dict
-
     calibration_done["Dataframe"] = True
-
     all_done = True
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
@@ -240,9 +247,11 @@ def update_dataframe():
 
         # time
         # time_dict["time"] = time.localtime()
-        now = datetime.now()
-        time_dict["time"] = now.strftime("%d/%m/%Y %H:%M:%S")
-        full_data_dict.update(time_dict)
+
+        time_dict["time"] = delta
+        #full_data_dict.update({
+        #    "TAJM": df_time
+        #})
 
         # Eye tracker
         # print(f"eyetracker dict:{eye_data_dict}\n")
@@ -322,7 +331,7 @@ def TEST_create_mock_dataframe(test_time):
     # eeg_data_dict = {}
 
     time_dict = {
-        "time":0
+        "time":"time0"
     }
 
     eye_data_dict = {
@@ -394,7 +403,7 @@ def start_threads():
     threads = []
     
     print("Server thread starts")
-    com_thread = threading.Thread(target=tcp_communication)
+    com_thread = threading.Thread(target=tcp_communication, daemon=True)
     com_thread.start()
     threads.append(com_thread)
 
@@ -453,7 +462,7 @@ if __name__ == "__main__":
     time.sleep(max_time+4)
 
     # closing all the active threads
-    join_threads(threads)  
+    join_threads(threads)
 
     # Save dataframe to a path and with specified format
     save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/Output", '.tsv')

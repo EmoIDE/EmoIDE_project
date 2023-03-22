@@ -156,7 +156,8 @@ class EEG:
         msg = await self.cortex.recv()
         #print(json.loads(msg))
 
-
+    async def end_session(self):
+       pass 
 
 
 

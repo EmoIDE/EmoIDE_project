@@ -94,6 +94,10 @@
       "icon": "Icons/settingsIcon"
     },
     {
+      "command": "EmoIDE.ConnectToDevice",
+      "title": "Connect to device specified in parameter"
+    },
+    {
       "command": "EmoIDE.connectToServer",
       "title": "Connect to the server",
       "icon": "Icons/connectIcon"
