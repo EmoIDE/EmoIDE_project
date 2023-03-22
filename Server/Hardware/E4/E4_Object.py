@@ -35,7 +35,7 @@ class E4:
             print("CLIENT CONNECTION DONE")
         
     def start_subscriptions(self):
-        requests = ['device_subscribe gsr ON\n', 'device_subscribe bvp ON\n', 'device_subscribe ibi ON\n', 'device_subscribe acc ON\n']
+        requests = ['device_subscribe bvp ON\n']
 
         try:
             for i in requests:
@@ -47,10 +47,38 @@ class E4:
 
         finally:
             print("REQUESTS DONE")
-            self.client_socket.send('pause OFF\n'.encode("utf-8"))
-            print(self.client_socket.recv(256).decode("utf-8"))
+    
+    def recieve_data(self, dict):
+        data = self.client_socket.recv(256).decode("utf-8")
 
-e4 = E4('127.0.0.1', 28000)
+        bvp = data[-10: -2]
 
-e4.E4_SS_connect()
-e4.start_subscriptions()
+        dict["Pulse"] = bvp
+    
+    def e4_stop(self):
+        requests = ['device_subscribe bvp OFF\n']
+        try:
+            for i in requests:
+                # send
+                self.client_socket.send(i.encode("utf-8"))
+                # recive
+                rec = self.client_socket.recv(256)
+                print(rec.decode("utf-8"))
+
+        finally:
+            print("REQUESTS DONE")
+        
+        self.client_socket.send('device_disconnect\n'.encode("utf-8"))
+        print("e4 disconnected")
+
+
+# e4_dict = {}
+
+# e4 = E4('127.0.0.1', 28000)
+
+# e4.E4_SS_connect()
+# e4.start_subscriptions()
+# e4.recieve_data(e4_dict)
+# e4.e4_stop()
+
+# print(e4_dict)

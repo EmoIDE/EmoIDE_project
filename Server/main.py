@@ -11,6 +11,8 @@
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
+from Hardware.E4 import E4_Object
+
 # imports
 import os
 import pandas as pd
@@ -161,8 +163,17 @@ def get_eye_tracker_data():
 def get_e4_data():
     global e4_data_dict
 
+    e4 = E4_Object.E4('127.0.0.1', 28000)
+
+    e4.E4_SS_connect()
+
+    e4.start_subscriptions()
+
+    start = time.time()
+    while time.time() - start < 40:
+        e4.recieve_data(e4_data_dict)
     # add data from function in E4/E4SS_client.py
-    pass
+    e4.e4_stop()
 
 
 def init_df():
@@ -196,7 +207,7 @@ def init_df():
     full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
-    # full_data_dict.update(e4_data_dict)                           ####################### Lägg till när e4 redo
+    full_data_dict.update(e4_data_dict)                           ####################### Lägg till när e4 redo
 
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
@@ -241,6 +252,8 @@ def update_dataframe():
         # Eeg
         # print(f"eeg dict:{eeg_data_dict}\n")
         full_data_dic.update(eeg_data_dict)
+
+        full_data_dic.update(e4_data_dict)
         
         # dataframe
         # print(f"dict: {full_data_dic}\n")
