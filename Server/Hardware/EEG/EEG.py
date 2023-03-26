@@ -157,8 +157,23 @@ class EEG:
         #print(json.loads(msg))
 
     async def end_session(self):
-       pass 
+        end_session_json = {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "updateSession",
+            "params": {
+                "cortexToken": "xxx",
+                "session": "38fef6d7-979b-420b-aa25-dd60ef5edc02",
+                "status": "close"
+            }
+        }
 
+        await self.cortex.send(json.dumps(end_session_json))
+        msg = await self.cortex.recv()
+
+        self.cortex.close()
+    
+    
 
 
     async def setup(self):
