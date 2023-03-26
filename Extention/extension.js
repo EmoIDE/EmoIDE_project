@@ -10,7 +10,7 @@ var net = require('net');
 var client = new net.Socket();
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-const DevicesStatus = {"wristBand":false,"Eyetracker":false,"BrainTracker":false}
+const DevicesStatus = {"wristBand":false,"eyeTracker":false,"brainTracker":false}
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -27,12 +27,12 @@ class DevicesDataProvider {
 		},
 		{
 			id: 'Eyetracker',
-			label: 'Eyetracker thing',
+			label: 'eyeTracker thing',
 			active: false,
 			iconPath: "Icons/Logo.png"
 		},
 		{
-			id: 'BrainTracker',
+			id: 'brainTracker',
 			label: 'Brainscanner',
 			active: false,
 			iconPath: "Icons/Logo.png"
