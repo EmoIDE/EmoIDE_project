@@ -131,6 +131,7 @@ async def import_EEG_data():
         #print(f"In get_EEG_data() dict is:{eeg_data_dict}")    
         
                         ####################################
+    await cortex_api.end_session()
 
 def start_eeg():
     asyncio.run(import_EEG_data())
