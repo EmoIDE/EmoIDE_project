@@ -122,15 +122,11 @@ async def import_EEG_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     
-    
     start = time.time()
     while time.time() - start < 40:
         time.sleep(1)
         eeg_data_dict = await cortex_api.get_eeg_data()
 
-        #print(f"In get_EEG_data() dict is:{eeg_data_dict}")    
-        
-                        ####################################
     await cortex_api.end_session()
 
 def start_eeg():
