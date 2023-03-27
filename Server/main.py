@@ -43,7 +43,7 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 10
+max_time = 3
 
 #extension settings
 settings = {
@@ -51,7 +51,9 @@ settings = {
     "EEG": False,
     "Eye tracker": False,
     "E4": False,
-    "Garmin": False
+    "Garmin": False,
+    "Save_path": 'PATH',
+    "Save_format": '.tsv'
     }
 
 eeg_settings = {
@@ -102,6 +104,19 @@ def tcp_communication():
         elif recived_msg == "get_eye_data":
             pass
             #skicka eye_datan till klienten, klienten har ansvar att begära data.
+        
+        # new save location
+        elif recived_msg == "save_path":
+            path_pos = recived_msg.find("path:")
+            picked_path = recived_msg[path_pos+5:]             # hämtar alla tecken efter "path:"
+            settings["Save_path"] = picked_path
+        
+        # new format type for saved file
+        elif recived_msg == "save_format":
+            format_pos = recived_msg.find("format:")
+            picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
+            settings["Save_format"] = picked_format
+            
     conn.close()
 
 async def import_EEG_data():
@@ -271,10 +286,9 @@ def update_dataframe():
 
 def save_df(df, path, save_as_ext = '.csv'):
     filename = 'output_data'    # get last part of path
-    full_path = str(path + "/" + filename)
 
     # checks if path exists on comupter
-    if not (os.path.exists(full_path)):
+    if not (os.path.exists(path)):
         print("Filepath does not exist")
         return 0
 
@@ -308,7 +322,7 @@ def save_df(df, path, save_as_ext = '.csv'):
 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
-        with pd.ExcelWriter(str(path + "/" + filename)) as writer:
+        with pd.ExcelWriter(str(path + "/" + filename)) as writer:          # ERROR "no module odf"
             df.to_excel(writer) 
 
     elif save_as_ext == '.xlsx':
@@ -402,8 +416,8 @@ def start_threads():
     
     print("Server thread starts")
     com_thread = threading.Thread(target=tcp_communication, daemon=True)
-    com_thread.start()
-    threads.append(com_thread)
+    #com_thread.start()
+    #threads.append(com_thread)
 
     if settings["EEG"] == True:
         #start thread/-s needed for EEG
@@ -447,23 +461,22 @@ if __name__ == "__main__":
     # initiate global empty dataframe
     init_df()
 
-    #extensionCon_thread = threading.Thread(target=extension_connected, daemon=True)
-    #extensionCon_thread.start()
-
-    # connect to server         # Vi är i servern? Det är inget att connecta till då denna main functionen hostar. Detta ska också alltid göras när programmet startar.
-
+    # start localy hosted server
     setup_server()
 
     # start all available hardware threads and return array of activated threads
     threads = start_threads()
 
+    # stop main thread until everything is finished         ############# Remake to a bool check so that it isn't time relyable
     time.sleep(max_time+4)
 
     # closing all the active threads
     join_threads(threads)
 
     # Save dataframe to a path and with specified format
-    save_df(full_df, "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/Output", '.tsv')
+    save_format = settings["Save_format"]
+    save_path = settings["Save_path"]
+    save_df(full_df, save_path, save_format)
     
     exit()
 
