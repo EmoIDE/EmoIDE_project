@@ -149,8 +149,8 @@ function activate(context) {
 			
 		}),
 
-		vscode.commands.registerCommand('EmoIDE.requestEyeData', () => {
-			const gettingEyeData = setInterval(getEyeData, 1000);
+		vscode.commands.registerCommand('EmoIDE.requestPulse', () => {
+			const gettingEyeData = setInterval(getCurrentPulse, 1000);
 		}),
 
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
@@ -171,7 +171,7 @@ function getWebviewContent() {
   <html lang="en">
   <head>
 	  <meta charset="UTF-8">
-	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <meta name="viewport" co5ntent="width=device-width, initial-scale=1.0">
 	  <title>Cat Coding</title>
   </head>
   <body>
@@ -190,8 +190,10 @@ function getWebviewContent() {
 	});
 };
 
-function getEyeData(){
-	var json_data = {"function": "getEyeData"}
+
+
+function getCurrentPulse(){
+	var json_data = {"function": "getPulse"}
 	client.write(JSON.stringify(json_data));
 }
 client.on('data', function(data){
@@ -200,8 +202,16 @@ client.on('data', function(data){
 	if (type_of_data == "ping") {
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
-		vscode.window.showInformationMessage('received ping');
+		//vscode.window.showInformation Message('received ping');
 	}
+	if (type_of_data == "getCurrentPulse") {
+		//gör något med infon som servern skickar
+		//sparar/visar data på något snyggt sätt
+		var pulse = json_data["data"]
+		statusbarPulse.text = "$(pulse)" + pulse.toString();
+		
+	}
+
 
 });
 client.on('close', function() {

@@ -43,16 +43,16 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 3
+max_time = 500000
 
 #extension settings
 settings = {
-    "extension": False,
+    "extension": True,
     "EEG": False,
     "Eye tracker": False,
     "E4": False,
     "Garmin": False,
-    "Save_path": 'PATH',
+    "Save_path": 'D:/codez/EmoIDE_project/Server/Output',
     "Save_format": '.tsv'
     }
 
@@ -79,7 +79,6 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
-    tcp_socket.settimeout(5)
     conn, client = tcp_socket.accept()
     print(f"Connected to {client}")
     extension_connected = True
@@ -94,16 +93,25 @@ def tcp_communication():
         json_data = json.loads(data_received)
         recived_msg = json_data["function"]
         # mest för att testa så klienten och servern kan kommunicera
+        
         if recived_msg == "ping":
+            print("ping")
             data = {
                 "function": "ping",
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
             print("Received a ping from the client & responded with pong.")
-        elif recived_msg == "get_eye_data":
-            pass
-            #skicka eye_datan till klienten, klienten har ansvar att begära data.
+
+        elif recived_msg == "getPulse":
+            print("hey")
+            pulse = e4_data_dict["Pulse"]
+            data = {
+                "function": "getCurrentPulse",
+                "data": random.randint(80, 120)
+                }
+            data_json = json.dumps(data)
+            conn.sendall(data_json.encode('utf-8'))
         
         # new save location
         elif recived_msg == "save_path":
@@ -173,7 +181,9 @@ def get_eye_coordinates_in_time_range(start_time, end_time):
     range_mask = (full_df["Time"] > start_time) & (full_df["Time"] <= end_time)
     return full_df.loc[range_mask]
 
-# ----------------------------------------- #
+
+
+# ---------------E4 DATA TRACKER---------------- #
 def get_e4_data():
     global e4_data_dict
 
@@ -251,7 +261,7 @@ def update_dataframe():
         time.sleep(1)
 
         # Clear terminal
-        os.system('cls' if os.name == 'nt' else 'clear')
+        #os.system('cls' if os.name == 'nt' else 'clear')
 
         # time
         # time_dict["time"] = time.localtime()
@@ -281,7 +291,7 @@ def update_dataframe():
         # time.sleep(1 - (1-((time.time() - start) - delta)))
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
-        print(f"{full_df}\n--------------------------------")
+        #print(f"{full_df}\n--------------------------------")
 
 
 def save_df(df, path, save_as_ext = '.csv'):
@@ -416,7 +426,7 @@ def start_threads():
     
     print("Server thread starts")
     com_thread = threading.Thread(target=tcp_communication, daemon=True)
-    #com_thread.start()
+    com_thread.start()
     #threads.append(com_thread)
 
     if settings["EEG"] == True:
@@ -442,14 +452,14 @@ def start_threads():
 
 
     print("Dataframe thread starts")
-    df_thread = threading.Thread(target=update_dataframe)
-    df_thread = threading.Thread(target=update_dataframe, daemon=True)
-    df_thread.start()
-    threads.append(df_thread)
+    #df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    #df_thread.start()
+    #threads.append(df_thread)
 
     return threads
 
 def join_threads(threads):
+    print(threads)
     for t in threads:
         print(f"----------  Joining {str(t)}  --------------")
         t.join()
