@@ -162,8 +162,8 @@ class EEG:
             "jsonrpc": "2.0",
             "method": "updateSession",
             "params": {
-                "cortexToken": "xxx",
-                "session": "38fef6d7-979b-420b-aa25-dd60ef5edc02",
+                "cortexToken": self.cortex_token,
+                "session": self.session_id,
                 "status": "close"
             }
         }

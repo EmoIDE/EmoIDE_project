@@ -112,7 +112,30 @@ def tcp_communication():
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
-        
+
+
+
+        elif recived_msg == "getEEG":
+            eeg = eeg_data_dict
+            #use real eeg data later
+            eeg_data = {
+                "function": "getEEGData",
+                "data": {
+                    "Engagement":random.random(),
+                    "Excitement":random.random(),
+                    "Long term excitement":random.random(),
+                    "Stress/Frustration":random.random(),
+                    "Relaxation":random.random(),
+                    "Interest/Affinity":random.random(),
+                    "Focus":random.random()
+                }
+
+            }
+            eeg_data_json = json.dumps(eeg_data)
+            
+            conn.sendall(eeg_data_json.encode('utf-8'))
+
+
         # new save location
         elif recived_msg == "save_path":
             path_pos = recived_msg.find("path:")
