@@ -7,6 +7,11 @@
 #
 ## THE VOICES
 #Wake up
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 #  Local imports
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
@@ -14,7 +19,6 @@ from Hardware.Eyetracker.eyetracker import EyeTracker
 from Hardware.E4 import E4_Object
 
 # imports
-import os
 import pandas as pd
 import threading
 import time
@@ -490,6 +494,12 @@ def join_threads(threads):
 
 if __name__ == "__main__":
     # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
+
+    # # Call this when stressed so the date and time match up on screenshot and stressed moment
+    # dashboard.capture_screen()
+    # # At end of session, or when you want to create dashboard call this, or maybe call it in the begining and have functions that updates it from here (or something)
+    # dashboard.create_dashboard()
+
 
     # initiate global empty dataframe
     init_df()
