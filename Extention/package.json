@@ -67,14 +67,6 @@
           "icon": "Icons/Logo.png",
           "canToggleVisibility": true
         }
-      ],
-      "explorer": [
-        {
-          "id": "deviceExplorer",
-          "name": "EmoIDE",
-          "command": "statusWindow.open",
-          "contextualTitle": "Package Explorer"
-        }
       ]
     },
     "commands": [
@@ -91,7 +83,7 @@
       {
         "command": "EmoIDE.showSettings",
         "title": "Open User Settings",
-        "icon": "Icons/settingsIcon"
+        "icon": "$(gear)"
       },
       {
         "command": "EmoIDE.ConnectToDevice",
