@@ -54,10 +54,10 @@ settings = {
     "extension": True,
     "EEG": False,
     "Eye tracker": False,
-    "E4": True,
+    "E4": False,
     "Garmin": False,
-    "Save_path": 'C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/Output',
-    "Save_format": '.ods'
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output',
+    "Save_format": '.xslx'
     }
 
 eeg_settings = {
@@ -143,7 +143,7 @@ def tcp_communication():
         # new save location     # msg: "set_save_path: [SPACE] root/path/location"
         elif "set_save_path:" in recived_msg:
             path_pos = recived_msg.find("set_save_path:")
-            picked_path = recived_msg[path_pos+5:]             # hämtar alla tecken efter "set_save_path:"
+            picked_path = recived_msg[path_pos+11:]             # hämtar alla tecken efter "set_save_path:"
             settings["Save_path"] = picked_path
         
         # new format type for saved file
