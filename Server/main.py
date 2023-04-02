@@ -140,15 +140,15 @@ def tcp_communication():
             conn.sendall(eeg_data_json.encode('utf-8'))
 
 
-        # new save location
-        elif recived_msg == "save_path":
-            path_pos = recived_msg.find("path:")
+        # new save location     # msg: "set_save_path: [SPACE] root/path/location"
+        elif "set_save_path:" in recived_msg:
+            path_pos = recived_msg.find("set_save_path:")
             picked_path = recived_msg[path_pos+5:]             # hämtar alla tecken efter "path:"
             settings["Save_path"] = picked_path
         
         # new format type for saved file
-        elif recived_msg == "save_format":
-            format_pos = recived_msg.find("format:")
+        elif "set_save_format:" in recived_msg:
+            format_pos = recived_msg.find("set_save_format:")
             picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
             settings["Save_format"] = picked_format
             
