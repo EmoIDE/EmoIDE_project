@@ -36,25 +36,26 @@ class E4:
             print("CLIENT CONNECTION DONE")
         
     def start_subscriptions(self):
-        requests = ['device_subscribe bvp ON\n']
+        requests = ['device_subscribe bvp ON\n', 'device_subscribe gsr ON\n', 'device_subscribe ibi ON\n']
 
         try:
             for i in requests:
                 # send
                 self.client_socket.send(i.encode("utf-8"))
                 # recive
-                rec = self.client_socket.recv(1024)
+                rec = self.client_socket.recv(2048)
                 print(rec.decode("utf-8"))
 
         finally:
             print("DATA SUBSCRIPTION ON")
     
     def recieve_data(self, dict):
-        data = self.client_socket.recv(1024).decode("utf-8")
+        data = self.client_socket.recv(2048).decode("utf-8")
 
         bvp = data[-10: -2]
 
         dict["Pulse"] = bvp
+        return data
     
     def e4_stop(self):
         requests = ['device_subscribe bvp OFF\n']
@@ -78,11 +79,15 @@ e4_dict = {}
 
 e4 = E4('127.0.0.1', 28000)
 
+start = time.time()
+delta = 0
+msg_arr = []
 e4.E4_SS_connect()
 e4.start_subscriptions()
-time.sleep(30)
-e4.recieve_data(e4_dict)
+while delta < 30:
+    msg_arr.append(e4.recieve_data(e4_dict))
+    delta = time.time() - start
 
 e4.e4_stop()
 
-print(e4_dict)
+print(msg_arr)
