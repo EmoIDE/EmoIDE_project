@@ -47,7 +47,7 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 500000
+max_time = 30
 
 #extension settings
 settings = {
@@ -56,8 +56,8 @@ settings = {
     "Eye tracker": False,
     "E4": True,
     "Garmin": False,
-    "Save_path": 'D:/codez/EmoIDE_project/Server/Output',
-    "Save_format": '.tsv'
+    "Save_path": 'C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/Output',
+    "Save_format": '.ods'
     }
 
 eeg_settings = {
@@ -221,7 +221,7 @@ def get_e4_data():
     e4.start_subscriptions()
 
     start = time.time()
-    while time.time() - start < 40:
+    while time.time() - start < max_time:
         e4.recieve_data(e4_data_dict)
         print(e4_data_dict)             # TEST print
     # add data from function in E4/E4SS_client.py
@@ -302,24 +302,17 @@ def update_dataframe():
         full_data_dic.update(time_dict)
 
         # Eye tracker
-        # print(f"eyetracker dict:{eye_data_dict}\n")
-        # print(eye_data_dict)
         full_data_dic.update(eye_data_dict)
         
         # Eeg
-        # print(f"eeg dict:{eeg_data_dict}\n")
         full_data_dic.update(eeg_data_dict)
 
         full_data_dic.update(e4_data_dict)
         
         # dataframe
-        # print(f"dict: {full_data_dic}\n")
-        #delta_decimaler = (delta - int(delta))
-        #time.sleep(delta_decimaler)
-        # time.sleep(1 - (1-((time.time() - start) - delta)))
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
-        #print(f"{full_df}\n--------------------------------")
+        print(f"{full_df}\n--------------------------------")
 
 
 def save_df(df, path, save_as_ext = '.csv'):
@@ -480,9 +473,9 @@ def start_threads():
 
 
     print("Dataframe thread starts")
-    #df_thread = threading.Thread(target=update_dataframe, daemon=True)
-    #df_thread.start()
-    #threads.append(df_thread)
+    df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    df_thread.start()
+    threads.append(df_thread)
 
     return threads
 

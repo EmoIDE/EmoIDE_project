@@ -1,6 +1,7 @@
 from re import S
 import socket
 import time
+import os
 
 class E4:
     def __init__(self, ip :str, port : int) -> None:
@@ -42,14 +43,14 @@ class E4:
                 # send
                 self.client_socket.send(i.encode("utf-8"))
                 # recive
-                rec = self.client_socket.recv(256)
+                rec = self.client_socket.recv(1024)
                 print(rec.decode("utf-8"))
 
         finally:
             print("DATA SUBSCRIPTION ON")
     
     def recieve_data(self, dict):
-        data = self.client_socket.recv(256).decode("utf-8")
+        data = self.client_socket.recv(1024).decode("utf-8")
 
         bvp = data[-10: -2]
 
@@ -61,6 +62,7 @@ class E4:
             for i in requests:
                 # send
                 self.client_socket.send(i.encode("utf-8"))
+
                 # recive
                 rec = self.client_socket.recv(256)
                 print(rec.decode("utf-8"))
@@ -72,13 +74,15 @@ class E4:
         print("e4 disconnected")
 
 
-# e4_dict = {}
+e4_dict = {}
 
-# e4 = E4('127.0.0.1', 28000)
+e4 = E4('127.0.0.1', 28000)
 
-# e4.E4_SS_connect()
-# e4.start_subscriptions()
-# e4.recieve_data(e4_dict)
-# e4.e4_stop()
+e4.E4_SS_connect()
+e4.start_subscriptions()
+time.sleep(30)
+e4.recieve_data(e4_dict)
 
-# print(e4_dict)
+e4.e4_stop()
+
+print(e4_dict)
