@@ -302,12 +302,9 @@ def update_dataframe():
         full_data_dic.update(time_dict)
 
         # Eye tracker
-        # print(f"eyetracker dict:{eye_data_dict}\n")
-        # print(eye_data_dict)
         full_data_dic.update(eye_data_dict)
         
         # Eeg
-        # print(f"eeg dict:{eeg_data_dict}\n")
         full_data_dic.update(eeg_data_dict)
 
         full_data_dic.update(e4_data_dict)

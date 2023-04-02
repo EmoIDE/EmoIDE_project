@@ -63,6 +63,7 @@ class E4:
             for i in requests:
                 # send
                 self.client_socket.send(i.encode("utf-8"))
+
                 # recive
                 rec = self.client_socket.recv(2048)
                 print(rec.decode("utf-8"))
@@ -123,17 +124,18 @@ e4 = E4('127.0.0.1', 28000)
 print(e4.get_values(arr))
 
 
+e4_dict = {}
 
-# string = 'E4_Hr 1680442024,70123 57,31078\r\n'
-# pattern = r'\d+,\d+(?=\r\n$)'  # Matches a float followed by \r\n at the end of the string
+e4 = E4('127.0.0.1', 28000)
 
-# result = re.findall(pattern, string)
-# if result:
-#     last_float = result[-1]
-#     print(last_float)
-# e4_dict = {}
-
-# e4 = E4('127.0.0.1', 28000)
+start = time.time()
+delta = 0
+msg_arr = []
+e4.E4_SS_connect()
+e4.start_subscriptions()
+while delta < 30:
+    msg_arr.append(e4.recieve_data(e4_dict))
+    delta = time.time() - start
 
 # start = time.time()
 # delta = 0
@@ -150,3 +152,6 @@ print(e4.get_values(arr))
 
         
 
+e4.e4_stop()
+
+print(msg_arr)
