@@ -19,7 +19,7 @@ class E4:
             msg = self.client_socket.recv(256)
             print(msg.decode("utf-8"))
 
-            self.client_socket.send('device_connect_btle 082FCD\n'.encode("utf-8"))
+            self.client_socket.send('device_connect_btle 082FCD\n'.encode("utf-8"))     # 082FCD is a specific unit
             msg = self.client_socket.recv(256)
             print(msg.decode("utf-8"))
 
@@ -46,7 +46,7 @@ class E4:
                 print(rec.decode("utf-8"))
 
         finally:
-            print("REQUESTS DONE")
+            print("DATA SUBSCRIPTION ON")
     
     def recieve_data(self, dict):
         data = self.client_socket.recv(256).decode("utf-8")
@@ -66,7 +66,7 @@ class E4:
                 print(rec.decode("utf-8"))
 
         finally:
-            print("REQUESTS DONE")
+            print("DATA SUBSCRIPTION OFF")
         
         self.client_socket.send('device_disconnect\n'.encode("utf-8"))
         print("e4 disconnected")

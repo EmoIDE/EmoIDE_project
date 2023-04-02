@@ -54,7 +54,7 @@ settings = {
     "extension": True,
     "EEG": False,
     "Eye tracker": False,
-    "E4": False,
+    "E4": True,
     "Garmin": False,
     "Save_path": 'D:/codez/EmoIDE_project/Server/Output',
     "Save_format": '.tsv'
@@ -112,7 +112,7 @@ def tcp_communication():
             pulse = e4_data_dict["Pulse"]
             data = {
                 "function": "getCurrentPulse",
-                "data": random.randint(80, 120)
+                "data": pulse    #random.randint(80, 120)
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
@@ -143,7 +143,7 @@ def tcp_communication():
         # new save location     # msg: "set_save_path: [SPACE] root/path/location"
         elif "set_save_path:" in recived_msg:
             path_pos = recived_msg.find("set_save_path:")
-            picked_path = recived_msg[path_pos+5:]             # hämtar alla tecken efter "path:"
+            picked_path = recived_msg[path_pos+5:]             # hämtar alla tecken efter "set_save_path:"
             settings["Save_path"] = picked_path
         
         # new format type for saved file
@@ -223,6 +223,7 @@ def get_e4_data():
     start = time.time()
     while time.time() - start < 40:
         e4.recieve_data(e4_data_dict)
+        print(e4_data_dict)             # TEST print
     # add data from function in E4/E4SS_client.py
     e4.e4_stop()
 
