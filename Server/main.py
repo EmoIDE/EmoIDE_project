@@ -47,17 +47,17 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 500000
+max_time = 30
 
 #extension settings
 settings = {
     "extension": True,
     "EEG": False,
     "Eye tracker": False,
-    "E4": True,
+    "E4": False,
     "Garmin": False,
-    "Save_path": 'D:/codez/EmoIDE_project/Server/Output',
-    "Save_format": '.tsv'
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output',
+    "Save_format": '.xslx'
     }
 
 eeg_settings = {
@@ -143,7 +143,7 @@ def tcp_communication():
         # new save location     # msg: "set_save_path: [SPACE] root/path/location"
         elif "set_save_path:" in recived_msg:
             path_pos = recived_msg.find("set_save_path:")
-            picked_path = recived_msg[path_pos+5:]             # hämtar alla tecken efter "set_save_path:"
+            picked_path = recived_msg[path_pos+11:]             # hämtar alla tecken efter "set_save_path:"
             settings["Save_path"] = picked_path
         
         # new format type for saved file
@@ -221,7 +221,7 @@ def get_e4_data():
     e4.start_subscriptions()
 
     start = time.time()
-    while time.time() - start < 40:
+    while time.time() - start < max_time:
         e4.recieve_data(e4_data_dict)
         print(e4_data_dict)             # TEST print
     # add data from function in E4/E4SS_client.py
@@ -313,13 +313,9 @@ def update_dataframe():
         full_data_dic.update(e4_data_dict)
         
         # dataframe
-        # print(f"dict: {full_data_dic}\n")
-        #delta_decimaler = (delta - int(delta))
-        #time.sleep(delta_decimaler)
-        # time.sleep(1 - (1-((time.time() - start) - delta)))
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
-        #print(f"{full_df}\n--------------------------------")
+        print(f"{full_df}\n--------------------------------")
 
 
 def save_df(df, path, save_as_ext = '.csv'):
@@ -480,9 +476,9 @@ def start_threads():
 
 
     print("Dataframe thread starts")
-    #df_thread = threading.Thread(target=update_dataframe, daemon=True)
-    #df_thread.start()
-    #threads.append(df_thread)
+    df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    df_thread.start()
+    threads.append(df_thread)
 
     return threads
 
