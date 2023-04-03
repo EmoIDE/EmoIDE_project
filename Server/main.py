@@ -208,7 +208,7 @@ def get_eye_tracker_data():
 # GETTERS
 
 def get_eye_coordinates_in_time_range(start_time, end_time):
-    range_mask = (full_df["time"] > start_time) & (full_df["time"] <= end_time)
+    range_mask = (full_df["time"] >= datetime.datetime.strftime(start_time, format)) & (full_df["time"] <= datetime.datetime.strftime(end_time, format))
     return full_df.loc[range_mask]
 
 
@@ -532,8 +532,8 @@ if __name__ == "__main__":
 
     #print(full_df.columns)
 
-    # dashboard.capture_screen(full_df.iloc[-1, 0])
-    # dashboard.create_heatmap(full_df.iloc[-1, 0])
+#     dashboard.capture_screen(full_df["time"].iloc[-1])
+#     dashboard.create_heatmap(full_df["time"].iloc[-1])
     
     exit()
 
