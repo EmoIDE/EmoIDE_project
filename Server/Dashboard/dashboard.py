@@ -17,11 +17,10 @@ def create_heatmap(moment_time):
     # from Backend.main import get_eye_coordinates_in_time_range
 
     # Pseudo code
-    before_moment = datetime.datetime.strptime(moment_time, format) - datetime.datetime.strptime(datetime.datetime.strptime(datetime.timedelta(minutes=2), format), format)
-    print("Before stressed: ", before_moment, " Stressed:", moment_time)
+    before_moment = datetime.datetime.strptime(moment_time, format) - datetime.timedelta(minutes=2)
 
-    x = get_eye_coordinates_in_time_range(before_moment.strftime(format), moment_time)['x'].to_numpy()
-    y = get_eye_coordinates_in_time_range(before_moment.strftime(format), moment_time)['y'].to_numpy()
+    x = get_eye_coordinates_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format))['x'].to_numpy()
+    y = get_eye_coordinates_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format))['y'].to_numpy()
 
 
     plt.hist2d(x,y, bins=[np.arange(0,400,5),np.arange(0,300,5)])
