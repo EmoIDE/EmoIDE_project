@@ -9,6 +9,7 @@
 #Wake up
 import os
 import sys
+import jinja2
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -47,7 +48,7 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 30
+max_time = 5
 
 #extension settings
 settings = {
@@ -56,8 +57,8 @@ settings = {
     "Eye tracker": False,
     "E4": False,
     "Garmin": False,
-    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output',
-    "Save_format": '.xslx'
+    "Save_path": 'D:/codez/EmoIDE_project/Server/Output',
+    "Save_format": '.html'
     }
 
 eeg_settings = {
@@ -343,13 +344,45 @@ def save_df(df, path, save_as_ext = '.csv'):
         df.to_csv(str(path + "/" + filename), sep="\t")
     
     elif save_as_ext == '.html':
+
+        #renderar output_data.html utifrån template.html där man kan "koda" i html filen för 
+        # att få in data genom data objektet nedan. Enkelt sett att få in fina grafer o annat coolt.
+    
+        output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Output'))
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+        template = env.get_template("template.html")
+        excitement_list = df['Excitement'].tolist()
+        engagement_list = df['Engagement'].tolist()
+        long_excitement_list = df['Long term excitement'].tolist()
+        stress_list = df['Stress/Frustration'].tolist()
+        relaxation_list = df['Relaxation'].tolist()
+        interest_list = df['Interest/Affinity'].tolist()
+        focus_list = df['Focus'].tolist()
+        pulse_list = df['Pulse'].tolist()
+        index_list = df.index.tolist()
+
+
+
+
+
+        data = {
+            'title': 'test',
+            'excitement_list': excitement_list,
+            'index_list': index_list,
+            'engagement_list': engagement_list,
+            'long_excitement_list': long_excitement_list,
+            'stress_list':stress_list,
+            'relaxation_list':relaxation_list,
+            'interest_list':interest_list,
+            'focus_list':focus_list,
+            'pulse_list':pulse_list,
+        }
+        html = template.render(data)
         filename = filename + save_as_ext
-        html = df.to_html()
   
         # write html to file
-        text_file = open(str(path + "/" + filename), "w")
-        text_file.write(html)
-        text_file.close()
+        with open(str(path + "/" + filename), "w") as f:
+            f.write(html)
 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
@@ -437,8 +470,8 @@ def TEST_create_mock_dataframe(test_time):
     return mock_full_df
 
 def TEST_full_mock(path, format, test_time):
-    df = TEST_create_mock_dataframe(test_time=10)
-    save_df(df, path, format)                ################# LÄGG TILL EGEN PATH
+    mock_df = TEST_create_mock_dataframe(test_time=test_time)
+    save_df(mock_df, path, format)                ################# LÄGG TILL EGEN PATH
 
     exit()
 
@@ -465,7 +498,7 @@ def start_threads():
         threads.append(eye_thread)
     
     if settings["E4"] == True:
-         #start thread/-s needed for Empatica E4
+        #start thread/-s needed for Empatica E4
         print("E4 thread starts")
         e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         e4_thread.start()
@@ -500,7 +533,6 @@ if __name__ == "__main__":
 
     # start localy hosted server
     setup_server()
-
     # start all available hardware threads and return array of activated threads
     threads = start_threads()
 
@@ -513,7 +545,8 @@ if __name__ == "__main__":
     # Save dataframe to a path and with specified format
     save_format = settings["Save_format"]
     save_path = settings["Save_path"]
-    save_df(full_df, save_path, save_format)
+    TEST_full_mock(save_path, save_format, 120)
+    #save_df(full_df, save_path, save_format)
     
     exit()
 
