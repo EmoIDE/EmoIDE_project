@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 import pyautogui
 import os
 import io
@@ -15,8 +15,10 @@ def create_heatmap(moment_time):
     from Backend.main import get_eye_coordinates_in_time_range
 
     # Pseudo code
-    x = get_eye_coordinates_in_time_range(moment_time - 10, moment_time)['x'].to_numpy()
-    y = get_eye_coordinates_in_time_range(moment_time - 10, moment_time)['y'].to_numpy()
+    before_moment = datetime.datetime.strptime(moment_time, format) - datetime.timedelta(minutes=2)
+
+    x = get_eye_coordinates_in_time_range(before_moment, moment_time)['x'].to_numpy()
+    y = get_eye_coordinates_in_time_range(before_moment, moment_time)['y'].to_numpy()
 
 
     plt.hist2d(x,y, bins=[np.arange(0,400,5),np.arange(0,300,5)])
@@ -51,4 +53,4 @@ def create_heatmap(moment_time):
 
 def capture_screen():
     myScreenshot = pyautogui.screenshot()
-    myScreenshot.save(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{datetime.now().strftime("%d-%m-%Y %H-%M-%S")}.png')
+    myScreenshot.save(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{datetime.datetime.now().strftime("%d-%m-%Y %H-%M-%S")}.png')

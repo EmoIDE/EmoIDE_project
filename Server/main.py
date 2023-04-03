@@ -206,7 +206,7 @@ def get_eye_tracker_data():
 # GETTERS
 
 def get_eye_coordinates_in_time_range(start_time, end_time):
-    range_mask = (full_df["Time"] > start_time) & (full_df["Time"] <= end_time)
+    range_mask = (full_df["time"] > start_time) & (full_df["time"] <= end_time)
     return full_df.loc[range_mask]
 
 
@@ -526,6 +526,8 @@ if __name__ == "__main__":
     # dashboard.capture_screen()
     # # At end of session, or when you want to create dashboard call this, or maybe call it in the begining and have functions that updates it from here (or something)
     # dashboard.create_dashboard()
+    # # Or create heatmap when you want, and it will save it in the Dashboard/Heatmaps folder
+    # dashboard.create_heatmap(moment)
 
 
     # initiate global empty dataframe
