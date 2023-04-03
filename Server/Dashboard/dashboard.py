@@ -5,6 +5,7 @@ import io
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+format = "%d-%m-%YT%H-%M-%S"
 
 
 def create_dashboard():
@@ -12,13 +13,15 @@ def create_dashboard():
 
 
 def create_heatmap(moment_time):
-    from Backend.main import get_eye_coordinates_in_time_range
+    from Server.main import get_eye_coordinates_in_time_range
+    # from Backend.main import get_eye_coordinates_in_time_range
 
     # Pseudo code
-    before_moment = datetime.datetime.strptime(moment_time, format) - datetime.timedelta(minutes=2)
+    before_moment = datetime.datetime.strptime(moment_time, format) - datetime.datetime.strptime(datetime.datetime.strptime(datetime.timedelta(minutes=2), format), format)
+    print("Before stressed: ", before_moment, " Stressed:", moment_time)
 
-    x = get_eye_coordinates_in_time_range(before_moment, moment_time)['x'].to_numpy()
-    y = get_eye_coordinates_in_time_range(before_moment, moment_time)['y'].to_numpy()
+    x = get_eye_coordinates_in_time_range(before_moment.strftime(format), moment_time)['x'].to_numpy()
+    y = get_eye_coordinates_in_time_range(before_moment.strftime(format), moment_time)['y'].to_numpy()
 
 
     plt.hist2d(x,y, bins=[np.arange(0,400,5),np.arange(0,300,5)])
@@ -51,6 +54,6 @@ def create_heatmap(moment_time):
 
 
 
-def capture_screen():
+def capture_screen(capture_name):
     myScreenshot = pyautogui.screenshot()
-    myScreenshot.save(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{datetime.datetime.now().strftime("%d-%m-%Y %H-%M-%S")}.png')
+    myScreenshot.save(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{capture_name}.png')

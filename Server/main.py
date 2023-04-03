@@ -16,8 +16,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 #  Local imports
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
-
-from Hardware.E4 import E4_Object
+from Hardware.E4 import E4_client
+import Dashboard.dashboard as dashboard
 
 # imports
 import pandas as pd
@@ -48,17 +48,17 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 5
+max_time = 20
 
 #extension settings
 settings = {
     "extension": True,
     "EEG": False,
-    "Eye tracker": False,
-    "E4": False,
+    "Eye tracker": True,
+    "E4": True,
     "Garmin": False,
-    "Save_path": 'D:/codez/EmoIDE_project/Server/Output',
-    "Save_format": '.html'
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output',
+    "Save_format": '.csv'
     }
 
 eeg_settings = {
@@ -158,6 +158,7 @@ def tcp_communication():
 async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
+    global max_time
 
     cortex_api = EEG.EEG()
     await cortex_api.connect()
@@ -174,7 +175,7 @@ async def import_EEG_data():
             all_done = True
     
     start = time.time()
-    while time.time() - start < 40:
+    while time.time() - start < max_time:
         time.sleep(1)
         eeg_data_dict = await cortex_api.get_eeg_data()
 
@@ -190,7 +191,7 @@ def get_eye_tracker_data():
     global calibration_done
     global eye_data_dict
 
-    eye_tracker = EyeTracker(1)
+    eye_tracker = EyeTracker(1, max_time)
     eye_tracker.setup()
     print("setup done")
     calibration_done["Eye tracker"] = True
@@ -215,7 +216,7 @@ def get_eye_coordinates_in_time_range(start_time, end_time):
 def get_e4_data():
     global e4_data_dict
 
-    e4 = E4_Object.E4('127.0.0.1', 28000)
+    e4 = E4_client.E4('127.0.0.1', 28000)
 
     e4.E4_SS_connect()
 
@@ -224,8 +225,7 @@ def get_e4_data():
     start = time.time()
     while time.time() - start < max_time:
         e4.recieve_data(e4_data_dict)
-        print(e4_data_dict)             # TEST print
-    # add data from function in E4/E4SS_client.py
+        # print(e4_data_dict)             
     e4.e4_stop()
 
 
@@ -262,13 +262,15 @@ def init_df():
         }
     
     e4_data_dict = {
-        "Pulse":0
+        "Pulse":0,
+        "Bvp":0,
+        "Gsr": 0
     }
 
     full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
-    full_data_dict.update(e4_data_dict)                           ####################### Lägg till när e4 redo
+    full_data_dict.update(e4_data_dict)
 
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
@@ -276,8 +278,9 @@ def init_df():
     
 def update_dataframe():
     global full_df
+    global max_time
     calibration_done["Dataframe"] = True
-    all_done = True
+    all_done = False
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -297,7 +300,7 @@ def update_dataframe():
 
         # time_dict["time"] = time.gmtime()
         # This gives the format - dd/mm/yy-HH:MM:SS
-        time_dict["time"] = datetime.now().strftime("%d/%m/%Y-%H:%M:%S")
+        time_dict["time"] = datetime.now().strftime("%d-%m-%YT%H-%M-%S")
 
         # 
         full_data_dic.update(time_dict)
@@ -360,9 +363,6 @@ def save_df(df, path, save_as_ext = '.csv'):
         focus_list = df['Focus'].tolist()
         pulse_list = df['Pulse'].tolist()
         index_list = df.index.tolist()
-
-
-
 
 
         data = {
@@ -503,8 +503,7 @@ def start_threads():
         e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         e4_thread.start()
         threads.append(e4_thread)
-
-
+    
     print("Dataframe thread starts")
     df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
@@ -547,8 +546,13 @@ if __name__ == "__main__":
     # Save dataframe to a path and with specified format
     save_format = settings["Save_format"]
     save_path = settings["Save_path"]
-    TEST_full_mock(save_path, save_format, 120)
-    #save_df(full_df, save_path, save_format)
+    #TEST_full_mock(save_path, save_format, 120)
+    save_df(full_df, save_path, save_format)
+
+    #print(full_df.columns)
+
+    # dashboard.capture_screen(full_df.iloc[-1, 0])
+    # dashboard.create_heatmap(full_df.iloc[-1, 0])
     
     exit()
 

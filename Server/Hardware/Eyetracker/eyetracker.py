@@ -2,7 +2,8 @@ from .gazepoint import gazepoint
 import time
 
 class EyeTracker:
-    def __init__(self, frequency):
+    def __init__(self, frequency, recording_length):
+        self.recording_length = recording_length
         self.eye_tracker = None
         self.recording = False
         self.cache = {
@@ -46,7 +47,7 @@ class EyeTracker:
         # Start recording data to cache
         print("EYE TRACKER START RECORDING...")
         start = time.time()
-        while time.time() - start < 10:
+        while time.time() - start < self.recording_length:
             self.store_to_cache(self.eye_tracker.get_gaze_position(), dict)
             time.sleep(self.frequency)
 
