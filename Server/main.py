@@ -54,7 +54,7 @@ max_time = 20
 settings = {
     "extension": True,
     "EEG": False,
-    "Eye tracker": True,
+    "Eye tracker": False,
     "E4": True,
     "Garmin": False,
     "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output',
@@ -69,6 +69,7 @@ eeg_settings = {
 calibration_done = {
     "Eye tracker": False,
     "EEG": True,
+    "E4": False,
     "Dataframe": True
     }
 
@@ -82,7 +83,7 @@ def setup_server():
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")  
 
 #handles the connection to the extension
-def tcp_communication():
+def tcp_communication():                            ################ Socket timeout borttagen. Varför? - Nu stängs inte tråden av då den väntar på .recv()
     global extension_connected
     conn, client = tcp_socket.accept()
     print(f"Connected to {client}")
@@ -215,18 +216,32 @@ def get_eye_coordinates_in_time_range(start_time, end_time):
 # ---------------E4 DATA TRACKER---------------- #
 def get_e4_data():
     global e4_data_dict
+    
+    calibration_done["E4"] = False
 
+    # init object
     e4 = E4_client.E4('127.0.0.1', 28000)
-
+    # connect and start getting Bvp, Gsr and Hr data
     e4.E4_SS_connect()
-
     e4.start_subscriptions()
 
     start = time.time()
     while time.time() - start < max_time:
-        e4.recieve_data(e4_data_dict)
-        # print(e4_data_dict)             
-    e4.e4_stop()
+        data = e4.recieve_data()
+        hr = data[0]
+        bvp = data[1]
+        gsr = data[2]
+
+        # Om de nya värdena är tomma, ersätt inte till dataframen.
+        if not hr == "":
+            e4_data_dict["Pulse"] = hr[hr.find(":")+1:]
+            calibration_done["E4"] = True               # Calibration done                              ##### EJ TESTAT
+        if not bvp == "":
+            e4_data_dict["Bvp"] = bvp[bvp.find(":")+1:]
+        if not gsr == "":
+            e4_data_dict["Gsr"] = gsr[gsr.find(":")+1:]
+        
+    # e4.e4_stop()                      # Printar resterande grejer i bufferten. Ta bort eller få den att sluta printa. Raden behövs tekniskt sätt inte.
 
 
 def init_df():
@@ -280,7 +295,7 @@ def update_dataframe():
     global full_df
     global max_time
     calibration_done["Dataframe"] = True
-    all_done = False
+    all_done = True                                                                     ######################
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -293,7 +308,7 @@ def update_dataframe():
         time.sleep(1)
 
         # Clear terminal
-        #os.system('cls' if os.name == 'nt' else 'clear')
+        #os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
         # time
         # time_dict["time"] = time.localtime()
@@ -347,46 +362,12 @@ def save_df(df, path, save_as_ext = '.csv'):
         df.to_csv(str(path + "/" + filename), sep="\t")
     
     elif save_as_ext == '.html':
-
-        #renderar output_data.html utifrån template.html där man kan "koda" i html filen för 
-        # att få in data genom data objektet nedan. Enkelt sett att få in fina grafer o annat coolt.
-    
-        output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Output'))
-        env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
-        template = env.get_template("template.html")
-        excitement_list = df['Excitement'].tolist()
-        engagement_list = df['Engagement'].tolist()
-        long_excitement_list = df['Long term excitement'].tolist()
-        stress_list = df['Stress/Frustration'].tolist()
-        relaxation_list = df['Relaxation'].tolist()
-        interest_list = df['Interest/Affinity'].tolist()
-        focus_list = df['Focus'].tolist()
-        pulse_list = df['Pulse'].tolist()
-        index_list = df.index.tolist()
-
-
-        data = {
-            'title': 'test',
-            'excitement_list': excitement_list,
-            'index_list': index_list,
-            'engagement_list': engagement_list,
-            'long_excitement_list': long_excitement_list,
-            'stress_list':stress_list,
-            'relaxation_list':relaxation_list,
-            'interest_list':interest_list,
-            'focus_list':focus_list,
-            'pulse_list':pulse_list,
-        }
-        html = template.render(data)
-        filename = filename + save_as_ext
-  
-        # write html to file
-        with open(str(path + "/" + filename), "w") as f:
-            f.write(html)
+        print("ERROR - Save html not found")                            ###### Fixa till gamla spara html grejen
+        
 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
-        with pd.ExcelWriter(str(path + "/" + filename)) as writer:          # ERROR "no module odf"
+        with pd.ExcelWriter(str(path + "/" + filename)) as writer:          # module odf needed
             df.to_excel(writer) 
 
     elif save_as_ext == '.xlsx':
@@ -481,7 +462,7 @@ def start_threads():
     print("Server thread starts")
     com_thread = threading.Thread(target=tcp_communication, daemon=True)
     com_thread.start()
-    #threads.append(com_thread)
+    threads.append(com_thread)
 
     if settings["EEG"] == True:
         #start thread/-s needed for EEG
@@ -555,4 +536,50 @@ if __name__ == "__main__":
     # dashboard.create_heatmap(full_df.iloc[-1, 0])
     
     exit()
+
+
+
+
+
+
+
+#######
+# SKA VA I DASHBOARD, inte i save_df
+#renderar output_data.html utifrån template.html där man kan "koda" i html filen för 
+        # att få in data genom data objektet nedan. Enkelt sett att få in fina grafer o annat coolt.
+    
+        # output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Output'))
+        # env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+        # template = env.get_template("template.html")
+        # excitement_list = df['Excitement'].tolist()
+        # engagement_list = df['Engagement'].tolist()
+        # long_excitement_list = df['Long term excitement'].tolist()
+        # stress_list = df['Stress/Frustration'].tolist()
+        # relaxation_list = df['Relaxation'].tolist()
+        # interest_list = df['Interest/Affinity'].tolist()
+        # focus_list = df['Focus'].tolist()
+        # pulse_list = df['Pulse'].tolist()
+        # index_list = df.index.tolist()
+
+
+        # data = {
+        #     'title': 'test',
+        #     'excitement_list': excitement_list,
+        #     'index_list': index_list,
+        #     'engagement_list': engagement_list,
+        #     'long_excitement_list': long_excitement_list,
+        #     'stress_list':stress_list,
+        #     'relaxation_list':relaxation_list,
+        #     'interest_list':interest_list,
+        #     'focus_list':focus_list,
+        #     'pulse_list':pulse_list,
+        # }
+        # html = template.render(data)
+        # filename = filename + save_as_ext
+  
+        # # write html to file
+        # with open(str(path + "/" + filename), "w") as f:
+        #     f.write(html)
+
+
 

@@ -32,8 +32,8 @@ class E4:
             msg = self.client_socket.recv(256)
             print(msg.decode("utf-8"))
 
-        finally:
-            print("CLIENT CONNECTION DONE")
+        except:
+            print("[ERROR] - Connection to E4 Streaming Server failed")
         
     def start_subscriptions(self):
         requests = ['device_subscribe bvp ON\n', 'device_subscribe ibi ON\n', 'device_subscribe gsr ON\n']
@@ -45,20 +45,23 @@ class E4:
                 # recive
                 rec = self.client_socket.recv(2048)
                 print(rec.decode("utf-8"))
-
-        finally:
-            print("DATA SUBSCRIPTION ON")
+        except:
+            print("[ERROR] - Can not subscribe to stream")
     
-    def recieve_data(self, dict):
-        data = self.client_socket.recv(2048).decode("utf-8")
+    def recieve_data(self):
+        msg_arr = []
+        start = time.time()
+        delta = 0
+        self.client_socket.settimeout(5.0)      # stops .recv after 5s if no msg is recived
+        while delta < 1:
+            try:
+                msg_arr.append(self.client_socket.recv(2048).decode("utf-8"))
+            except:
+                print("[ERROR] - no message recived from e4 Streaming Server")
+            delta = time.time() - start
+            #print("msg_arr:  ", msg_arr)
+        return self.get_latest_values(msg_arr)
 
-        arr = self.get_values(data)
-        print(arr)
-
-        dict["Pulse"] = arr[0]
-        dict["Bvp"] = arr[1]
-        dict["Gsr"] = arr[2]
-    
     def e4_stop(self):
         requests = ['device_subscribe bvp OFF\n', 'device_subscribe ibi OFF\n', 'device_subscribe gsr OFF\n']
         try:
@@ -77,28 +80,31 @@ class E4:
         print("e4 disconnected")
 
     def get_latest_values(self, arr):
-        arr_2 = []
+        fixed_arr = []
         for i in arr:
             end_of_id = i.find(" ")
             id = i[0 : end_of_id]
             
-            pattern = r'-?\d+,\d+(?=\r\n$)'  # Matches a float followed by \r\n at the end of the string
-            result = re.findall(pattern, i)
-            last_float = result[0]
-
+            try:
+                pattern = r'-?\d+,\d+(?=\r\n$)'  # Matches a float followed by \r\n at the end of the string
+                result = re.findall(pattern, i)
+                last_float = result[0]
+            except:
+                print("[ERROR] - e4 data not available")
+            
             if id == "E4_Hr":
-                temp = "Hr:" + last_float
-                arr_2.append(temp)
+                data_and_name = "Hr:" + last_float
+                fixed_arr.append(data_and_name)
             elif id == "E4_Bvp":
-                temp = "Bvp:" + last_float
-                arr_2.append(temp)
+                data_and_name = "Bvp:" + last_float
+                fixed_arr.append(data_and_name)
             elif id == "E4_Gsr":
-                temp = "Gsr:" + last_float
-                arr_2.append(temp)
+                data_and_name = "Gsr:" + last_float
+                fixed_arr.append(data_and_name)
             
         # filter array
         hr, bvp, gsr = "", "", ""
-        for j in arr_2:
+        for j in fixed_arr:
             end_of_id = j.find(":")
             id = j[0 : end_of_id]
 
@@ -121,32 +127,44 @@ class E4:
     # 'E4_Bvp 1680442029,00437 -15,52991\r\n', 'E4_Gsr 1680442027,73 0,08067529\r\n', 'E4_Gsr 1680442027,98 0,0832364\r\nE4_Gsr 1680442028,23 0,08195585\r\n', 'E4_Gsr 1680442028,48 0,0832364\r\n', 'E4_Gsr 1680442028,73 0,0832364\r\n', 'E4_Gsr 1680442028,98 0,0832364\r\n', 'E4_Bvp 1680442029,01999 -18,76831\r\n', 'E4_Bvp 1680442029,03562 -20,34393\r\nE4_Bvp 1680442029,05124 -20,38129\r\n', 'E4_Bvp 1680442029,06687 -19,63263\r\n', 'E4_Bvp 1680442029,08249 -19,30249\r\n', 'E4_Bvp 1680442029,09812 -20,71851\r\n', 'E4_Bvp 1680442029,11375 -24,83002\r\n', 'E4_Bvp 1680442029,12937 -31,8396\r\n', 'E4_Bvp 1680442029,145 -41,0896\r\n', 'E4_Bvp 1680442029,16062 -51,1333\r\n', 'E4_Bvp 1680442029,17625 -60,12396\r\n', 'E4_Bvp 1680442029,19187 -66,22949\r\n', 'E4_Bvp 1680442029,2075 -68,0304\r\nE4_Bvp 1680442029,22313 -64,83942\r\n', 'E4_Bvp 1680442029,23875 -56,84741\r\n', 'E4_Bvp 1680442029,25438 -45,15454\r\n', 'E4_Bvp 1680442029,27 -31,54852\r\n', 'E4_Bvp 1680442029,28563 -18,07819\r\n', 'E4_Bvp 1680442029,30125 -6,531494\r\n', 'E4_Bvp 1680442029,31688 2,022156\r\n', 'E4_Bvp 1680442029,33251 7,461182\r\n', 'E4_Bvp 1680442029,34813 10,48157\r\n', 'E4_Hr 1680442023,65431 54,8546\r\n', 'E4_Ibi 1680442023,65431 1,093801\r\nE4_Bvp 1680442029,36376 12,16321\r\n', 'E4_Bvp 1680442029,37938 13,54291\r\n', 'E4_Bvp 1680442029,39501 15,21429\r\n', 'E4_Bvp 1680442029,41063 17,25928\r\n', 'E4_Bvp 1680442029,42626 19,40759\r\nE4_Bvp 1680442029,44189 21,289\r\n', 'E4_Bvp 1680442029,45751 22,63861\r\n', 'E4_Bvp 1680442029,47314 23,42334\r\n', 'E4_Bvp 1680442029,48876 23,79321\r\n', 'E4_Bvp 1680442029,50439 23,92487\r\n', 'E4_Bvp 1680442029,52001 23,91174\r\n', 'E4_Bvp 1680442029,53564 23,79108\r\n', 'E4_Bvp 1680442029,55127 23,62897\r\n', 'E4_Bvp 1680442029,56689 23,60065\r\n', 'E4_Bvp 1680442029,58252 24,0036\r\n', 'E4_Bvp 1680442029,59814 25,07147\r\n', 'E4_Bvp 1680442029,61377 26,771\r\n', 'E4_Bvp 1680442029,62939 28,71985\r\n', 'E4_Bvp 1680442029,64502 30,25751\r\n', 'E4_Bvp 1680442029,66065 30,75629\r\n', 'E4_Bvp 1680442029,67627 29,93719\r\n', 'E4_Bvp 1680442029,6919 28,01019\r\n', 'E4_Bvp 1680442029,70752 25,59662\r\n', 'E4_Bvp 1680442029,72315 23,39038\r\n', 'E4_Bvp 1680442029,73877 21,87573\r\n', 'E4_Bvp 1680442029,7544 21,02588\r\n', 'E4_Bvp 1680442029,77003 20,47162\r\n', 'E4_Bvp 1680442029,78565 19,78015\r\n', 'E4_Bvp 1680442029,80128 18,7113\r\n', 'E4_Bvp 1680442029,8169 17,42273\r\n', 'E4_Bvp 1680442029,83253 16,36548\r\n', 'E4_Bvp 1680442029,84815 16,03528\r\n', 'E4_Bvp 1680442029,86378 16,71814\r\n', 'E4_Bvp 1680442029,87941 18,40674\r\n', 'E4_Bvp 1680442029,89503 20,78082\r\n', 'E4_Bvp 1680442029,91066 23,38361\r\n', 'E4_Bvp 1680442029,92628 25,73895\r\n', 'E4_Bvp 1680442029,94191 27,51849\r\n', 'E4_Bvp 1680442029,95754 28,56287\r\n', 'E4_Bvp 1680442029,97316 28,85211\r\n', 'E4_Bvp 1680442029,98879 28,5307\r\n', 'E4_Bvp 1680442030,00441 27,8667\r\n', 'E4_Bvp 1680442030,02004 27,16815\r\n', 'E4_Bvp 1680442030,03566 26,67847\r\n', 'E4_Bvp 1680442030,05129 26,42834\r\n', 'E4_Bvp 1680442030,06692 26,15857\r\nE4_Bvp 1680442030,08254 25,34027\r\n', 'E4_Bvp 1680442030,09817 23,3103\r\n', 'E4_Bvp 1680442030,11379 19,48798\r\n', 'E4_Bvp 1680442030,12942 13,53955\r\n', 'E4_Bvp 1680442030,14504 5,518433\r\n', 'E4_Bvp 1680442030,16067 -4,075867\r\n', 'E4_Bvp 1680442030,1763 -14,27435\r\n', 'E4_Bvp 1680442030,19192 -23,77563\r\n', 'E4_Bvp 1680442030,20755 -31,18225\r\n', 'E4_Bvp 1680442030,22317 -35,34058\r\n', 'E4_Bvp 1680442030,2388 -35,716\r\n', 'E4_Bvp 1680442030,25442 -32,6037\r\n', 'E4_Bvp 1680442030,27005 -27,01813\r\n', 'E4_Bvp 1680442030,28568 -20,34424\r\n', 'E4_Bvp 1680442030,3013 -13,90161\r\n', 'E4_Bvp 1680442030,31693 -8,538452\r\n', 'E4_Bvp 1680442030,33255 -4,516479\r\n', 'E4_Bvp 1680442030,34818 -1,639587\r\n', 'E4_Bvp 1680442030,3638 0,4731445\r\n', 'E4_Bvp 1680442030,37943 2,12085\r\n', 'E4_Gsr 1680442029,23 0,07939473\r\n', 'E4_Gsr 1680442029,48 0,0832364\r\nE4_Gsr 1680442029,73 0,08067529\r\n', 'E4_Gsr 1680442029,98 0,08067529\r\n', 'E4_Gsr 1680442030,23 0,08451696\r\n', 'E4_Gsr 1680442030,48 0,08067529\r\n', 
     # 'E4_Bvp 1680442030,39506 3,331482\r\n', 'E4_Bvp 1680442030,41068 3,97821\r\n', 'E4_Hr 1680442024,70123 57,31078\r\n', 'E4_Ibi 1680442024,70123 1,046923\r\n', 'E4_Bvp 1680442030,42631 3,828857\r\n', 'E4_Bvp 1680442030,44193 2,742615\r\nE4_Bvp 1680442030,45756 0,8103027\r\n', 'E4_Bvp 1680442030,47318 -1,656189\r\n', 'E4_Bvp 1680442030,48881 -4,165039\r\n', 'E4_Bvp 1680442030,50444 -6,174377\r\n', 'E4_Bvp 1680442030,52006 -7,185669\r\n', 'E4_Bvp 1680442030,53569 -6,811279\r\n', 'E4_Bvp 1680442030,55131 -4,881531\r\n', 'E4_Bvp 1680442030,56694 -1,402466\r\n']
 
-e4 = E4('127.0.0.1', 28000)
+################3
+# e4 = E4('127.0.0.1', 28000)
 
-#     # print(e4.get_values(arr))
+# start = time.time()
+# delta = 0
+# e4.E4_SS_connect()
+# e4.start_subscriptions()
+# while delta < 20:
+#     arr = e4.recieve_data()
+#     print(arr)
+#     bvp = arr[1]
+#     print(bvp[bvp.find(":"):])
+#     delta = time.time() - start 
+##############
+
+# arr = ['Hr:68,56825', 'Bvp:-51,69904', 'Gsr:0,04481689']
+# bvp = arr[1]
+# print(bvp[bvp.find(":")+1:])
 
 
-e4_dict = {}
+# e4.e4_stop()
 
-#     # e4 = E4('127.0.0.1', 28000)
-
-start = time.time()
-delta = 0
-msg_arr = []
-e4.E4_SS_connect()
-e4.start_subscriptions()
-while delta < 5:
-    msg_arr.append(e4.recv(1024))
-    e4.get_latest_values(msg_arr)
-    delta = time.time() - start
-print(e4_dict)
-
-    # e4.e4_stop()
-
-    # print(msg_arr)
-
-            
-
-    # e4.e4_stop()
-
-    # print(msg_arr)
+# ['', 'Bvp:28,88359', 'Gsr:0,05634124']
+# ['', 'Bvp:1,217896', 'Gsr:0,05506076']
+# ['', 'Bvp:-365,4111', 'Gsr:0,05506076']
+# ['', 'Bvp:62,82471', 'Gsr:0,04865834']
+# ['', 'Bvp:48,9585', 'Gsr:0,04609737']
+# ['', 'Bvp:-11,72839', 'Gsr:0,04609737']
+# ['', 'Bvp:-49,37', 'Gsr:0,04865834']
+# ['', 'Bvp:-45,36536', 'Gsr:0,04481689']
+# ['', 'Bvp:20,1217', 'Gsr:0,04481689']
+# ['', 'Bvp:17,96448', 'Gsr:0,04737785']
+# ['', 'Bvp:40,36072', 'Gsr:0,04609737']
+# ['', 'Bvp:6,785339', 'Gsr:0,04609737']
+# ['', 'Bvp:-52,33167', 'Gsr:0,04609737']
+# ['Hr:68,56825', 'Bvp:-51,69904', 'Gsr:0,04481689']
+# ['Hr:67,3653', 'Bvp:43,99561', 'Gsr:0,04737785']
+# ['Hr:63,99702', 'Bvp:43,13422', 'Gsr:0,04737785']
+# ['Hr:63,99702', 'Bvp:50,02826', 'Gsr:0,04481689']
+# ['Hr:66,20383', 'Bvp:50,46475', 'Gsr:0,04993882']
+# ['Hr:61,93262', 'Bvp:27,19405', 'Gsr:0,04993882']
