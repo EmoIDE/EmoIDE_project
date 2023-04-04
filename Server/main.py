@@ -48,17 +48,17 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 20
+max_time = 100
 
 #extension settings
 settings = {
-    "extension": False,
+    "extension": True,
     "EEG": False,
-    "Eye tracker": True,
-    "E4": False,
+    "Eye tracker": False,
+    "E4": True,
     "Garmin": False,
     "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
-    "Save_format": '.html'
+    "Save_format": '.csv'
     }
 
 eeg_settings = {
@@ -67,7 +67,7 @@ eeg_settings = {
 }
 
 calibration_done = {
-    "Eye tracker": False,
+    "Eye tracker": True,
     "EEG": True,
     "E4": True,
     "Dataframe": True
@@ -85,7 +85,7 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
-    tcp_socket.settimeout(10)
+    tcp_socket.settimeout(50)
     conn, client = tcp_socket.accept()
     print(f"Connected to {client}")
     extension_connected = True
@@ -119,7 +119,6 @@ def tcp_communication():
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
-
 
 
         elif recived_msg == "getEEG":
@@ -345,7 +344,7 @@ def update_dataframe():
         # dataframe
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
-        print(f"{full_df}\n--------------------------------")
+        print(f"{full_df}\n--------------------------------")                                     ###########################
 
 
 def save_df(df, path, save_as_ext = '.csv'):

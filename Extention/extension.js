@@ -102,9 +102,11 @@ function activate(context) {
 			'statusWindow.open', // Identifies the type of the webview. Used internally
 			'Status', // Title of the panel displayed to the user
 			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-			{} // Webview options. More on these later.
+			{
+				enableScripts: true
+			} // Webview options. More on these later.
 		  );
-		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Output/output_data.html");
+		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/dashboard.html");
 		  const fileUri = vscode.Uri.file(onDiskPath.path);
 
 		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
@@ -118,6 +120,7 @@ function activate(context) {
 	
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
 			connectToServer();
+			const gettingEyeData = setInterval(getCurrentPulse, 1000);
 		}),
 
 		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
@@ -149,9 +152,7 @@ function activate(context) {
 			
 		}),
 
-		vscode.commands.registerCommand('EmoIDE.requestPulse', () => {
-			const gettingEyeData = setInterval(getCurrentPulse, 1000);
-		}),
+
 
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
 		// The code you place here will be executed every time your command is executed
@@ -187,6 +188,7 @@ function getWebviewContent() {
 		console.log('Connected');
 		var json_data = {"function": "ping"}
 		client.write(JSON.stringify(json_data));
+		
 	});
 };
 
@@ -200,6 +202,7 @@ client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]
 	if (type_of_data == "ping") {
+		console.log("ping funka");
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
 		//vscode.window.showInformation Message('received ping');
@@ -207,9 +210,9 @@ client.on('data', function(data){
 	if (type_of_data == "getCurrentPulse") {
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
+		console.log("ss");
 		var pulse = json_data["data"]
 		statusbarPulse.text = "$(pulse)" + pulse.toString();
-		
 	}
 
 
