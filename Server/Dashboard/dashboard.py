@@ -6,6 +6,8 @@ import jinja2
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import gaussian_kde
+
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
@@ -71,50 +73,51 @@ def create_heatmap(moment_time, df):
     x = get_df_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format), df)['x'].to_numpy()
     y = get_df_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format), df)['y'].to_numpy()
 
-    resolution = (1920, 1080)
+    img = Image.open(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{moment_time}.png')
 
-    my_dpi = 96
-    fig = plt.figure(figsize=(resolution[0]/my_dpi,resolution[1]/my_dpi), dpi=my_dpi)
-    ax1 = fig.add_subplot(211)
+    img_arr = np.array(img)
 
-    ax1.pcolormesh(x, y, alpha=0.5)
-    ax1.set_xlim(0, resolution[0])
-    ax1.set_ylim(0, resolution[1])
-    ax1.show()
+    # Convert x and y coordinates to pixel coordinates
+    x_pixel = x * img.width
+    y_pixel = y * img.height
 
+    xy = np.vstack([x,y])
+    density = gaussian_kde(xy)(xy)
 
-    import plotly.express as px
-    df = pd.DataFrame({'x': x*resolution[0], 'y':y*resolution[1]})
-    fig = px.density_heatmap(df, x='x', y='y', xbins=resolution[0], ybins=resolution[1])
-    fig.show()
+    # Create a heatmap over the image
+    plt.imshow(img_arr)
+    plt.scatter(x_pixel, y_pixel, s=100, c=density, cmap='coolwarm', alpha=0.25)
 
-    plt.hist2d(x*resolution[0],y*resolution[1], bins=[np.arange(0,resolution[0],1),np.arange(0,resolution[1],1)])
-    # plt.set_cmap('plasma_r')
-    # plt.set_cmap('gnuplot2_r')
-    plt.set_cmap('CMRmap_r')
+    # Set axis limits and show the plot
+    plt.xlim([0, img.width])
+    plt.ylim([img.height, 0])
     plt.axis('off')
+    plt.savefig(f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{moment_time}.png', dpi=300, format='png', bbox_inches='tight')
 
 
-    heatmap_buf = io.BytesIO()
-    plt.show()
-    plt.savefig(heatmap_buf, format='png', transparent=True)
 
-    heatmap = Image.open(heatmap_buf)
-    heatmap_w, heatmap_h = heatmap.size
-    heatmap.putalpha(35)
+    # # WORKING BUT NOT TRADITIONAL HEATMAP DESIGN
+    # # Read in the image and convert to RGBA format
+    # img = Image.open(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/04-04-2023T22-33-29.png')
 
-    heatmap_f = heatmap.crop()
-    newsize = (3440, 1440)
-    heatmap_f = heatmap_f.resize(newsize)
+    # img_arr = np.array(img)
 
-    sceen_capture = Image.open(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{moment_time}.png')
-    sceen_capture_w, sceen_capture_h = sceen_capture.size
-    offset = ((sceen_capture_w - heatmap_w) // 2, (sceen_capture_h - heatmap_h) // 2)
+    # # Generate some sample data
+    # x = np.random.rand(100)
+    # y = np.random.rand(100)
 
-    # sceen_capture.paste(heatmap, offset, heatmap)
-    sceen_capture.paste(heatmap_f, heatmap_f)
-    sceen_capture.save(f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{moment_time}.png')
+    # # Convert x and y coordinates to pixel coordinates
+    # x_pixel = x * img.width
+    # y_pixel = y * img.height
 
+    # # Create a heatmap over the image
+    # plt.imshow(img_arr)
+    # plt.scatter(x_pixel, y_pixel, c='red', alpha=0.35)
+
+    # # Set axis limits and show the plot
+    # plt.xlim([0, img.width])
+    # plt.ylim([img.height, 0])
+    # plt.show()
 
 
 
