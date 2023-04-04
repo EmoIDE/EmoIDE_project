@@ -2,13 +2,52 @@ import datetime
 import pyautogui
 import os
 import io
+import jinja2
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
+output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Output'))
 
+def create_dashboard(df):
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+    template = env.get_template("template.html")
+    excitement_list = df['Excitement'].tolist()
+    engagement_list = df['Engagement'].tolist()
+    long_excitement_list = df['Long term excitement'].tolist()
+    stress_list = df['Stress/Frustration'].tolist()
+    relaxation_list = df['Relaxation'].tolist()
+    interest_list = df['Interest/Affinity'].tolist()
+    focus_list = df['Focus'].tolist()
+    pulse_list = df['Pulse'].tolist()
+    gsr_list = df["Gsr"].tolist()
+    bvp_list = df["Bvp"].tolist()
+    index_list = df.index.tolist()
 
-def create_dashboard():
+    # Prepare the data to be rendered in the Jinja2 template
+    data = {
+        'title': 'test',
+        'excitement_list': excitement_list,
+        'index_list': index_list,
+        'engagement_list': engagement_list,
+        'long_excitement_list': long_excitement_list,
+        'stress_list': stress_list,
+        'relaxation_list': relaxation_list,
+        'interest_list': interest_list,
+        'focus_list': focus_list,
+        'pulse_list': pulse_list,
+        "gsr_list": gsr_list,
+        "bvp_list": bvp_list
+    }
+
+    # Render the data in the Jinja2 template
+    html = template.render(data)
+
+    # Save the rendered HTML to a file
+    filename = "/dashboard.html"
+    with open(str(output_path+  filename), "w") as f:
+        f.write(html)
     pass
 
 

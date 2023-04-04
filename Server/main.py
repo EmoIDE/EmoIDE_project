@@ -57,7 +57,7 @@ settings = {
     "Eye tracker": False,
     "E4": True,
     "Garmin": False,
-    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Output',
+    "Save_path": 'D:\codez\EmoIDE_project\Server\Output',
     "Save_format": '.csv'
     }
 
@@ -85,6 +85,7 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():                            ################ Socket timeout borttagen. Varför? - Nu stängs inte tråden av då den väntar på .recv()
     global extension_connected
+    tcp_socket.settimeout(10)
     conn, client = tcp_socket.accept()
     print(f"Connected to {client}")
     extension_connected = True
@@ -362,7 +363,8 @@ def save_df(df, path, save_as_ext = '.csv'):
         df.to_csv(str(path + "/" + filename), sep="\t")
     
     elif save_as_ext == '.html':
-        print("ERROR - Save html not found")                            ###### Fixa till gamla spara html grejen
+        dashboard.create_dashboard(df)
+        print("ERROR - Save html not found")                            ###### Fixa till gamla spara html grejen ???? varför?
         
 
     elif save_as_ext == '.ods':
@@ -405,8 +407,13 @@ def TEST_create_mock_dataframe(test_time):
         "Interest/Affinity":0,
         "Focus":0
         }
-
+    e4_data_dict = {
+        "Pulse":0,
+        "Bvp":0,
+        "Gsr": 0
+    }
     full_data_dict.update(time_dict)
+    full_data_dict.update(e4_data_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
 
@@ -438,8 +445,12 @@ def TEST_create_mock_dataframe(test_time):
         eeg_data_dict["Relaxation"] = rand_Relaxation
         eeg_data_dict["Stress/Frustration"] = rand_Frustration
 
+        e4_data_dict["Pulse"] = random.randint(50,150)
+        e4_data_dict["Bvp"] = random.randint(50,150)
+        e4_data_dict["Gsr"] = random.randint(50,150)
         full_data_dict.update(time_dict)
         full_data_dict.update(eye_data_dict)
+        full_data_dict.update(e4_data_dict)
         full_data_dict.update(eeg_data_dict)
 
         mock_full_df = mock_full_df.append(full_data_dict, ignore_index = True)
@@ -500,7 +511,7 @@ def join_threads(threads):
         print(f"{str(t)} is now closed")
 
 if __name__ == "__main__":
-    # full_mock_test("PATH", '.csv', 11)          ################ Startar och avslutar en dataframe med fake-värden test
+    TEST_full_mock(settings["Save_path"], '.html', 20)          ################ Startar och avslutar en dataframe med fake-värden test
 
     # # Call this when stressed so the date and time match up on screenshot and stressed moment
     # dashboard.capture_screen()
