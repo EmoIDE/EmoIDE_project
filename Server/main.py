@@ -52,13 +52,13 @@ max_time = 20
 
 #extension settings
 settings = {
-    "extension": True,
+    "extension": False,
     "EEG": False,
-    "Eye tracker": False,
-    "E4": True,
+    "Eye tracker": True,
+    "E4": False,
     "Garmin": False,
-    "Save_path": 'D:\codez\EmoIDE_project\Server\Output',
-    "Save_format": '.csv'
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
+    "Save_format": '.html'
     }
 
 eeg_settings = {
@@ -69,7 +69,7 @@ eeg_settings = {
 calibration_done = {
     "Eye tracker": False,
     "EEG": True,
-    "E4": False,
+    "E4": True,
     "Dataframe": True
     }
 
@@ -83,7 +83,7 @@ def setup_server():
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")  
 
 #handles the connection to the extension
-def tcp_communication():                            ################ Socket timeout borttagen. Varför? - Nu stängs inte tråden av då den väntar på .recv()
+def tcp_communication():
     global extension_connected
     tcp_socket.settimeout(10)
     conn, client = tcp_socket.accept()
@@ -199,32 +199,45 @@ def get_eye_tracker_data():
     calibration_done["Eye tracker"] = True
 
     all_done = False
+    print("SCIENCE, YO")
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
+    print("emil är här")
     
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
 
-# GETTERS
-
-def get_eye_coordinates_in_time_range(start_time, end_time):
-    range_mask = (full_df["time"] >= datetime.datetime.strftime(start_time, format)) & (full_df["time"] <= datetime.datetime.strftime(end_time, format))
-    return full_df.loc[range_mask]
-
-
-
 # ---------------E4 DATA TRACKER---------------- #
 def get_e4_data():
+    #global calibration_done
     global e4_data_dict
-    
-    calibration_done["E4"] = False
 
     # init object
     e4 = E4_client.E4('127.0.0.1', 28000)
     # connect and start getting Bvp, Gsr and Hr data
     e4.E4_SS_connect()
     e4.start_subscriptions()
+
+    # POSSIBLE FUTURE SOLUTION                                                                  #############################
+    # e4_calibration = {
+    #     ["E4"]:True
+    # }
+    # calibration_done.update(e4_calibration)
+
+
+    # while e4.recieve_data()[0] == "":
+    #     pass
+    # calibration_done["E4"] = True
+
+    calibration_done["E4"] = True
+
+    all_done = False                                                                     ######################
+    print("HISTORY YEAH!")
+    while not all_done:
+        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+            all_done = True
+    print("e4 start recording")
 
     start = time.time()
     while time.time() - start < max_time:
@@ -236,7 +249,7 @@ def get_e4_data():
         # Om de nya värdena är tomma, ersätt inte till dataframen.
         if not hr == "":
             e4_data_dict["Pulse"] = hr[hr.find(":")+1:]
-            calibration_done["E4"] = True               # Calibration done                              ##### EJ TESTAT
+                   # Calibration done                              ##### EJ TESTAT
         if not bvp == "":
             e4_data_dict["Bvp"] = bvp[bvp.find(":")+1:]
         if not gsr == "":
@@ -256,7 +269,7 @@ def init_df():
     full_df = pd.DataFrame(dtype='object')
 
     time_dict = {
-        "time":0
+        "time":"0"
     }
 
     eye_data_dict = {
@@ -296,7 +309,7 @@ def update_dataframe():
     global full_df
     global max_time
     calibration_done["Dataframe"] = True
-    all_done = True                                                                     ######################
+    all_done = False                                                                     ######################
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -363,8 +376,14 @@ def save_df(df, path, save_as_ext = '.csv'):
         df.to_csv(str(path + "/" + filename), sep="\t")
     
     elif save_as_ext == '.html':
-        dashboard.create_dashboard(df)
-        print("ERROR - Save html not found")                            ###### Fixa till gamla spara html grejen ???? varför?
+        filename = filename + save_as_ext
+        html = df.to_html()
+  
+        # write html to file
+        text_file = open(str(path + "/" + filename), "w")
+        text_file.write(html)
+        text_file.close()
+        print("ERROR - Save html not found")
         
 
     elif save_as_ext == '.ods':
@@ -470,10 +489,11 @@ def TEST_full_mock(path, format, test_time):
 def start_threads():
     threads = []
     
-    print("Server thread starts")
-    com_thread = threading.Thread(target=tcp_communication, daemon=True)
-    com_thread.start()
-    threads.append(com_thread)
+    if settings["extension"] == True:
+        print("Server thread starts")
+        com_thread = threading.Thread(target=tcp_communication, daemon=True)
+        com_thread.start()
+        threads.append(com_thread)
 
     if settings["EEG"] == True:
         #start thread/-s needed for EEG
@@ -481,7 +501,7 @@ def start_threads():
         eeg_thread = threading.Thread(target=start_eeg)
         eeg_thread.start()
         threads.append(eeg_thread)
-    
+
     if settings["Eye tracker"] == True:
         #start thread/-s needed for Eye tracker
         print("Eye thread starts")
@@ -510,8 +530,20 @@ def join_threads(threads):
         t.join()
         print(f"{str(t)} is now closed")
 
+def make_dashboard():
+    global full_df
+
+    # Heatmap dashboard
+    dashboard.capture_screen(full_df["time"].iloc[-1])
+    dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
+    
+    # graphs
+    dashboard.create_dashboard(full_df)
+
+
+
 if __name__ == "__main__":
-    TEST_full_mock(settings["Save_path"], '.html', 20)          ################ Startar och avslutar en dataframe med fake-värden test
+    # TEST_full_mock(settings["Save_path"], '.html', 20)          ################ Startar och avslutar en dataframe med fake-värden test
 
     # # Call this when stressed so the date and time match up on screenshot and stressed moment
     # dashboard.capture_screen()
@@ -543,54 +575,7 @@ if __name__ == "__main__":
 
     #print(full_df.columns)
 
-#     dashboard.capture_screen(full_df["time"].iloc[-1])
-#     dashboard.create_heatmap(full_df["time"].iloc[-1])
+    make_dashboard()
     
     exit()
-
-
-
-
-
-
-
-#######
-# SKA VA I DASHBOARD, inte i save_df
-#renderar output_data.html utifrån template.html där man kan "koda" i html filen för 
-        # att få in data genom data objektet nedan. Enkelt sett att få in fina grafer o annat coolt.
-    
-        # output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Output'))
-        # env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
-        # template = env.get_template("template.html")
-        # excitement_list = df['Excitement'].tolist()
-        # engagement_list = df['Engagement'].tolist()
-        # long_excitement_list = df['Long term excitement'].tolist()
-        # stress_list = df['Stress/Frustration'].tolist()
-        # relaxation_list = df['Relaxation'].tolist()
-        # interest_list = df['Interest/Affinity'].tolist()
-        # focus_list = df['Focus'].tolist()
-        # pulse_list = df['Pulse'].tolist()
-        # index_list = df.index.tolist()
-
-
-        # data = {
-        #     'title': 'test',
-        #     'excitement_list': excitement_list,
-        #     'index_list': index_list,
-        #     'engagement_list': engagement_list,
-        #     'long_excitement_list': long_excitement_list,
-        #     'stress_list':stress_list,
-        #     'relaxation_list':relaxation_list,
-        #     'interest_list':interest_list,
-        #     'focus_list':focus_list,
-        #     'pulse_list':pulse_list,
-        # }
-        # html = template.render(data)
-        # filename = filename + save_as_ext
-  
-        # # write html to file
-        # with open(str(path + "/" + filename), "w") as f:
-        #     f.write(html)
-
-
 

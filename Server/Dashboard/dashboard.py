@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
-output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Output'))
+output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
 
 def create_dashboard(df):
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
@@ -51,18 +51,44 @@ def create_dashboard(df):
     pass
 
 
-def create_heatmap(moment_time):
-    from Server.main import get_eye_coordinates_in_time_range
-    # from Backend.main import get_eye_coordinates_in_time_range
 
+
+
+def get_df_in_time_range(start_time, end_time, df):
+    time_series = df["time"]
+    start_time_series = datetime.datetime.strftime(start_time, format)
+    end_time_series = datetime.datetime.strftime(end_time, format)
+    range_mask = (time_series >= start_time_series) & (time_series <= end_time_series)
+    return df.loc[range_mask]
+
+
+
+
+def create_heatmap(moment_time, df):
     # Pseudo code
     before_moment = datetime.datetime.strptime(moment_time, format) - datetime.timedelta(minutes=2)
 
-    x = get_eye_coordinates_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format))['x'].to_numpy()
-    y = get_eye_coordinates_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format))['y'].to_numpy()
+    x = get_df_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format), df)['x'].to_numpy()
+    y = get_df_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format), df)['y'].to_numpy()
+
+    resolution = (1920, 1080)
+
+    my_dpi = 96
+    fig = plt.figure(figsize=(resolution[0]/my_dpi,resolution[1]/my_dpi), dpi=my_dpi)
+    ax1 = fig.add_subplot(211)
+
+    ax1.pcolormesh(x, y, alpha=0.5)
+    ax1.set_xlim(0, resolution[0])
+    ax1.set_ylim(0, resolution[1])
+    ax1.show()
 
 
-    plt.hist2d(x,y, bins=[np.arange(0,400,5),np.arange(0,300,5)])
+    import plotly.express as px
+    df = pd.DataFrame({'x': x*resolution[0], 'y':y*resolution[1]})
+    fig = px.density_heatmap(df, x='x', y='y', xbins=resolution[0], ybins=resolution[1])
+    fig.show()
+
+    plt.hist2d(x*resolution[0],y*resolution[1], bins=[np.arange(0,resolution[0],1),np.arange(0,resolution[1],1)])
     # plt.set_cmap('plasma_r')
     # plt.set_cmap('gnuplot2_r')
     plt.set_cmap('CMRmap_r')
@@ -70,6 +96,7 @@ def create_heatmap(moment_time):
 
 
     heatmap_buf = io.BytesIO()
+    plt.show()
     plt.savefig(heatmap_buf, format='png', transparent=True)
 
     heatmap = Image.open(heatmap_buf)

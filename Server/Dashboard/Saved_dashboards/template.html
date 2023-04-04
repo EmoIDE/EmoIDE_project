@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>test</title>
+  <title>{{ title }}</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
@@ -35,6 +35,11 @@
       margin: 0 auto;
       padding: 20px;
       justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
     
 .chart-container {
@@ -95,21 +100,22 @@
 </body>
   
 <script>
+
   var ctx1 = document.getElementById('chart1');
       var chart1 = new Chart(ctx1, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Excitement',
-            data: [0,9,6,1,10,8,4,5,5,2,3,6,8,5,9,10,8,4,1,10,10,],
+            data: [{% for value in excitement_list %}{{ value }},{% endfor %}],
             borderColor: "#B22222"
           }]
         },
       options: {
       title: {
         display: true,
-        text: 'Dina känslor som vi kommer sälja till Kina för en förmögenhet.'
+        text: 'Dina kÃ¤nslor som vi kommer sÃ¤lja till Kina fÃ¶r en fÃ¶rmÃ¶genhet.'
       },
       scales: {
         x: {
@@ -125,14 +131,16 @@
       }
     }
       });
+
+
       var ctx2 = document.getElementById('chart2');
       var chart2 = new Chart(ctx2, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Engagement',
-            data: [0,9,5,4,2,0,0,10,3,7,1,0,5,8,4,8,9,6,9,7,0,],
+            data: [{% for value in engagement_list %}{{ value }},{% endfor %}],
             borderColor: "#4D81F0"
           }]
         },
@@ -155,14 +163,16 @@
       }
     }
       });
+
+
       var ctx3 = document.getElementById('chart3');
       var chart3 = new Chart(ctx3, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Long Term Excitement',
-            data: [0,10,4,9,2,6,10,6,4,0,5,0,8,5,9,6,6,8,7,5,1,],
+            data: [{% for value in long_excitement_list %}{{ value }},{% endfor %}],
             borderColor: "#FF69B4"
           }]
         },
@@ -185,14 +195,16 @@
       }
     }
       });
+
+
       var ctx4 = document.getElementById('chart4');
       var chart4 = new Chart(ctx4, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Stress',
-            data: [0,5,7,0,5,4,0,3,6,10,4,1,3,9,2,3,0,1,1,9,7,],
+            data: [{% for value in stress_list %}{{ value }},{% endfor %}],
             borderColor: "#FFFACD"
           }]
         },
@@ -215,14 +227,16 @@
       }
     }
       });
+
+
       var ctx5 = document.getElementById('chart5');
       var chart5 = new Chart(ctx5, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Relaxation',
-            data: [0,2,2,6,10,4,1,10,1,0,10,10,10,8,0,2,5,0,5,3,3,],
+            data: [{% for value in relaxation_list %}{{ value }},{% endfor %}],
             borderColor: "#FF7F50"
           }]
         },
@@ -245,14 +259,16 @@
       }
     }
       });
+
+
       var ctx6 = document.getElementById('chart6');
       var chart6 = new Chart(ctx6, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Interest',
-            data: [0,6,5,4,8,7,3,8,2,9,2,10,4,1,7,3,7,7,10,1,9,],
+            data: [{% for value in interest_list %}{{ value }},{% endfor %}],
             borderColor: "#D2F04D"
           }]
         },
@@ -275,14 +291,16 @@
       }
     }
       });
+
+
       var ctx7 = document.getElementById('chart7');
       var chart7 = new Chart(ctx7, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Focus',
-            data: [0,3,1,1,1,6,3,5,6,7,6,4,2,2,8,1,5,9,1,9,0,],
+            data: [{% for value in focus_list %}{{ value }},{% endfor %}],
             borderColor: "#4DF0B0"
           }]
         },
@@ -305,14 +323,16 @@
       }
     }
       });
+
+
       var ctx8 = document.getElementById('chart8');
       var chart8 = new Chart(ctx8, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Pulse',
-            data: [0,56,63,52,60,137,129,107,146,102,134,101,134,149,68,148,100,66,60,71,68,],
+            data: [{% for value in pulse_list %}{{ value }},{% endfor %}],
             borderColor: "#F95858"
           }]
         },
@@ -335,14 +355,16 @@
       }
     }
       });
+
+
       var ctx9 = document.getElementById('chart9');
       var chart9 = new Chart(ctx9, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Galvanic Skin Response',
-            data: [0,116,138,84,134,60,135,64,72,130,60,54,96,108,121,103,117,85,54,125,111,],
+            data: [{% for value in gsr_list %}{{ value }},{% endfor %}],
             borderColor: "#F958C3"
           }]
         },
@@ -365,14 +387,16 @@
       }
     }
       });
+
+
       var ctx10 = document.getElementById('chart10');
       var chart10 = new Chart(ctx10, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,],
+          labels: [{% for value in index_list %}{{ value }},{% endfor %}],
           datasets: [{
             label: 'Blood Volume Pulse',
-            data: [0,101,116,141,143,126,107,124,74,54,139,134,149,119,124,126,65,84,73,117,137,],
+            data: [{% for value in bvp_list %}{{ value }},{% endfor %}],
             borderColor: "#F9C158"
           }]
         },
