@@ -7,6 +7,7 @@ const { debug } = require('console');
 const vscode = require('vscode');
 const fs = require('fs');
 var net = require('net');
+const { promises } = require('dns');
 var client = new net.Socket();
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -14,6 +15,33 @@ const DevicesStatus = {"wristBand":false,"eyeTracker":false,"brainTracker":false
 /**
  * @param {vscode.ExtensionContext} context
  */
+
+
+class StatisticsDataProvider
+{
+	constructor()
+	{
+		this.data = [{
+			id: 'SAMStatus',
+			label:"shitty ass API shit not working",
+			collapsibleState: vscode.TreeItemCollapsibleState.None
+		  }];
+
+		this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+    }
+	getTreeItem(element) {
+		const treeItem = new vscode.TreeItem(element.label);
+		return treeItem;
+	}
+
+	getChildren(element) {
+		if (!element){
+			return Promise.resolve(this.data);
+		}
+		
+	}
+}
 
 class DevicesDataProvider {
 	constructor() {
@@ -81,6 +109,7 @@ class DevicesDataProvider {
   }
 
 const devices = new DevicesDataProvider();
+const stats = new StatisticsDataProvider();
 function activate(context) {
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
@@ -91,6 +120,7 @@ function activate(context) {
 
 	vscode.workspace.getConfiguration('')
 	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:devices})
+	const statsView = vscode.window.createTreeView("Stats",{treeDataProvider:stats})
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -122,7 +152,6 @@ function activate(context) {
 			connectToServer();
 			const gettingEyeData = setInterval(getCurrentPulse, 1000);
 		}),
-
 		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
 			//Insert command for connecting to server here
 
@@ -151,9 +180,6 @@ function activate(context) {
 			
 			
 		}),
-
-
-
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
 		// The code you place here will be executed every time your command is executed
 
@@ -164,23 +190,8 @@ function activate(context) {
 
 	context.subscriptions.push();
 }
-function getWebviewContent() {
-	return null
-	//Andvänd som placeholder tillsvidare
-
-	/*`<!DOCTYPE html>
-  <html lang="en">
-  <head>
-	  <meta charset="UTF-8">
-	  <meta name="viewport" co5ntent="width=device-width, initial-scale=1.0">
-	  <title>Cat Coding</title>
-  </head>
-  <body>
-	  <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-	  <h1>LOOK AT THIS CAT WOAW</h1>
-  </body>
-  </html>`;
-  */
+function getPlaceholderContent() {
+	return `<img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />`;
   }
   
   function connectToServer(){
