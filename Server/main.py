@@ -48,7 +48,7 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 100
+max_time = 70
 
 #extension settings
 settings = {
@@ -232,7 +232,6 @@ def get_e4_data():
     calibration_done["E4"] = True
 
     all_done = False                                                                     ######################
-    print("HISTORY YEAH!")
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -533,13 +532,16 @@ def make_dashboard():
     global full_df
 
     # Heatmap dashboard
-    dashboard.capture_screen(full_df["time"].iloc[-1])
-    dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
-    
+    try:
+        dashboard.capture_screen(full_df["time"].iloc[-1])
+        dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
+    except:
+        print("[ERROR] - heatmap failed")
     # graphs
-    dashboard.create_dashboard(full_df)
-
-
+    try:
+        dashboard.create_dashboard(full_df)
+    except:
+        print("[ERROR] - dashboard failed")
 
 if __name__ == "__main__":
     # TEST_full_mock(settings["Save_path"], '.html', 20)          ################ Startar och avslutar en dataframe med fake-värden test
