@@ -48,13 +48,13 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 70
+max_time = 30
 
 #extension settings
 settings = {
     "extension": True,
-    "EEG": False,
-    "Eye tracker": False,
+    "EEG": True,
+    "Eye tracker": True,
     "E4": True,
     "Garmin": False,
     "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
@@ -67,7 +67,7 @@ eeg_settings = {
 }
 
 calibration_done = {
-    "Eye tracker": True,
+    "Eye tracker": False,
     "EEG": True,
     "E4": True,
     "Dataframe": True
@@ -85,92 +85,97 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
-    tcp_socket.settimeout(50)
-    conn, client = tcp_socket.accept()
-    print(f"Connected to {client}")
-    extension_connected = True
-    start = time.time()
-    delta = 0
-    print(f"Connected to {client}")
-    while delta <= max_time:
-        delta = time.time() - start
-        data_received = conn.recv(1024).decode('utf-8')
-        if not data_received.strip():
-            break
-        json_data = json.loads(data_received)
-        recived_msg = json_data["function"]
-        # mest för att testa så klienten och servern kan kommunicera
+    try:
+        tcp_socket.settimeout(60)
         
-        if recived_msg == "ping":
-            print("ping")
-            data = {
-                "function": "ping",
-                }
-            data_json = json.dumps(data)
-            conn.sendall(data_json.encode('utf-8'))
-            print("Received a ping from the client & responded with pong.")
-
-        elif recived_msg == "getPulse":
-            print("hey")
-            pulse = e4_data_dict["Pulse"]
-            data = {
-                "function": "getCurrentPulse",
-                "data": pulse    #random.randint(80, 120)
-                }
-            data_json = json.dumps(data)
-            conn.sendall(data_json.encode('utf-8'))
-
-
-        elif recived_msg == "getEEG":
-            eeg = eeg_data_dict
-            #use real eeg data later
-            eeg_data = {
-                "function": "getEEGData",
-                "data": {
-                    "Engagement":random.random(),
-                    "Excitement":random.random(),
-                    "Long term excitement":random.random(),
-                    "Stress/Frustration":random.random(),
-                    "Relaxation":random.random(),
-                    "Interest/Affinity":random.random(),
-                    "Focus":random.random()
-                }
-
-            }
-            eeg_data_json = json.dumps(eeg_data)
+        conn, client = tcp_socket.accept()
+        print(f"Connected to {client}")
+        extension_connected = True
+        start = time.time()
+        delta = 0
+        print(f"Connected to {client}")
+        while delta <= max_time:
+            delta = time.time() - start
+            data_received = conn.recv(1024).decode('utf-8')
+            if not data_received.strip():
+                break
+            json_data = json.loads(data_received)
+            recived_msg = json_data["function"]
+            # mest för att testa så klienten och servern kan kommunicera
             
-            conn.sendall(eeg_data_json.encode('utf-8'))
+            if recived_msg == "ping":
+                print("ping")
+                data = {
+                    "function": "ping",
+                    }
+                data_json = json.dumps(data)
+                conn.sendall(data_json.encode('utf-8'))
+                print("Received a ping from the client & responded with pong.")
+
+            elif recived_msg == "getPulse":
+                print("hey")
+                pulse = e4_data_dict["Pulse"]
+                data = {
+                    "function": "getCurrentPulse",
+                    "data": pulse    #random.randint(80, 120)
+                    }
+                data_json = json.dumps(data)
+                conn.sendall(data_json.encode('utf-8'))
 
 
-        # new save location     # msg: "set_save_path: [SPACE] root/path/location"
-        elif "set_save_path:" in recived_msg:
-            path_pos = recived_msg.find("set_save_path:")
-            picked_path = recived_msg[path_pos+11:]             # hämtar alla tecken efter "set_save_path:"
-            settings["Save_path"] = picked_path
-        
-        # new format type for saved file
-        elif "set_save_format:" in recived_msg:
-            format_pos = recived_msg.find("set_save_format:")
-            picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
-            settings["Save_format"] = picked_format
+            elif recived_msg == "getEEG":
+                eeg = eeg_data_dict
+                #use real eeg data later
+                eeg_data = {
+                    "function": "getEEGData",
+                    "data": {
+                        "Engagement":random.random(),
+                        "Excitement":random.random(),
+                        "Long term excitement":random.random(),
+                        "Stress/Frustration":random.random(),
+                        "Relaxation":random.random(),
+                        "Interest/Affinity":random.random(),
+                        "Focus":random.random()
+                    }
+
+                }
+                eeg_data_json = json.dumps(eeg_data)
+                
+                conn.sendall(eeg_data_json.encode('utf-8'))
+
+
+            # new save location     # msg: "set_save_path: [SPACE] root/path/location"
+            elif "set_save_path:" in recived_msg:
+                path_pos = recived_msg.find("set_save_path:")
+                picked_path = recived_msg[path_pos+11:]             # hämtar alla tecken efter "set_save_path:"
+                settings["Save_path"] = picked_path
             
-    conn.close()
+            # new format type for saved file
+            elif "set_save_format:" in recived_msg:
+                format_pos = recived_msg.find("set_save_format:")
+                picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
+                settings["Save_format"] = picked_format
+                
+        conn.close()
+
+    except:
+        print("tcp error")
 
 async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
     global max_time
 
-    cortex_api = EEG.EEG()
-    await cortex_api.connect()
-    await cortex_api.setup()
+    #cortex_api = EEG.EEG()
+    #await cortex_api.connect()
+    #await cortex_api.setup()
     
     #wait for first message
     #await cortex_api.get_eeg_data()
 
     calibration_done["EEG"] = True
 
-    all_done = True
+    all_done = False
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -178,9 +183,20 @@ async def import_EEG_data():
     start = time.time()
     while time.time() - start < max_time:
         time.sleep(1)
-        eeg_data_dict = await cortex_api.get_eeg_data()
+        #eeg_data_dict = await cortex_api.get_eeg_data()
+        # random_num = random.random()
+        eeg_data_dict = {
+            "Engagement": random.random(),
+            "Excitement": random.random(),
+            "Long term excitement": random.random(),
+            "Stress/Frustration": random.random(),
+            "Relaxation": random.random(),
+            "Interest/Affinity": random.random(),
+            "Focus": random.random()
+        }
 
-    await cortex_api.end_session()
+
+    #await cortex_api.end_session()
 
 def start_eeg():
     asyncio.run(import_EEG_data())
@@ -194,16 +210,13 @@ def get_eye_tracker_data():
 
     eye_tracker = EyeTracker(1, max_time)
     eye_tracker.setup()
-    print("setup done")
     calibration_done["Eye tracker"] = True
 
     all_done = False
-    print("SCIENCE, YO")
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
-    print("emil är här")
-    
+    print("[RUNNING] - Eye tracker start recording")
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
 
@@ -320,7 +333,7 @@ def update_dataframe():
         time.sleep(1)
 
         # Clear terminal
-        #os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+        os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
         # time
         # time_dict["time"] = time.localtime()

@@ -90,7 +90,8 @@ class E4:
                 result = re.findall(pattern, i)
                 last_float = result[0]
             except:
-                print("[ERROR] - e4 data not available")
+                a = 1+1
+                #print("[ERROR] - e4 data not available")
             
             if id == "E4_Hr":
                 data_and_name = "Hr:" + last_float

@@ -45,7 +45,6 @@ class EyeTracker:
 
     def start_recording(self, dict):
         # Start recording data to cache
-        print("EYE TRACKER START RECORDING...")
         start = time.time()
         while time.time() - start < self.recording_length:
             self.store_to_cache(self.eye_tracker.get_gaze_position(), dict)
