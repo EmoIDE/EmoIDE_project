@@ -40,6 +40,12 @@
           "group": "navigation"
         },
         {
+          "command": "EmoIDE.connectToServer",
+          "when": "view == Devices",
+          "group": "navigation"
+          
+        },
+        {
           "command": "statusWindow.open",
           "when": "view == DataWindow",
           "group": "navigation"
@@ -91,8 +97,8 @@
       },
       {
         "command": "EmoIDE.connectToServer",
-        "title": "Connect to the server",
-        "icon": "Icons/connectIcon"
+        "title": "Try connecting to the server",
+        "icon": "$broadcast"
       },
       {
         "command": "EmoIDE.requestEyeData",

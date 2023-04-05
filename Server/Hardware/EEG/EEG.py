@@ -171,7 +171,7 @@ class EEG:
         await self.cortex.send(json.dumps(end_session_json))
         msg = await self.cortex.recv()
 
-        self.cortex.close()
+        await self.cortex.close() 
     
     
 

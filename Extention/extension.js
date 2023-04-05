@@ -15,6 +15,30 @@ const DevicesStatus = {"wristBand":false,"eyeTracker":false,"brainTracker":false
  * @param {vscode.ExtensionContext} context
  */
 
+class StatisticsDataProvider
+{
+	constructor()
+	{
+		this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+    }
+	getChildren(element)
+	{
+
+        if (element.label === 'Webview 1') {
+            // Return webview node
+            const panel = vscode.window.createWebviewPanel(
+                'SAMStatus',
+                'Emotional status',
+                vscode.ViewColumn.One,
+                {}
+            );
+			panel.webview.html = '<h1>Hello World from Webview 1!</h1>';
+
+		}
+	}
+}
+
 class DevicesDataProvider {
 	constructor() {
 	  // Define the items to display in the tree view
@@ -81,6 +105,8 @@ class DevicesDataProvider {
   }
 
 const devices = new DevicesDataProvider();
+const stats = new StatisticsDataProvider();
+
 function activate(context) {
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
@@ -91,6 +117,7 @@ function activate(context) {
 
 	vscode.workspace.getConfiguration('')
 	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:devices})
+	const treeViewStats = vscode.window.createTreeView("Stats",{treeDataProvider:stats})
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json

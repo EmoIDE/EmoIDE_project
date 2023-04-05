@@ -48,13 +48,13 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 100
+max_time = 20
 
 #extension settings
 settings = {
     "extension": True,
-    "EEG": False,
-    "Eye tracker": False,
+    "EEG": True,
+    "Eye tracker": True,
     "E4": True,
     "Garmin": False,
     "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
@@ -67,9 +67,9 @@ eeg_settings = {
 }
 
 calibration_done = {
-    "Eye tracker": True,
-    "EEG": True,
-    "E4": True,
+    "Eye tracker": False,
+    "EEG": False,
+    "E4": False,
     "Dataframe": True
     }
 
@@ -85,7 +85,7 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
-    tcp_socket.settimeout(50)
+    tcp_socket.settimeout(180)
     conn, client = tcp_socket.accept()
     print(f"Connected to {client}")
     extension_connected = True
@@ -533,12 +533,16 @@ def make_dashboard():
     global full_df
 
     # Heatmap dashboard
-    dashboard.capture_screen(full_df["time"].iloc[-1])
-    dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
-    
+    try:
+        dashboard.capture_screen(full_df["time"].iloc[-1])
+        dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
+    except:
+        print("[ERROR] - heatmap failed")
     # graphs
-    dashboard.create_dashboard(full_df)
-
+    try:
+        dashboard.create_dashboard(full_df)
+    except:
+        print("[ERROR] - dashboard failed")
 
 
 if __name__ == "__main__":
