@@ -48,17 +48,12 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 70
+max_time = 23
+SETTINGS_PATH = "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/settings.json"
+
 
 #extension settings
-settings = {
-    "extension": True,
-    "EEG": True,
-    "Eye tracker": True,
-    "E4": True,
-    "Garmin": False,
-    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
-    "Save_format": '.csv'
+settings_dict = {
     }
 
 eeg_settings = {
@@ -146,13 +141,13 @@ def tcp_communication():
         elif "set_save_path:" in recived_msg:
             path_pos = recived_msg.find("set_save_path:")
             picked_path = recived_msg[path_pos+11:]             # hämtar alla tecken efter "set_save_path:"
-            settings["Save_path"] = picked_path
+            settings_dict["Save_path"] = picked_path
         
         # new format type for saved file
         elif "set_save_format:" in recived_msg:
             format_pos = recived_msg.find("set_save_format:")
             picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
-            settings["Save_format"] = picked_format
+            settings_dict["Save_format"] = picked_format
             
     conn.close()
 
@@ -307,7 +302,7 @@ def update_dataframe():
     global full_df
     global max_time
     calibration_done["Dataframe"] = True
-    all_done = False                                                                     ######################
+    all_done = True                                                                     ######################
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -395,6 +390,13 @@ def save_df(df, path, save_as_ext = '.csv'):
     else:
         filename = filename + '.csv'
         df.to_csv(str(path + "/" + filename))
+
+
+def read_settings(settings_path):
+    global settings_dict
+    
+    with open(settings_path, "r") as wow:
+        settings_dict = json.load(wow)
 
 
 #### TESTFUNKTION
@@ -487,27 +489,27 @@ def TEST_full_mock(path, format, test_time):
 def start_threads():
     threads = []
     
-    if settings["extension"] == True:
+    if settings_dict["extension"] == True:
         print("Server thread starts")
         com_thread = threading.Thread(target=tcp_communication, daemon=True)
         com_thread.start()
         threads.append(com_thread)
 
-    if settings["EEG"] == True:
+    if settings_dict["EEG"] == True:
         #start thread/-s needed for EEG
         print("EEG thread starts")
         eeg_thread = threading.Thread(target=start_eeg)
         eeg_thread.start()
         threads.append(eeg_thread)
 
-    if settings["Eye tracker"] == True:
+    if settings_dict["Eye tracker"] == True:
         #start thread/-s needed for Eye tracker
         print("Eye thread starts")
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
     
-    if settings["E4"] == True:
+    if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
         print("E4 thread starts")
         e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
@@ -557,6 +559,9 @@ if __name__ == "__main__":
     # initiate global empty dataframe
     init_df()
 
+    # load settings from settings file
+    read_settings(SETTINGS_PATH)
+
     # start localy hosted server
     setup_server()
     # start all available hardware threads and return array of activated threads
@@ -569,8 +574,8 @@ if __name__ == "__main__":
     join_threads(threads)
 
     # Save dataframe to a path and with specified format
-    save_format = settings["Save_format"]
-    save_path = settings["Save_path"]
+    save_format = settings_dict["Save_format"]
+    save_path = settings_dict["Save_path"]
     #TEST_full_mock(save_path, save_format, 120)
     save_df(full_df, save_path, save_format)
 
