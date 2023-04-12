@@ -29,6 +29,12 @@
           "type": "string",
           "default": "null",
           "description": "Format of file when data is saved"
+        },
+        "Save Location":
+        {
+          "type": "string",
+          "default": "null",
+          "description": "Location to store the data from the server"
         }
       }
     },

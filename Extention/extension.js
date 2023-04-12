@@ -154,7 +154,7 @@ function activate(context) {
 		}),
 		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
 			//Insert command for connecting to server here
-
+			
 			//If connection sucessfull, set value to True
 			if (devices[deviceId] == true)
 			{
