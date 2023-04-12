@@ -546,16 +546,6 @@ def make_dashboard():
         print("[ERROR] - dashboard failed")
 
 if __name__ == "__main__":
-    # TEST_full_mock(settings["Save_path"], '.html', 20)          ################ Startar och avslutar en dataframe med fake-värden test
-
-    # # Call this when stressed so the date and time match up on screenshot and stressed moment
-    # dashboard.capture_screen()
-    # # At end of session, or when you want to create dashboard call this, or maybe call it in the begining and have functions that updates it from here (or something)
-    # dashboard.create_dashboard()
-    # # Or create heatmap when you want, and it will save it in the Dashboard/Heatmaps folder
-    # dashboard.create_heatmap(moment)
-
-
     # initiate global empty dataframe
     init_df()
 
@@ -576,7 +566,6 @@ if __name__ == "__main__":
     # Save dataframe to a path and with specified format
     save_format = settings_dict["Save_format"]
     save_path = settings_dict["Save_path"]
-    #TEST_full_mock(save_path, save_format, 120)
     save_df(full_df, save_path, save_format)
 
     #print(full_df.columns)
