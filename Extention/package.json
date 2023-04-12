@@ -53,7 +53,7 @@
         },
         {
           "command": "statusWindow.open",
-          "when": "view == Stats",
+          "when": "view == DataWindow",
           "group": "navigation"
         }
       ]
@@ -70,12 +70,13 @@
     "views": {
       "EmoIDE": [
         {
-          "id": "Stats",
+          "id": "DataWindow",
           "name": "Data"
         },
         {
           "id": "Devices",
           "name": "Devices",
+          "icon": "Icons/Logo.png",
           "canToggleVisibility": true
         }
       ]
@@ -102,17 +103,13 @@
       },
       {
         "command": "EmoIDE.connectToServer",
-        "title": "Connect to the server",
-        "icon": "$(broadcast)"
+        "title": "Try connecting to the server",
+        "icon": "$broadcast"
       },
       {
         "command": "EmoIDE.requestEyeData",
         "title": "Requests eye data from the server every x seconds.",
         "icon": "Icons/eyeDataIcon"
-      },
-      {
-        "command": "EmoIDE.ShowSAMStatus",
-        "title": "Shows a webview of the SAM status"
       }
     ]
   },
