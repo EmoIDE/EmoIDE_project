@@ -11,7 +11,7 @@
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
-from Hardware.E4 import E4_Object
+from Hardware.E4 import E4_client
 from ML import Pop_up
 
 # imports
@@ -55,8 +55,8 @@ settings = {
     "E4": False,
     "Garmin": False,
     "Record data": True,
-    "Save_path": 'C:/Users/sebastian.johanss11/Desktop/Python grejer/EmoIDE_project_data_collection/Server/Output/training',
-    "Save_format": '.tsv'
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
+    "Save_format": '.csv'
     }
 
 eeg_settings = {
