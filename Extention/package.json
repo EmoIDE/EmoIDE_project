@@ -12,38 +12,47 @@
   ],
   "main": "./extension.js",
   "contributes": {
-    "configuration":{
+    "configuration": {
       "title": "EmoIDE",
       "properties": {
-        "Age":
-        {
+        "Age": {
           "type": "string",
           "default": "NA",
           "description": "The age of the user"
         },
-        "Base Pulse":
-        {
+        "Base Pulse": {
           "type": "integer",
-          "default":100,
+          "default": 100,
           "description": "Resting pulse of user as point of reference"
         },
-        "File Format":
-        {
+        "File Format": {
           "type": "string",
           "default": "null",
           "description": "Format of file when data is saved"
+        },
+        "Save Location":
+        {
+          "type": "string",
+          "default": "null",
+          "description": "Location to store the data from the server"
+        }
       }
-    }
     },
     "menus": {
       "view/title": [
         {
-          "command":"EmoIDE.showSettings",
+          "command": "EmoIDE.showSettings",
           "when": "view == Devices",
           "group": "navigation"
         },
         {
-          "command":"statusWindow.open",
+          "command": "EmoIDE.connectToServer",
+          "when": "view == Devices",
+          "group": "navigation"
+          
+        },
+        {
+          "command": "statusWindow.open",
           "when": "view == DataWindow",
           "group": "navigation"
         }
@@ -58,7 +67,7 @@
         }
       ]
     },
-    "views":{
+    "views": {
       "EmoIDE": [
         {
           "id": "DataWindow",
@@ -70,43 +79,39 @@
           "icon": "Icons/Logo.png",
           "canToggleVisibility": true
         }
-      ],
-      "explorer": [
-        {"id": "deviceExplorer",
-         "name":  "EmoIDE",
-         "command":"statusWindow.open",
-         "contextualTitle": "Package Explorer"
-        }]
+      ]
+    },
+    "commands": [
+      {
+        "command": "emoide.BreakNotif",
+        "title": "take a break!",
+        "category": "notification"
       },
-    "commands": [{
-      "command": "emoide.BreakNotif",
-      "title": "take a break!",
-      "category": "notification" 
-    },
-    {
-      "command": "statusWindow.open",
-      "title": "Open status window",
-      "icon": "$(graph-line)"
-    },
-    {
-      "command": "EmoIDE.showSettings",
-      "title": "Open User Settings",
-      "icon": "Icons/settingsIcon"
-    },
-    {
-      "command": "EmoIDE.ConnectToDevice",
-      "title": "Connect to device specified in parameter"
-    },
-    {
-      "command": "EmoIDE.connectToServer",
-      "title": "Connect to the server",
-      "icon": "Icons/connectIcon"
-    },
-    {
-      "command": "EmoIDE.requestEyeData",
-      "title": "Requests eye data from the server every x seconds.",
-      "icon": "Icons/eyeDataIcon"
-    }]
+      {
+        "command": "statusWindow.open",
+        "title": "Open status window",
+        "icon": "$(graph-line)"
+      },
+      {
+        "command": "EmoIDE.showSettings",
+        "title": "Open User Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "EmoIDE.ConnectToDevice",
+        "title": "Connect to device specified in parameter"
+      },
+      {
+        "command": "EmoIDE.connectToServer",
+        "title": "Try connecting to the server",
+        "icon": "$broadcast"
+      },
+      {
+        "command": "EmoIDE.requestEyeData",
+        "title": "Requests eye data from the server every x seconds.",
+        "icon": "Icons/eyeDataIcon"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
@@ -114,17 +119,27 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "node ./test/runTest.js"
+    "test": "node ./test/runTest.js",
+    "start": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@vscode/test-electron": "^2.2.2",
     "eslint": "^8.33.0",
     "glob": "^8.1.0",
     "mocha": "^10.1.0",
-    "typescript": "^4.9.4",
-    "@vscode/test-electron": "^2.2.2"
-  }
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "vscode": "^1.1.37"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

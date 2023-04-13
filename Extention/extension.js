@@ -15,6 +15,30 @@ const DevicesStatus = {"wristBand":false,"eyeTracker":false,"brainTracker":false
  * @param {vscode.ExtensionContext} context
  */
 
+class StatisticsDataProvider
+{
+	constructor()
+	{
+		this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+    }
+	getChildren(element)
+	{
+
+        if (element.label === 'Webview 1') {
+            // Return webview node
+            const panel = vscode.window.createWebviewPanel(
+                'SAMStatus',
+                'Emotional status',
+                vscode.ViewColumn.One,
+                {}
+            );
+			panel.webview.html = '<h1>Hello World from Webview 1!</h1>';
+
+		}
+	}
+}
+
 class DevicesDataProvider {
 	constructor() {
 	  // Define the items to display in the tree view
@@ -81,6 +105,8 @@ class DevicesDataProvider {
   }
 
 const devices = new DevicesDataProvider();
+const stats = new StatisticsDataProvider();
+
 function activate(context) {
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
@@ -91,6 +117,7 @@ function activate(context) {
 
 	vscode.workspace.getConfiguration('')
 	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:devices})
+	const treeViewStats = vscode.window.createTreeView("Stats",{treeDataProvider:stats})
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -102,9 +129,11 @@ function activate(context) {
 			'statusWindow.open', // Identifies the type of the webview. Used internally
 			'Status', // Title of the panel displayed to the user
 			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-			{} // Webview options. More on these later.
+			{
+				enableScripts: true
+			} // Webview options. More on these later.
 		  );
-		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Output/output_data.html");
+		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/dashboard.html");
 		  const fileUri = vscode.Uri.file(onDiskPath.path);
 
 		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
@@ -118,11 +147,12 @@ function activate(context) {
 	
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
 			connectToServer();
+			const gettingEyeData = setInterval(getCurrentPulse, 1000);
 		}),
 
 		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
 			//Insert command for connecting to server here
-
+			
 			//If connection sucessfull, set value to True
 			if (devices[deviceId] == true)
 			{
@@ -149,9 +179,7 @@ function activate(context) {
 			
 		}),
 
-		vscode.commands.registerCommand('EmoIDE.requestEyeData', () => {
-			const gettingEyeData = setInterval(getEyeData, 1000);
-		}),
+
 
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
 		// The code you place here will be executed every time your command is executed
@@ -171,7 +199,7 @@ function getWebviewContent() {
   <html lang="en">
   <head>
 	  <meta charset="UTF-8">
-	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <meta name="viewport" co5ntent="width=device-width, initial-scale=1.0">
 	  <title>Cat Coding</title>
   </head>
   <body>
@@ -187,21 +215,33 @@ function getWebviewContent() {
 		console.log('Connected');
 		var json_data = {"function": "ping"}
 		client.write(JSON.stringify(json_data));
+		
 	});
 };
 
-function getEyeData(){
-	var json_data = {"function": "getEyeData"}
+
+
+function getCurrentPulse(){
+	var json_data = {"function": "getPulse"}
 	client.write(JSON.stringify(json_data));
 }
 client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]
 	if (type_of_data == "ping") {
+		console.log("ping funka");
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
-		vscode.window.showInformationMessage('received ping');
+		//vscode.window.showInformation Message('received ping');
 	}
+	if (type_of_data == "getCurrentPulse") {
+		//gör något med infon som servern skickar
+		//sparar/visar data på något snyggt sätt
+		console.log("ss");
+		var pulse = json_data["data"]
+		statusbarPulse.text = "$(pulse)" + pulse.toString();
+	}
+
 
 });
 client.on('close', function() {
