@@ -360,12 +360,14 @@ def update_dataframe():
         full_data_dic.update(e4_data_dict)
         
         # Training
+        training_time = 10
+
         if settings_dict["Training"] == True:
             if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
                 training_dict["Initial pulse"] = e4_data_dict["Pulse"]
-            if time.time() - data_collection_timer > 10:
-                training_dict["Arousal"] = Pop_up.test_arousal()
-                training_dict["Valence"] = Pop_up.test_valence()
+            if time.time() - data_collection_timer > training_time:
+                training_dict["Arousal"] = Pop_up.test_arousal() + 1
+                training_dict["Valence"] = Pop_up.test_valence() + 1
                 data_collection_timer = time.time()
             full_data_dic.update(training_dict)
             training_dict["Valence"] = None
