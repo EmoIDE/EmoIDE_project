@@ -2,12 +2,16 @@ from re import S
 import socket
 import time
 import re
+import neurokit2 as nk
 
 class E4:
     def __init__(self, ip :str, port : int) -> None:
         self.server_ip = ip
         self.server_port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
+
+        self.EDA_signal = []
+        self.EDA_timer = 0
             # tcp socket är en steam of data
 
 
@@ -115,7 +119,24 @@ class E4:
                 bvp = j
             elif id == "Gsr":
                 gsr = j
+        
+        # print(gsr)
+        if time.time() - self.EDA_timer > 0.5 and gsr != "":
+
+            gsr_string = gsr[gsr.find(":")+1:]
+            self.EDA_signal.append(float(gsr_string.replace(",", ".")))
+            if len(self.EDA_signal) > 10:
+                signals, info = nk.eda_process(self.EDA_signal, sampling_rate=2)
+                cleaned = signals["EDA_Clean"]
+                # print(type(cleaned))
+                # print(cleaned)
+                data = nk.eda_phasic(nk.standardize(cleaned), sampling_rate=2)
+                # print(type(data))
+                # print(data)
+            self.EDA_timer = time.time()
+
         ret_arr = [hr, bvp, gsr]
+
 
         return ret_arr
     
@@ -169,3 +190,16 @@ class E4:
 # ['Hr:63,99702', 'Bvp:50,02826', 'Gsr:0,04481689']
 # ['Hr:66,20383', 'Bvp:50,46475', 'Gsr:0,04993882']
 # ['Hr:61,93262', 'Bvp:27,19405', 'Gsr:0,04993882']
+
+e4 = E4('127.0.0.1', 28000)
+
+start = time.time()
+delta = 0
+e4.E4_SS_connect()
+e4.start_subscriptions()
+while delta < 20:
+    arr = e4.recieve_data()
+    # print(arr)
+    # bvp = arr[1]
+    # print(bvp[bvp.find(":"):])
+    delta = time.time() - start 

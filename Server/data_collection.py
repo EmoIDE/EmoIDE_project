@@ -11,7 +11,7 @@
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
-from Hardware.E4 import E4_Object
+from Hardware.E4 import E4_client
 from ML import Pop_up
 
 # imports
@@ -50,7 +50,7 @@ max_time = 20
 #extension settings
 settings = {
     "extension": False,
-    "EEG": False,
+    "EEG": True,
     "Eye tracker": False,
     "E4": False,
     "Garmin": False,
