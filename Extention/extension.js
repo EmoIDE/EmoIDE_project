@@ -22,20 +22,13 @@ class StatisticsDataProvider
 		this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }
+	getTreeItem(element){
+		return element;
+	}
 	getChildren(element)
 	{
 
-        if (element.label === 'Webview 1') {
-            // Return webview node
-            const panel = vscode.window.createWebviewPanel(
-                'SAMStatus',
-                'Emotional status',
-                vscode.ViewColumn.One,
-                {}
-            );
-			panel.webview.html = '<h1>Hello World from Webview 1!</h1>';
-
-		}
+       return element
 	}
 }
 
@@ -109,6 +102,16 @@ const stats = new StatisticsDataProvider();
 
 function activate(context) {
 
+	var SAMViewProvider ={
+        resolveWebviewView:function(thisWebview, thisWebviewContext, thisToken){
+            thisWebview.webview.options={enableScripts:true}
+            thisWebview.webview.html=`<!DOCTYPE html>
+			<html lang="en"><img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" /></html>`;
+        }
+	};
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider)); //Rutan som visar SAM Status
+
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
 	statusbarPulse.command = "statusWindow.open";
 	statusbarPulse.text = "$(pulse) 0";
@@ -117,7 +120,7 @@ function activate(context) {
 
 	vscode.workspace.getConfiguration('')
 	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:devices})
-	const treeViewStats = vscode.window.createTreeView("Stats",{treeDataProvider:stats})
+	const treeViewStats = vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -139,6 +142,7 @@ function activate(context) {
 		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
 		  
 		}),
+		
 
 		vscode.commands.registerCommand('EmoIDE.showSettings', () => {
 			// Open the settings editor
@@ -182,14 +186,9 @@ function activate(context) {
 
 
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
 		vscode.window.showInformationMessage('We recommend taking a break ☕');
 	})
 	);
-
-	context.subscriptions.push();
 }
 function getWebviewContent() {
 	return null

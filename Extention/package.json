@@ -12,32 +12,121 @@
   ],
   "main": "./extension.js",
   "contributes": {
-    "configuration": {
-      "title": "EmoIDE",
-      "properties": {
-        "Age": {
-          "type": "string",
-          "default": "NA",
-          "description": "The age of the user"
-        },
-        "Base Pulse": {
-          "type": "integer",
-          "default": 100,
-          "description": "Resting pulse of user as point of reference"
-        },
-        "File Format": {
-          "type": "string",
-          "default": "null",
-          "description": "Format of file when data is saved"
-        },
-        "Save Location":
+    
+    
+    "configuration": [
+      
+      {
+        "activationEvents": [
+          "onView:SAMView"
+      ],
+        "type": "object",
+        "title": "Extension",
+        "properties": {
+         
+          "Extension.ServerPort":{
+            "type":"string",
+            "default": "6969",
+            "description": "Server Port for the python server"
+          },
+
+          "Extension.FileFormat": {
+            "type": "string",
+            "default": ".csv",
+            "enum": [".pdf", ".tsv",".html",".ods", ".xlxs", ".csv"],
+            "description": "Format of file when data is saved"
+          },
+
+          "Extension.SaveLocation":
+          {
+            "type": "string",
+            "default": "null",
+            "description": "Location to store the data from the server"
+          },
+
+          "Extension.DonateData":{
+            "type":"boolean",
+            "default": "off",
+            "enum": ["on","off"],
+            "description": "Donate your to data to the machine learning model"
+          },
+
+          "Extension.Pop-ups":{
+            "type":"boolean",
+            "default":"on",
+            "enum": ["on","off"],
+            "description": "Turn on or off pop-ups"
+          },
+
+          "Extension.DashboardThreshold":{
+            "description": "Placeholder"
+          }
+         }
+      
+      },
+      
         {
-          "type": "string",
-          "default": "null",
-          "description": "Location to store the data from the server"
+          "type": "object",
+          "title": "Hardware",
+            "properties": {
+              "Hardware.E4StreamingPort": {
+                "type":"string",
+                "default":"28000",
+                "description": "E4 streaming server port"
+              },
+
+              "Hardware.EyeTrackerCalibration":{
+                "type":"boolean",
+                "default":"on",
+                "enum": ["on","off"],
+                "description": "Disable or activate eye tracker calibration. Disabling calibration may increase startup time"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "User",
+              "properties": {
+                "User.Age":{
+                  "type": "integer",
+                  "default":0,
+                  "minimum": 0,
+                  "description": "Age of the user" 
+                },
+                
+                "User.Gender":{
+                  "type": "string",
+                  "default": "null",
+                  "enum": ["male","female"]
+                },
+
+                "User.RestingHeartRate":{
+                  "type":"integer",
+                  "default":70,
+                  "minimum": 0
+                },
+
+                "User.Glasses":{
+                  "type": "string",
+                  "default": "no",
+                  "enum": ["yes", "no"],
+                  "markdownDescription": "Are you using glasses?"
+                }
+            }
         }
-      }
-    },
+      ],
+
+      
+
+          
+      
+
+      
+  
+
+
+
+
     "menus": {
       "view/title": [
         {
@@ -53,7 +142,7 @@
         },
         {
           "command": "statusWindow.open",
-          "when": "view == DataWindow",
+          "when": "view == SAMView",
           "group": "navigation"
         }
       ]
@@ -70,7 +159,8 @@
     "views": {
       "EmoIDE": [
         {
-          "id": "DataWindow",
+          "type":"webview",
+          "id": "SAMView",
           "name": "Data"
         },
         {
@@ -104,7 +194,7 @@
       {
         "command": "EmoIDE.connectToServer",
         "title": "Try connecting to the server",
-        "icon": "$broadcast"
+        "icon": "$(broadcast)"
       },
       {
         "command": "EmoIDE.requestEyeData",
