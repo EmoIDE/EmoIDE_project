@@ -50,12 +50,12 @@ max_time = 20
 #extension settings
 settings = {
     "extension": False,
-    "EEG": False,
-    "Eye tracker": False,
-    "E4": False,
+    "EEG": True,
+    "Eye tracker": True,
+    "E4": True,
     "Garmin": False,
     "Record data": True,
-    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export',
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Trainging_output',
     "Save_format": '.csv'
     }
 
