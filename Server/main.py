@@ -17,23 +17,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 from Hardware.E4 import E4_client
+from ML import Pop_up
 import Dashboard.dashboard as dashboard
 
 # imports
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import threading
 import time
-from datetime import datetime
 import socket
 import asyncio
 import json
+from datetime import datetime
+from matplotlib.backends.backend_pdf import PdfPages
 
 # FOR TESTING
 import random
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 
 
 
@@ -48,13 +48,18 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 23
+max_time = 20
 SETTINGS_PATH = "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/settings.json"
 
 
 #extension settings
 settings_dict = {
+    
     }
+
+training_dict = {
+
+}
 
 eeg_settings = {
     "client_id": "",
@@ -258,6 +263,7 @@ def init_df():
     global e4_data_dict
     global full_data_dict
     global full_df
+    global training_dict
 
     full_df = pd.DataFrame(dtype='object')
 
@@ -289,6 +295,23 @@ def init_df():
         "Gsr": 0
     }
 
+    if settings_dict["Training"] == True:
+        training_dict = {
+            "Name":"Jane Doe",
+            "Age": None,
+            "Initial pulse": None,
+            "Arousal": None,
+            "Valence": None,
+            "Gender" : None
+        }
+        
+        training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
+        training_dict["Age"] = Pop_up.get_age()
+        training_dict["Gender"] = Pop_up.get_gender()
+        training_dict["Arousal"] = Pop_up.test_arousal()
+        training_dict["Valence"] = Pop_up.test_valence()
+        full_data_dict.update(training_dict)
+
     full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
@@ -306,6 +329,8 @@ def update_dataframe():
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
+
+    data_collection_timer = time.time()
 
     start = time.time()
     delta = 0
@@ -333,8 +358,21 @@ def update_dataframe():
         # Eeg
         full_data_dic.update(eeg_data_dict)
 
+        # E4
         full_data_dic.update(e4_data_dict)
         
+        # Training
+        if settings_dict["Training"] == True:
+            if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
+                training_dict["Initial pulse"] = e4_data_dict["Pulse"]
+            if time.time() - data_collection_timer > 10:
+                training_dict["Arousal"] = Pop_up.test_arousal()
+                training_dict["Valence"] = Pop_up.test_valence()
+                data_collection_timer = time.time()
+            full_data_dic.update(training_dict)
+            training_dict["Valence"] = None
+            training_dict["Arousal"] = None
+
         # dataframe
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
 
@@ -343,6 +381,10 @@ def update_dataframe():
 
 def save_df(df, path, save_as_ext = '.csv'):
     filename = 'output_data'    # get last part of path
+
+    if settings_dict["Training"] == True:
+        filename += "_"
+        filename += training_dict["Name"]
 
     # checks if path exists on comupter
     if not (os.path.exists(path)):
@@ -546,11 +588,11 @@ def make_dashboard():
         print("[ERROR] - dashboard failed")
 
 if __name__ == "__main__":
-    # initiate global empty dataframe
-    init_df()
-
     # load settings from settings file
     read_settings(SETTINGS_PATH)
+
+    # initiate global empty dataframe
+    init_df()
 
     # start localy hosted server
     setup_server()

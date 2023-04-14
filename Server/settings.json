@@ -1,1 +1,10 @@
-{"extension": false, "EEG": false, "Eye tracker": false, "E4": false, "Garmin": false, "Save_path": "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Export", "Save_format": ".csv"}
+{
+    "extension": false, 
+    "EEG": false, 
+    "Eye tracker": false, 
+    "E4": false, 
+    "Garmin": false, 
+    "Save_path": "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Training_output", 
+    "Save_format": ".csv",
+    "Training": true
+}
