@@ -11,7 +11,7 @@
 from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
-from Hardware.E4 import E4_Object
+from Hardware.E4 import E4_client
 from ML import Pop_up
 
 # imports
