@@ -12,6 +12,7 @@ from Hardware.EEG import EEG
 from Hardware.Eyetracker.eyetracker import EyeTracker
 
 from Hardware.E4 import E4_client
+from Hardware.E4 import E4_client
 from ML import Pop_up
 
 # imports
@@ -51,12 +52,12 @@ max_time = 20
 settings = {
     "extension": False,
     "EEG": True,
-    "Eye tracker": False,
-    "E4": False,
+    "Eye tracker": True,
+    "E4": True,
     "Garmin": False,
     "Record data": True,
-    "Save_path": 'C:/Users/sebastian.johanss11/Desktop/Python grejer/EmoIDE_project_data_collection/Server/Output/training',
-    "Save_format": '.tsv'
+    "Save_path": 'C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Trainging_output',
+    "Save_format": '.csv'
     }
 
 eeg_settings = {
