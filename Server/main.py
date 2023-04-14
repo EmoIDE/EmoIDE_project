@@ -54,11 +54,9 @@ SETTINGS_PATH = "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/settings.
 
 #extension settings
 settings_dict = {
-    
     }
 
 training_dict = {
-
 }
 
 eeg_settings = {
@@ -589,7 +587,10 @@ def make_dashboard():
 
 if __name__ == "__main__":
     # load settings from settings file
-    read_settings(SETTINGS_PATH)
+    try:
+        read_settings(SETTINGS_PATH)
+    except:
+        print("settings filepath not found")
 
     # initiate global empty dataframe
     init_df()
