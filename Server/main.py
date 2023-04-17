@@ -48,8 +48,8 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 20
-SETTINGS_PATH = "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/settings.json"
+max_time = 1200
+SETTINGS_PATH = "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/settings.json"
 
 
 #extension settings
@@ -228,11 +228,11 @@ def get_e4_data():
     # calibration_done["E4"] = True
 
     calibration_done["E4"] = True
-
+    print("Jag sker")
     all_done = False                                                                     ######################
-    while not all_done:
-        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
-            all_done = True
+    # while not all_done:
+    #     if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+    #         all_done = True
     print("e4 start recording")
 
     start = time.time()
@@ -244,8 +244,9 @@ def get_e4_data():
 
         # Om de nya värdena är tomma, ersätt inte till dataframen.
         if not hr == "":
-            e4_data_dict["Pulse"] = hr[hr.find(":")+1:]
-                   # Calibration done                              ##### EJ TESTAT
+            hr_string = hr[hr.find(":")+1:]
+            if float(hr_string.replace(",", ".")) > 20:
+                e4_data_dict["Pulse"] = hr_string            ##### EJ TESTAT
         if not bvp == "":
             e4_data_dict["Bvp"] = bvp[bvp.find(":")+1:]
         if not gsr == "":
@@ -360,7 +361,7 @@ def update_dataframe():
         full_data_dic.update(e4_data_dict)
         
         # Training
-        training_time = 10
+        training_time = 300
 
         if settings_dict["Training"] == True:
             if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
@@ -517,7 +518,7 @@ def TEST_create_mock_dataframe(test_time):
         mock_full_df = mock_full_df.append(full_data_dict, ignore_index = True)
 
         # Print in terminal
-        os.system('cls' if os.name == 'nt' else 'clear')
+        # os.system('cls' if os.name == 'nt' else 'clear')
         print(f"{mock_full_df}\n--------------------------------")
 
     return mock_full_df
