@@ -125,12 +125,12 @@ class E4:
 
             gsr_string = gsr[gsr.find(":")+1:]
             self.EDA_signal.append(float(gsr_string.replace(",", ".")))
-            if len(self.EDA_signal) > 10:
-                signals, info = nk.eda_process(self.EDA_signal, sampling_rate=2)
-                cleaned = signals["EDA_Clean"]
+            #if len(self.EDA_signal) > 10:
+                #signals, info = nk.eda_process(self.EDA_signal, sampling_rate=2)
+                #cleaned = signals["EDA_Clean"]
                 # print(type(cleaned))
                 # print(cleaned)
-                data = nk.eda_phasic(nk.standardize(cleaned), sampling_rate=2)
+                #data = nk.eda_phasic(nk.standardize(cleaned), sampling_rate=2)
                 # print(type(data))
                 # print(data)
             self.EDA_timer = time.time()
