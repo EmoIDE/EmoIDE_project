@@ -532,6 +532,8 @@ def TEST_full_mock(path, format, test_time):
 def start_threads():
     threads = []
     
+    
+
     if settings_dict["extension"] == True:
         print("Server thread starts")
         com_thread = threading.Thread(target=tcp_communication, daemon=True)
@@ -559,6 +561,15 @@ def start_threads():
         e4_thread.start()
         threads.append(e4_thread)
     
+    # Heatmap thread - Create gif
+    start_gif_thread = False                                                    ############## STARTA NÄR MAN VILL TESTA GIF CREATION I DASHBOARD
+    if start_gif_thread == True:
+        print("GIF thread starts")
+        gif_thread = threading.Thread(target=capture_gif, daemon=True)
+        gif_thread.start()
+        threads.append(df_thread)
+
+    # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
     df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
@@ -572,6 +583,11 @@ def join_threads(threads):
         print(f"----------  Joining {str(t)}  --------------")
         t.join()
         print(f"{str(t)} is now closed")
+
+
+def capture_gif():                                          ################### EJ TESTAD???
+    dashboard.heatmap_thread()
+
 
 def make_dashboard():
     global full_df
