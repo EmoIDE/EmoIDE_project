@@ -200,37 +200,37 @@ class EEG:
 
 
     async def get_eeg_data(self):
-        # data_arr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        # try:
-        #     data = await self.cortex.recv()
-        #     data_arr = json.loads(data)["met"]
-        # except:
-        #     pass
+        data_arr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        try:
+            data = await self.cortex.recv()
+            data_arr = json.loads(data)["met"]
+        except:
+            pass
             
-        # EEG_data_dict = {
-        #     "Engagement": data_arr[1],
-        #     "Excitement": data_arr[3],
-        #     "Long term excitement": data_arr[4],
-        #     "Stress/Frustration" : data_arr[6],
-        #     "Relaxation": data_arr[8],
-        #     "Interest/Affinity": data_arr[10],
-        #     "Focus": data_arr[12]
-        # }
-
-        #print(EEG_data_dict)
-        #return EEG_data_dict
-        eeg_data_dict = {
-            "Engagement":random.random(),
-            "Excitement":random.random(),
-            "Long term excitement":random.random(),
-            "Stress/Frustration":random.random(),
-            "Relaxation":random.random(),
-            "Interest/Affinity":random.random(),
-            "Focus":random.random()
+        EEG_data_dict = {
+            "Engagement": data_arr[1],
+            "Excitement": data_arr[3],
+            "Long term excitement": data_arr[4],
+            "Stress/Frustration" : data_arr[6],
+            "Relaxation": data_arr[8],
+            "Interest/Affinity": data_arr[10],
+            "Focus": data_arr[12]
         }
 
+        print(EEG_data_dict)
+        return EEG_data_dict
+        # eeg_data_dict = {
+        #     "Engagement":random.random(),
+        #     "Excitement":random.random(),
+        #     "Long term excitement":random.random(),
+        #     "Stress/Frustration":random.random(),
+        #     "Relaxation":random.random(),
+        #     "Interest/Affinity":random.random(),
+        #     "Focus":random.random()
+        # }
 
-        return eeg_data_dict
+
+        # return eeg_data_dict
 
 
 
