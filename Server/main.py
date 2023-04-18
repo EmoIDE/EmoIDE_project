@@ -4,7 +4,6 @@
 # (╯°Д°)╯︵/(.□ . \)
 #HAHAHAHAHHA123
 # ( ͡° ͜ʖ ͡°)
-#
 ## THE VOICES
 #Wake up
 import os
@@ -48,8 +47,8 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 1200
-SETTINGS_PATH = "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/settings.json"
+max_time = 1800
+SETTINGS_PATH = "C:/Users/power/Documents/GitHub/EmoIDE_project/Server/settings.json"
 
 
 #extension settings

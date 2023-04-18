@@ -2,9 +2,9 @@
     "extension": false, 
     "EEG": true, 
     "Eye tracker": false, 
-    "E4": true, 
+    "E4": false, 
     "Garmin": false, 
-    "Save_path": "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Training_output", 
+    "Save_path": "C:/Users/power/Documents/GitHub/EmoIDE_project/Server/Training_output", 
     "Save_format": ".csv",
     "Training": true
 }
