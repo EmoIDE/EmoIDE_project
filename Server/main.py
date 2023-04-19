@@ -375,6 +375,7 @@ def update_dataframe():
             full_data_dic.update(training_dict)
             training_dict["Valence"] = None
             training_dict["Arousal"] = None
+            training_dict["Stress"] = 0
 
         # dataframe
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
