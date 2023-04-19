@@ -299,14 +299,16 @@ def init_df():
             "Initial pulse": None,
             "Arousal": None,
             "Valence": None,
-            "Gender" : None
+            "Gender" : None,
+            "Stress": 0
         }
         
         training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
         training_dict["Age"] = Pop_up.get_age()
         training_dict["Gender"] = Pop_up.get_gender()
-        training_dict["Arousal"] = Pop_up.test_arousal()
-        training_dict["Valence"] = Pop_up.test_valence()
+        training_dict["Arousal"] = Pop_up.test_arousal() + 1
+        training_dict["Valence"] = Pop_up.test_valence() + 1
+        training_dict["Stress"] = Pop_up.get_stress()
         full_data_dict.update(training_dict)
 
     full_data_dict.update(time_dict)
@@ -367,6 +369,8 @@ def update_dataframe():
             if time.time() - data_collection_timer > training_time:
                 training_dict["Arousal"] = Pop_up.test_arousal() + 1
                 training_dict["Valence"] = Pop_up.test_valence() + 1
+                training_dict["Stress"] = Pop_up.get_stress()
+
                 data_collection_timer = time.time()
             full_data_dic.update(training_dict)
             training_dict["Valence"] = None
