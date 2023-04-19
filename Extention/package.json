@@ -52,16 +52,13 @@
 
           "Extension.DonateData":{
             "type":"boolean",
-            "default": "off",
-            "enum": ["on","off"],
+            "default": "false",
             "description": "Donate your to data to the machine learning model"
           },
 
           "Extension.Pop-ups":{
             "type":"boolean",
-            "default":"on",
-            "enum": ["on","off"],
-            "description": "Turn on or off pop-ups"
+            "default":"true"
           },
 
           "Extension.DashboardThreshold":{
@@ -83,9 +80,8 @@
 
               "Hardware.EyeTrackerCalibration":{
                 "type":"boolean",
-                "default":"on",
-                "enum": ["on","off"],
-                "description": "Disable or activate eye tracker calibration. Disabling calibration may increase startup time"
+                "default":true,
+                "description": "Enabling calibration may increase startup time"
               }
             }
           },

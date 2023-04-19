@@ -29,3 +29,9 @@ def test_valence():
     titleValence = "Valence test"
     imageValence = "Server\ML\SAMValence.png"
     return eg.indexbox(msgValence, titleValence, ["1", "2", "3", "4", "5"], image = imageValence)  
+
+def get_stress():
+    msg = "On a scale from 1 to 100, how stressed are you?"
+    title = "Stress test"
+    return eg.enterbox(msg, title)
+

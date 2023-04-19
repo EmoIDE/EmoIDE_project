@@ -199,6 +199,9 @@ def get_eye_tracker_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     print("emil är här")
+
+    # Start heatmap thead
+
     
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
@@ -299,14 +302,16 @@ def init_df():
             "Initial pulse": None,
             "Arousal": None,
             "Valence": None,
-            "Gender" : None
+            "Gender" : None,
+            "Stress": 0
         }
         
         training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
         training_dict["Age"] = Pop_up.get_age()
         training_dict["Gender"] = Pop_up.get_gender()
-        training_dict["Arousal"] = Pop_up.test_arousal()
-        training_dict["Valence"] = Pop_up.test_valence()
+        training_dict["Arousal"] = Pop_up.test_arousal() + 1
+        training_dict["Valence"] = Pop_up.test_valence() + 1
+        training_dict["Stress"] = Pop_up.get_stress()
         full_data_dict.update(training_dict)
 
     full_data_dict.update(time_dict)
@@ -367,10 +372,13 @@ def update_dataframe():
             if time.time() - data_collection_timer > training_time:
                 training_dict["Arousal"] = Pop_up.test_arousal() + 1
                 training_dict["Valence"] = Pop_up.test_valence() + 1
+                training_dict["Stress"] = Pop_up.get_stress()
+
                 data_collection_timer = time.time()
             full_data_dic.update(training_dict)
             training_dict["Valence"] = None
             training_dict["Arousal"] = None
+            training_dict["Stress"] = 0
 
         # dataframe
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
@@ -551,6 +559,12 @@ def start_threads():
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
+
+        # Start heatmap thread
+        print("Heatmap thread starts")
+        heatmap_thread = threading.Thread(target=dashboard.create_heatmap_gif(full_df, max_time))
+        heatmap_thread.start()
+        threads.append(heatmap_thread)
     
     if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
@@ -591,11 +605,11 @@ def make_dashboard():
     global full_df
 
     # Heatmap dashboard
-    try:
-        dashboard.capture_screen(full_df["time"].iloc[-1])
-        dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
-    except:
-        print("[ERROR] - heatmap failed")
+    # try:
+    #     dashboard.capture_screen(full_df["time"].iloc[-1])
+    #     dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
+    # except:
+    #     print("[ERROR] - heatmap failed")
     # graphs
     try:
         dashboard.create_dashboard(full_df)

@@ -17,6 +17,7 @@ const { debug } = require('console');
 const vscode = require('vscode');
 const fs = require('fs');
 var net = require('net');
+const { json } = require('stream/consumers');
 var client = new net.Socket();
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -148,6 +149,27 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
+
+	vscode.workspace.onDidChangeConfiguration( () =>{
+
+		//get all settings
+		const user_settings = vscode.workspace.getConfiguration().get("User");
+		const hardware_settings = vscode.workspace.getConfiguration().get("Hardware");
+		const extension_settings = vscode.workspace.getConfiguration().get("Extension");
+		
+		//merge json
+		const merge_json = Object.assign(user_settings, hardware_settings, extension_settings);
+		
+	
+		vscode.window.showInformationMessage("trying to write settings");
+
+		const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/extension_settings.json");
+		const fileUri = vscode.Uri.file(onDiskPath.path);
+		fs.writeFileSync(fileUri.fsPath, JSON.stringify(merge_json));
+		
+		vscode.window.showInformationMessage("settings updated");
+
+	})
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('statusWindow.open', () => {
