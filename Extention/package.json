@@ -13,7 +13,13 @@
   "main": "./extension.js",
   "contributes": {
     
-    
+    "webviews": [
+      {
+        "contributes": {
+          "contentSecurityPolicy": {
+            "img-src": ["self", "vscode-resource:"]
+            }
+      }}],
     "configuration": [
       
       {
@@ -200,6 +206,10 @@
         "command": "EmoIDE.requestEyeData",
         "title": "Requests eye data from the server every x seconds.",
         "icon": "Icons/eyeDataIcon"
+      },
+      {
+        "command": "EmoIDE.UpdateSAM",
+        "title": "set SAMStatus by index"
       }
     ]
   },

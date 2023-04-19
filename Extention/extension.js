@@ -3,6 +3,16 @@ let StatusGreen = "StatusActive.png"
 let StatusRed =	"StatusInactive.png"
 let statusbarPulse;
 
+const SAMValence = [
+	"Assets/SAMIcons/Valence/SAMValence1.png",
+	"Assets/SAMIcons/Valence/SAMValence2.png",
+	"Assets/SAMIcons/Valence/SAMValence3.png",
+	"Assets/SAMIcons/Valence/SAMValence4.png",
+	"Assets/SAMIcons/Valence/SAMValence5.png"
+]
+const SAMArousal = [ //TODO: Add Arousal Icons
+]
+
 const { debug } = require('console');
 const vscode = require('vscode');
 const fs = require('fs');
@@ -102,15 +112,31 @@ const stats = new StatisticsDataProvider();
 
 function activate(context) {
 
-	var SAMViewProvider ={
-        resolveWebviewView:function(thisWebview, thisWebviewContext, thisToken){
-            thisWebview.webview.options={enableScripts:true}
-            thisWebview.webview.html=`<!DOCTYPE html>
-			<html lang="en"><img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" /></html>`;
-        }
-	};
-	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider)); //Rutan som visar SAM Status
+	function UpdateSAMIndex(index)
+	{
+
+		var SAMViewProvider ={
+			resolveWebviewView:function(thisWebview){
+				const valPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index])
+				const imgVal = thisWebview.webview.asWebviewUri(valPath);
+		
+				const aroPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index+2])
+				const imgAro = thisWebview.webview.asWebviewUri(aroPath);
+				thisWebview.webview.options={enableScripts:true}
+				thisWebview.webview.html=GetSAMView();
+				thisWebview.webview.postMessage({SamVal: imgVal.toString(),SamAro: imgAro.toString()});
+			}
+		};
+		vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider);
+
+		
+	}
+	
+	vscode.workspace.getConfiguration('')
+	vscode.window.createTreeView("Devices",{treeDataProvider:devices})
+	vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
+
+	UpdateSAMIndex(0);
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
 	statusbarPulse.command = "statusWindow.open";
@@ -118,9 +144,7 @@ function activate(context) {
 	statusbarPulse.color = "#42f551";
 	statusbarPulse.show();
 
-	vscode.workspace.getConfiguration('')
-	const treeView = vscode.window.createTreeView("Devices",{treeDataProvider:devices})
-	const treeViewStats = vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -143,6 +167,10 @@ function activate(context) {
 		  
 		}),
 		
+		vscode.commands.registerCommand('EmoIDE.UpdateSAM', () => 
+		{
+			UpdateSAMIndex(1);
+		}),
 
 		vscode.commands.registerCommand('EmoIDE.showSettings', () => {
 			// Open the settings editor
@@ -190,23 +218,36 @@ function activate(context) {
 	})
 	);
 }
-function getWebviewContent() {
-	return null
-	//Andvänd som placeholder tillsvidare
-
-	/*`<!DOCTYPE html>
+function GetSAMView() {
+return `<!DOCTYPE html>
   <html lang="en">
   <head>
 	  <meta charset="UTF-8">
-	  <meta name="viewport" co5ntent="width=device-width, initial-scale=1.0">
-	  <title>Cat Coding</title>
   </head>
   <body>
-	  <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-	  <h1>LOOK AT THIS CAT WOAW</h1>
+	<div id=arousal align = "left">
+		<p>Arousal</p>
+		<img  id="SAMArousal" src="" width="90" />
+	</div>
+
+	<div id=valence align = "left">
+		<p>Valence</p>
+  		<img id="SAMValence" src="" width="90" />
+	</div>
+	
+	<script>
+		const vscode = acquireVsCodeApi();
+		window.addEventListener('message', event => {
+			console.log("message recieved");
+			const message = event.data;
+			const imgVal = document.getElementById('SAMValence');
+			const imgAro = document.getElementById('SAMArousal');
+			imgVal.src = message.SamVal;
+			imgAro.src = message.SamAro;
+			});
+	</script>
   </body>
   </html>`;
-  */
   }
   
   function connectToServer(){
@@ -217,8 +258,6 @@ function getWebviewContent() {
 		
 	});
 };
-
-
 
 function getCurrentPulse(){
 	var json_data = {"function": "getPulse"}
