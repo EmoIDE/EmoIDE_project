@@ -199,6 +199,9 @@ def get_eye_tracker_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     print("emil är här")
+
+    # Start heatmap thead
+
     
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
@@ -551,6 +554,12 @@ def start_threads():
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
+
+        # Start heatmap thread
+        print("Heatmap thread starts")
+        heatmap_thread = threading.Thread(target=dashboard.create_heatmap_gif(full_df, max_time))
+        heatmap_thread.start()
+        threads.append(heatmap_thread)
     
     if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
@@ -591,11 +600,11 @@ def make_dashboard():
     global full_df
 
     # Heatmap dashboard
-    try:
-        dashboard.capture_screen(full_df["time"].iloc[-1])
-        dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
-    except:
-        print("[ERROR] - heatmap failed")
+    # try:
+    #     dashboard.capture_screen(full_df["time"].iloc[-1])
+    #     dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
+    # except:
+    #     print("[ERROR] - heatmap failed")
     # graphs
     try:
         dashboard.create_dashboard(full_df)
