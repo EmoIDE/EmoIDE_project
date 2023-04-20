@@ -11,11 +11,12 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import imageio
 import time
 from scipy.stats import gaussian_kde
+import random
 
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
-image_cache = [{}]
+image_cache = []
 
 def create_dashboard(df):
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
@@ -108,20 +109,20 @@ def capture_screen(capture_name):
 
 
 
-
-
-
-
-
 def create_heatmap_gif(img_cache, df):
+    print(img_cache)
     heatmap_cache = []
 
     for screenshot in img_cache:
+        print(df)
+        print("----------------- CURRENT DATE: ", screenshot["date"])
         before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=30)
+        print("----------------- 30 SECONDS BEFORE DATE: ", before_moment)
 
         x = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['x'].to_numpy()
         y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
 
+        print("----------------- COORDINATES: ",x, y)
         img = screenshot["img"]
 
         img_arr = np.array(img)
@@ -134,7 +135,6 @@ def create_heatmap_gif(img_cache, df):
         density = gaussian_kde(xy)(xy)
 
         # Create a heatmap over the image
-        canvas = FigureCanvas(plt)
         plt.imshow(img_arr)
         plt.scatter(x_pixel, y_pixel, s=100, c=density, cmap='coolwarm', alpha=0.25)
 
@@ -142,6 +142,9 @@ def create_heatmap_gif(img_cache, df):
         plt.xlim([0, img.width])
         plt.ylim([img.height, 0])
         plt.axis('off')
+
+        fig = plt.gcf()
+        canvas = FigureCanvas(fig)
         heatmap_cache.append(Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb()))
     # # Version 1.0
     # frame_one = heatmap_cache[0]
@@ -159,23 +162,35 @@ def screenshot_img(capture_name):
     return {"date": capture_name, "name": f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{capture_name}.png', "img": pyautogui.screenshot()}
 
 
-
 # Version 2.0 that always record but after two minutes it saves it (gif) and mark it based on level of stress
-def heatmap_thread(full_df, max_time):
+def heatmap_thread():
+    max_time = 60
     start = time.time()
+    full_df = pd.DataFrame()
+    start_2 = time.time()
+    while time.time() - start_2 < 10:
+        new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
+        full_df = full_df.append(new_data, ignore_index=True)
+        print(full_df)
+        time.sleep(1)
+
     # Get image and time right now
-    last_time = datetime.datetime.strftime(full_df["time"].iloc[-1], format)
-    image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
+    last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
+    print(image_cache)
 
     # Run whole session (maybe future instead of max_time just have bool that check if user extension is connected)
     while time.time() - start < max_time:
+        new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
+        full_df = full_df.append(new_data, ignore_index=True)
         # Save constantly the newest row (date) in the dataframe
-        current_time = datetime.datetime.strftime(full_df["time"].iloc[-1], format)
+        current_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
+        print(full_df)
 
         # Check if the newest row (date) is older than 30 seconds then take screen shot
-        if current_time - last_time > datetime.timedelta(0,30):
+        if current_time - last_time > datetime.timedelta(0,8):
+            print("TAKE PICTURE")
             # If cache is larger than 4 => (120 second with 4 images has gone by) we should save and clear
-            if len(image_cache) >= 4:
+            if len(image_cache) >= 3:
                 # Append last image
                 image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
                 # Create gif from the 120 seconds gone by made up by 4 images 30 seconds apart
@@ -184,14 +199,15 @@ def heatmap_thread(full_df, max_time):
                 image_cache.clear()
 
                 # Update last time
-                last_time = datetime.datetime.strftime(full_df["time"].iloc[-1], format)
                 image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
             else:
                 # If 4 images (120 seconds gone by) is NOT done just add and continue
                 image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
+            last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
         # Sleep 1 second to match up with dataframe update and to reduce CPU usage
         time.sleep(1)
 
+heatmap_thread()
 
 
 # # Version 1.0 that only create heatmaps when stressed (only record 2 minutes at a time)

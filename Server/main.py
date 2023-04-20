@@ -47,8 +47,8 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 1860
-SETTINGS_PATH = "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/settings.json"
+max_time = 60
+SETTINGS_PATH = "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 
 #extension settings
 settings_dict = {
@@ -166,7 +166,7 @@ async def import_EEG_data():
 
     calibration_done["EEG"] = True
 
-    all_done = True
+    all_done = False
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -187,6 +187,7 @@ def start_eeg():
 def get_eye_tracker_data():
     global calibration_done
     global eye_data_dict
+    global full_df
 
     eye_tracker = EyeTracker(1, max_time)
     eye_tracker.setup()
@@ -194,15 +195,10 @@ def get_eye_tracker_data():
     calibration_done["Eye tracker"] = True
 
     all_done = False
-    print("SCIENCE, YO")
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
-    print("emil är här")
 
-    # Start heatmap thead
-
-    
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
 
@@ -268,7 +264,7 @@ def init_df():
     full_df = pd.DataFrame(dtype='object')
 
     time_dict = {
-        "time":"0"
+        "time":datetime.now().strftime("%d-%m-%YT%H-%M-%S")
     }
 
     eye_data_dict = {
@@ -327,7 +323,7 @@ def update_dataframe():
     global full_df
     global max_time
     calibration_done["Dataframe"] = True
-    all_done = True                                                                     ######################
+    all_done = False                                                                     ######################
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -536,9 +532,8 @@ def TEST_full_mock(path, format, test_time):
     exit()
 
 def start_threads():
+    global full_df
     threads = []
-    
-    
 
     if settings_dict["extension"] == True:
         print("Server thread starts")
@@ -552,6 +547,8 @@ def start_threads():
         eeg_thread = threading.Thread(target=start_eeg)
         eeg_thread.start()
         threads.append(eeg_thread)
+    else:
+        calibration_done["EEG"] = True
 
     if settings_dict["Eye tracker"] == True:
         #start thread/-s needed for Eye tracker
@@ -561,10 +558,15 @@ def start_threads():
         threads.append(eye_thread)
 
         # Start heatmap thread
+        # print("Heatmap thread starts")
+        # dashboard.heatmap_thread(full_df, max_time)
+
         print("Heatmap thread starts")
-        heatmap_thread = threading.Thread(target=dashboard.create_heatmap_gif(full_df, max_time))
+        heatmap_thread = threading.Thread(target=start_heatmap)
         heatmap_thread.start()
         threads.append(heatmap_thread)
+    else:
+        calibration_done["Eye tracker"] = True
     
     if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
@@ -572,20 +574,15 @@ def start_threads():
         e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         e4_thread.start()
         threads.append(e4_thread)
-    
-    # Heatmap thread - Create gif
-    start_gif_thread = False                                                    ############## STARTA NÄR MAN VILL TESTA GIF CREATION I DASHBOARD
-    if start_gif_thread == True:
-        print("GIF thread starts")
-        gif_thread = threading.Thread(target=capture_gif, daemon=True)
-        gif_thread.start()
-        threads.append(df_thread)
+    else:
+        calibration_done["E4"] = True
 
     # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
     df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
     threads.append(df_thread)
+    calibration_done["Dataframe"] = True
 
     return threads
 
@@ -597,9 +594,16 @@ def join_threads(threads):
         print(f"{str(t)} is now closed")
 
 
-def capture_gif():                                          ################### EJ TESTAD???
-    dashboard.heatmap_thread()
+def start_heatmap():
+    global full_df
 
+    all_done = False                                                                     ######################
+    while not all_done:
+        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+            all_done = True
+
+    print("calibration done - starting the heatmap creation")
+    dashboard.heatmap_thread(full_df.iloc[1:], max_time)
 
 def make_dashboard():
     global full_df
