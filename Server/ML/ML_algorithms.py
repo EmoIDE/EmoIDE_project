@@ -32,7 +32,10 @@ def ML_dataframe(data):
 def random_forest(data):
     regressor = RandomForestRegressor(n_estimators=100, random_state=0)
     # fit the regressor with the training set
-    regressor.fit(data)
+    try:
+        regressor.fit(data)
+    except:
+        print("Random forest failed")
 
 
 def multilayer_perceptron(data):
