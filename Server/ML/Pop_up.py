@@ -31,7 +31,7 @@ def test_valence():
     return eg.indexbox(msgValence, titleValence, ["1", "2", "3", "4", "5"], image = imageValence)  
 
 def get_stress():
-    msg = "On a scale from 1 to 100, how stressed are you?"
-    title = "Stress test"
-    return eg.enterbox(msg, title)
+    msg_stress = "On a scale from 1 to 10, how stressed are you?"
+    title_stress = "Stress test"
+    return eg.indexbox(msg_stress, title_stress, ["1", "2", "3", "4", "5", "6", "7","8","9","10"]) 
 

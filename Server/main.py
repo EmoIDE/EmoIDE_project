@@ -47,8 +47,8 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 1860
-SETTINGS_PATH = "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/settings.json"
+max_time = 20
+SETTINGS_PATH = "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/settings.json"
 
 #extension settings
 settings_dict = {
@@ -63,9 +63,9 @@ eeg_settings = {
 }
 
 calibration_done = {
-    "Eye tracker": False,
-    "EEG": False,
-    "E4": False,
+    "Eye tracker": True,
+    "EEG": True,
+    "E4": True,
     "Dataframe": True
     }
 
@@ -226,7 +226,6 @@ def get_e4_data():
     # calibration_done["E4"] = True
 
     calibration_done["E4"] = True
-    print("Jag sker")
     all_done = False                                                                     ######################
     # while not all_done:
     #     if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
@@ -361,7 +360,7 @@ def update_dataframe():
         full_data_dic.update(e4_data_dict)
         
         # Training
-        training_time = 300
+        training_time = 5
 
         if settings_dict["Training"] == True:
             if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
@@ -369,12 +368,15 @@ def update_dataframe():
             if time.time() - data_collection_timer > training_time:
                 training_dict["Arousal"] = Pop_up.test_arousal() + 1
                 training_dict["Valence"] = Pop_up.test_valence() + 1
+                
+                print("Jag sker")
                 training_dict["Stress"] = Pop_up.get_stress()
 
                 data_collection_timer = time.time()
             full_data_dic.update(training_dict)
             training_dict["Valence"] = None
             training_dict["Arousal"] = None
+            training_dict["Stress"] = None
 
         # dataframe
         full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
