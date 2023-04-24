@@ -13,6 +13,10 @@ import time
 from scipy.stats import gaussian_kde
 import random
 
+
+#yo?
+from django.shortcuts import render
+
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
@@ -168,6 +172,23 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
+def create_heatmap_dashboard(request):
+    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
+
+    folders = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
+    folder_carousel = []
+    for folder in folders:
+        folder_path = os.path.join(dirpath, folder)
+        images = [i for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))]
+        carousel_html = '<div class="carousel">'
+        for image in images:
+            carousel_html += f'<img src="{os.path.join(folder, image)}">'
+        carousel_html += '</div>'
+        folder_carousel.append((folder, carousel_html))
+    # # Or any other template html service, the image carousel is done, just need a way to display it
+    # return render(request, 'Saved_dashboards/heatmap_dashboard.html', {'folder_carousels': folder_carousel})
+
 def create_heatmap_gif(img_cache, df):
     dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{img_cache[0]["date"]}'
 
@@ -178,7 +199,6 @@ def create_heatmap_gif(img_cache, df):
     else:
         print(f'{bcolors.OKGREEN}Directory{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath}{bcolors.ENDC} successfully created')
 
-        updates = 0
         for i, screenshot in enumerate(img_cache):
             before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=30)
 
@@ -213,11 +233,7 @@ def create_heatmap_gif(img_cache, df):
 
                 plt.savefig(dirpath + "/" + screenshot["date"] + ".png", dpi=300, format='png', bbox_inches='tight')
 
-                done = 100*(i/len(img_cache))
-                if divmod(done, 10) == (updates, 0):
-                    updates += 1
-                    print(f'Finished processing {bcolors.OKGREEN}{int(done)}{bcolors.ENDC} % of all images')
-
+            print(f'Finished processing {bcolors.OKGREEN}{int(((i + 1) / len(img_cache)) * 100)}{bcolors.ENDC} % of all images')
 
 
 
@@ -227,16 +243,17 @@ def screenshot_img(capture_name):
 
 # Version 2.0 that always record but after two minutes it saves it (gif) and mark it based on level of stress
 def heatmap_thread():
-    max_time = 60
+    max_time = 40
     start = time.time()
     full_df = pd.DataFrame()
-    start_2 = time.time()
-    while time.time() - start_2 < 10:
-        new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
-        full_df = full_df.append(new_data, ignore_index=True)
-        print(full_df)
-        time.sleep(1)
-
+    # start_2 = time.time()
+    # while time.time() - start_2 < 10:
+        # new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
+        # full_df = full_df.append(new_data, ignore_index=True)
+    #     print(full_df)
+    #     time.sleep(1)
+    new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
+    full_df = full_df.append(new_data, ignore_index=True)
     # Get image and time right now
     last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
     print(image_cache)
@@ -260,6 +277,7 @@ def heatmap_thread():
                 create_heatmap_gif(image_cache, full_df)
                 # Clear cache to continue the next 2 minutes and forward the whole session...
                 image_cache.clear()
+                break
 
                 # Update last time
                 image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
@@ -270,7 +288,18 @@ def heatmap_thread():
         # Sleep 1 second to match up with dataframe update and to reduce CPU usage
         time.sleep(1)
 
-heatmap_thread()
+    # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
+    create_heatmap_dashboard()
+
+
+if __name__ == '__main__':
+    # # Works with fake data
+    # heatmap_thread()
+
+    # Create dashboard testing
+    create_heatmap_dashboard()
+
+
 
 
 # # Version 1.0 that only create heatmaps when stressed (only record 2 minutes at a time)
