@@ -14,9 +14,6 @@ from scipy.stats import gaussian_kde
 import random
 
 
-#yo?
-from django.shortcuts import render
-
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
@@ -172,20 +169,31 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def create_heatmap_dashboard():
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+    template = env.get_template("heatmap_template.html")
 
-def create_heatmap_dashboard(request):
     dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
 
     folders = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
     folder_carousel = []
     for folder in folders:
         folder_path = os.path.join(dirpath, folder)
-        images = [i for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))]
+        images = [os.path.join(folder_path, i) for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))]
         carousel_html = '<div class="carousel">'
         for image in images:
             carousel_html += f'<img src="{os.path.join(folder, image)}">'
         carousel_html += '</div>'
         folder_carousel.append((folder, carousel_html))
+    print(folder_carousel)
+    # Render the data in the Jinja2 template
+    html = template.render({'folder_carousels': folder_carousel})
+
+    # Save the rendered HTML to a file
+    filename = "/heatmap.html"
+    with open(str(output_path+  filename), "w") as f:
+        f.write(html)
+
     # # Or any other template html service, the image carousel is done, just need a way to display it
     # return render(request, 'Saved_dashboards/heatmap_dashboard.html', {'folder_carousels': folder_carousel})
 
