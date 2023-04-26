@@ -247,7 +247,7 @@ async def main():
         try:
             await cortex_api.get_eeg_data()
         except:
-            print("[ERROR] EEG main - get_eeg_data")
+            print("[ERROR] - get_eeg_data")
             break
 
 

@@ -86,6 +86,7 @@ def setup_server():
 def tcp_communication():
     global extension_connected
     tcp_socket.settimeout(10)
+
     # loop and try to connect to extention
     extension_connected = False
     connect_test = 0
@@ -102,6 +103,8 @@ def tcp_communication():
         print("Failed to connect to extension")
         return 0
     
+
+    # Commands
     start = time.time()
     delta = 0
     while delta <= max_time:
@@ -116,10 +119,15 @@ def tcp_communication():
         recived_msg = json_data["function"]
         # mest för att testa så klienten och servern kan kommunicera
         
+
         print(recived_msg)
         if recived_msg == "settings_update":
             read_settings(SETTINGS_PATH)
             print(settings_dict)
+
+        if recived_msg == "getEmotion":
+            conn.sendall(json.dumps(prediction_dict).encode('utf-8'))
+            print("changed SAM on extension")
 
         if recived_msg == "ping":
             print("ping")
