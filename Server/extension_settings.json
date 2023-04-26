@@ -1,1 +1,1 @@
-{"Age":64,"Gender":"male","RestingHeartRate":70,"Glasses":"yes","E4StreamingPort":"28000","EyeTrackerCalibration":"off","VscodeWindowSize":[],"ServerPort":"6969","FileFormat":".csv","SaveLocation":"null","DonateData":true,"Pop-ups":true,"DashboardThreshold":[]}
+{"Age":0,"Gender":"null","RestingHeartRate":70,"Glasses":"no","E4StreamingPort":"28000","EyeTrackerCalibration":true,"ServerPort":"6969","FileFormat":".csv","SaveLocation":"null","DonateData":"false","Pop-ups":"true","DashboardThreshold":null}
