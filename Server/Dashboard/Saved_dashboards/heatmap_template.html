@@ -1,26 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Image Gallery</title>
+  <title>Heatmap</title>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
   <style>
-    .carousel {
+    /* .carousel {
       width: 80%;
       margin: 0 auto;
     }
     .carousel img {
       max-width: 100%;
       height: auto;
+    } */
+    * {
+      margin:0;
+      padding:0;
+    }
+    .dashboard {
+      position: relative;
+      max-width:1000px;
+      width:95%;
+      height:100%;
+      margin:auto;
+
+      display:flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .heatmap {
+      position: relative;
+      width:100%;
+      height: calc(440px + 30px);
+    }
+    .moment {
+      width:100%;
+      height:100%;
+      position: absolute;
+      top:0;
+      left:0;
+      /* display:none; */
+    }
+
+
+
+    .controller {
+      width:100%;
+      height:100px;
+      background-color:rgb(255, 255, 255);
+      display:flex;
+    }
+    .controller::after {
+      position: absolute;
+      top:50%;
+      left:0;
+      width:100%;
+      height:2px;
+      background-color:gray;
+    }
+    .time {
+      width:50px;
+      height:100%;
+      background-color:gray;
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Image Gallery</h1>
-  {% for folder, carousel_html in folder_carousels %}
-    <h2>{{ folder }}</h2>
-    {{ carousel_html }}
-  {% endfor %}
+  <div class="dashboard">
+    <div class="heatmap">
+      {% for folder, carousel_html in folder_carousels %}
+        <div class="moment" data-link={{ folder }}>
+          {{ carousel_html }}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="controller">
+      {% for folder, carousel_html in folder_carousels %}
+      <div class="time" data-link={{ folder }}>
+      </div>
+      {% endfor %} 
+    </div>
+  </div>
+
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
   <script>
