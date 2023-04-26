@@ -50,7 +50,7 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 25
+max_time = 10
 bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 
@@ -400,7 +400,10 @@ def update_dataframe():
         #     training_dict["Arousal"] = None
         #     training_dict["Stress"] = 0
 
-        predict_series()
+        try:
+            predict_series()
+        except:
+            print("prediction failed - prediction_dict not updated")
 
         # dataframe
         full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
@@ -432,8 +435,15 @@ def predict_series():
 
 def load_models():
     global svm_arousal, svm_valence
-    svm_arousal = pickle.load(open("Server/ML/Models/SVM_Arousal_model.sav", 'rb'))
-    svm_valence = pickle.load(open("Server/ML/Models/SVM_Valence_model.sav", 'rb'))
+    with open('Server/ML/Models/SVM_Arousal_model_new.sav', 'rb') as f:
+    # load the pickled object using the correct encoding
+        svm_arousal = pickle.load(f)
+
+    with open('Server/ML/Models/SVM_Valence_model_new.sav', 'rb') as f:
+    # load the pickled object using the correct encoding
+        svm_valence = pickle.load(f)
+    #svm_arousal = pickle.load(open("Server/ML/Models/SVM_Arousal_model_new.sav", 'rb'))
+    #svm_valence = pickle.load(open("Server/ML/Models/SVM_Valence_model_new.sav", 'rb'))
 
 
 # ------------------------------------------ Files ------------------------------------------ #
@@ -501,13 +511,15 @@ def read_settings(settings_path):
 # ------------------------------------------ Threads ------------------------------------------ #
 def start_threads():
     global full_df
+    global thread_names
+    thread_names = []
     threads = []
 
-                                                                    ############################# FIXA
     print("tcp thread starts")
     tcp_thread = threading.Thread(target=tcp_communication, daemon=True)
     tcp_thread.start()
     threads.append(tcp_thread)
+    thread_names.append("tcp_thread")
 
     if settings_dict["EEG"] == True:
         #start thread/-s needed for EEG
@@ -515,6 +527,7 @@ def start_threads():
         eeg_thread = threading.Thread(target=start_eeg)
         eeg_thread.start()
         threads.append(eeg_thread)
+        thread_names.append("eeg_thread")
     else:
         calibration_done["EEG"] = True
 
@@ -524,15 +537,13 @@ def start_threads():
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
-
-        # Start heatmap thread
-        # print("Heatmap thread starts")
-        # dashboard.heatmap_thread(full_df, max_time)
+        thread_names.append("eye_thread")
 
         print("Heatmap thread starts")
         heatmap_thread = threading.Thread(target=start_heatmap)
         heatmap_thread.start()
         threads.append(heatmap_thread)
+        thread_names.append("heatmap_thread")
     else:
         calibration_done["Eye tracker"] = True
     
@@ -542,6 +553,7 @@ def start_threads():
         e4_thread = threading.Thread(target=get_e4_data)
         e4_thread.start()
         threads.append(e4_thread)
+        thread_names.append("e4_thread")
     else:
         calibration_done["E4"] = True
 
@@ -550,18 +562,22 @@ def start_threads():
     df_thread = threading.Thread(target=update_dataframe, daemon=True)
     df_thread.start()
     threads.append(df_thread)
+    thread_names.append("df_thread")
     calibration_done["Dataframe"] = True
 
     return threads
 
-
+""" Closes all running threads included in the list """
 def join_threads(threads):
-    print(threads)
+    # print(threads)
+    i = 0
     for t in threads:
-        print(f"----------  Joining {str(t)}  --------------")
-        t.join()
-        print(f"{str(t)} is now closed")
-
+        try:
+            t.join()
+            print(f"{thread_names[i]}: {str(t)} is now closed")
+            i += 1
+        except:
+            print(f"failed to join {t}")
 
 # ------------------------------------------ Dashboard ------------------------------------------ # 
 def start_heatmap():
@@ -610,13 +626,6 @@ def start_heatmap():
 def make_dashboard():
     global full_df
 
-    # Heatmap dashboard
-    # try:
-    #     dashboard.capture_screen(full_df["time"].iloc[-1])
-    #     dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
-    # except:
-    #     print("[ERROR] - heatmap failed")
-    # graphs
     try:
         dashboard.create_dashboard(full_df)
     except:
