@@ -113,31 +113,30 @@ const stats = new StatisticsDataProvider();
 
 function activate(context) {
 
+	var SAMViewProvider ={
+		resolveWebviewView:function(thisWebview){
+			thisWebview.webview.options={enableScripts:true}
+			thisWebview.webview.html=GetSAMView();
+		}
+	};
+	SAMViewProvider.thisWebview.vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider);
+
 	function UpdateSAMIndex(index)
 	{
+		const valPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index])
+		const imgVal = SAMViewProvider.webview.asWebviewUri(valPath);
+		const aroPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index+2])
+		const imgAro = SAMViewProvider.webview.asWebviewUri(aroPath);
 
-		var SAMViewProvider ={
-			resolveWebviewView:function(thisWebview){
-				const valPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index])
-				const imgVal = thisWebview.webview.asWebviewUri(valPath);
-		
-				const aroPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index+2])
-				const imgAro = thisWebview.webview.asWebviewUri(aroPath);
-				thisWebview.webview.options={enableScripts:true}
-				thisWebview.webview.html=GetSAMView();
-				thisWebview.webview.postMessage({SamVal: imgVal.toString(),SamAro: imgAro.toString()});
-			}
-		};
-		vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider);
-
-		
+		SAMViewProvider.postMessage({SamVal: imgVal.toString(),SamAro: imgAro.toString()});
 	}
 	
 	vscode.workspace.getConfiguration('')
 	vscode.window.createTreeView("Devices",{treeDataProvider:devices})
 	vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
 
-	UpdateSAMIndex(0);
+	UpdateSAMIndex(1);
+	
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
 	statusbarPulse.command = "statusWindow.open";
