@@ -51,22 +51,22 @@ class DevicesDataProvider {
 		  id: 'wristBand',
 		  label: 'Empatica E4',
 		  active: false,
-		  iconPath: "Icons/Logo.png"
+		  iconPath: "$(gear)"
 		},
 		{
 			id: 'Eyetracker',
 			label: 'eyeTracker thing',
 			active: false,
-			iconPath: "Icons/Logo.png"
+			iconPath: "$(gear)"
 		},
 		{
 			id: 'brainTracker',
 			label: 'Brainscanner',
 			active: false,
-			iconPath: "Icons/Logo.png"
+			iconPath: "$(gear)"
 		}
 	  ];
-	  icon: "StatusGreen"
+	  iconPath: "$(gear)"
 	}
   
 	getChildren(element) {
