@@ -48,7 +48,8 @@ e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
 max_time = 60
-SETTINGS_PATH = "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
+bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
+SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 
 #extension settings
 settings_dict = {
