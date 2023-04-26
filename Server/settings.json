@@ -1,10 +1,17 @@
 {
-    "extension": false, 
-    "EEG": true, 
-    "Eye tracker": false, 
-    "E4": false, 
-    "Garmin": false, 
-    "Save_path": "C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Training_output", 
-    "Save_format": ".csv",
-    "Training": true
+    "Age": 20,
+    "Gender": "male",
+    "RestingHeartRate": 70,
+    "Glasses": "no",
+    "E4StreamingPort": "28000",
+    "EyeTrackerCalibration": true,
+    "EEG": true,
+    "E4": false,
+    "Eyetracker": false,
+    "ServerPort": "4700",
+    "FileFormat": ".tsv",
+    "SaveLocation": "C:\\Users\\David\\Documents\\GitHub\\EmoIDE_project\\Server\\Output",
+    "DonateData": "false",
+    "Pop-ups": true,
+    "DashboardThreshold": null
 }

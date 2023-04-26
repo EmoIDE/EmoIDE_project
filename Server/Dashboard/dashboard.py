@@ -17,7 +17,6 @@ import random
 from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
-image_cache = []
 
 def create_dashboard(df):
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
@@ -207,7 +206,7 @@ def create_heatmap_gif(img_cache, df):
         print(f'{bcolors.OKGREEN}Directory{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath}{bcolors.ENDC} successfully created')
 
         for i, screenshot in enumerate(img_cache):
-            before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=30)
+            before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=20)
 
             x = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['x'].to_numpy()
             y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
@@ -216,7 +215,6 @@ def create_heatmap_gif(img_cache, df):
                 print(f'{bcolors.WARNING}Image{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath + "/" + screenshot["date"] + ".png"}{bcolors.ENDC} not enough data to create heatmap')
 
                 screenshot["img"].save(dirpath + "/" + screenshot["date"] + ".png")
-                break
             else:
                 img = screenshot["img"]
 
@@ -247,56 +245,6 @@ def create_heatmap_gif(img_cache, df):
 def screenshot_img(capture_name):
     return {"date": capture_name, "name": f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{capture_name}.png', "img": pyautogui.screenshot()}
 
-
-# Version 2.0 that always record but after two minutes it saves it (gif) and mark it based on level of stress
-def heatmap_thread():
-    max_time = 40
-    start = time.time()
-    full_df = pd.DataFrame()
-    # start_2 = time.time()
-    # while time.time() - start_2 < 10:
-        # new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
-        # full_df = full_df.append(new_data, ignore_index=True)
-    #     print(full_df)
-    #     time.sleep(1)
-    new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
-    full_df = full_df.append(new_data, ignore_index=True)
-    # Get image and time right now
-    last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
-    print(image_cache)
-
-    # Run whole session (maybe future instead of max_time just have bool that check if user extension is connected)
-    while time.time() - start < max_time:
-        new_data = {"time": datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S"), "x": random.random(), "y": random.random()}
-        full_df = full_df.append(new_data, ignore_index=True)
-        # Save constantly the newest row (date) in the dataframe
-        current_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
-        print(full_df)
-
-        # Check if the newest row (date) is older than 30 seconds then take screen shot
-        if current_time - last_time > datetime.timedelta(0,8):
-            print("TAKE PICTURE")
-            # If cache is larger than 4 => (120 second with 4 images has gone by) we should save and clear
-            if len(image_cache) >= 3:
-                # Append last image
-                image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
-                # Create gif from the 120 seconds gone by made up by 4 images 30 seconds apart
-                create_heatmap_gif(image_cache, full_df)
-                # Clear cache to continue the next 2 minutes and forward the whole session...
-                image_cache.clear()
-                break
-
-                # Update last time
-                image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
-            else:
-                # If 4 images (120 seconds gone by) is NOT done just add and continue
-                image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
-            last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
-        # Sleep 1 second to match up with dataframe update and to reduce CPU usage
-        time.sleep(1)
-
-    # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
-    create_heatmap_dashboard()
 
 
 if __name__ == '__main__':

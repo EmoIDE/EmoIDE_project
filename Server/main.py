@@ -28,12 +28,15 @@ import time
 import socket
 import asyncio
 import json
-from datetime import datetime
+import datetime
+import pickle
+import random
 from matplotlib.backends.backend_pdf import PdfPages
 
-# FOR TESTING
-import random
+from sklearn.preprocessing import scale
 
+
+format = "%d-%m-%YT%H-%M-%S"
 
 
 # global variables
@@ -47,7 +50,7 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 60
+max_time = 25
 bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 
@@ -70,7 +73,7 @@ calibration_done = {
     "Dataframe": True
     }
 
-
+# ------------------------------------------ Server ------------------------------------------ #
 # start serverside with a tcp socket. AF - Address Family (IPv4). Sock_stream - type (TCP)
 def setup_server():
     global tcp_socket
@@ -82,22 +85,42 @@ def setup_server():
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
-    tcp_socket.settimeout(180)
-    conn, client = tcp_socket.accept()
-    print(f"Connected to {client}")
-    extension_connected = True
+    tcp_socket.settimeout(10)
+    # loop and try to connect to extention
+    extension_connected = False
+    connect_test = 0
+    while not extension_connected and connect_test < 2:
+        try:
+            connect_test += 1
+            conn, client = tcp_socket.accept()
+            extension_connected = True
+        except:
+            print("not connected")
+    try:
+        print(f"Connected to {client}")
+    except:
+        print("Failed to connect to extension")
+        return 0
+    
     start = time.time()
     delta = 0
-    print(f"Connected to {client}")
     while delta <= max_time:
         delta = time.time() - start
-        data_received = conn.recv(1024).decode('utf-8')
+        try:
+            data_received = conn.recv(1024).decode('utf-8')
+        except:
+            print("no message")
         if not data_received.strip():
             break
         json_data = json.loads(data_received)
         recived_msg = json_data["function"]
         # mest för att testa så klienten och servern kan kommunicera
         
+        print(recived_msg)
+        if recived_msg == "settings_update":
+            read_settings(SETTINGS_PATH)
+            print(settings_dict)
+
         if recived_msg == "ping":
             print("ping")
             data = {
@@ -108,11 +131,10 @@ def tcp_communication():
             print("Received a ping from the client & responded with pong.")
 
         elif recived_msg == "getPulse":
-            print("hey")
             pulse = e4_data_dict["Pulse"]
             data = {
                 "function": "getCurrentPulse",
-                "data": pulse    #random.randint(80, 120)
+                "data": random.randint(80, 120)
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
@@ -153,6 +175,8 @@ def tcp_communication():
             
     conn.close()
 
+
+# ------------------------------------------ EEG ------------------------------------------ #
 async def import_EEG_data():
     global eeg_data_dict
     global calibration_done
@@ -179,12 +203,12 @@ async def import_EEG_data():
 
     await cortex_api.end_session()
 
+
 def start_eeg():
     asyncio.run(import_EEG_data())
 
 
-# -------------- EYE TRACKER -------------- #
-
+# ------------------------------------------ EYE TRACKER ------------------------------------------ #
 def get_eye_tracker_data():
     global calibration_done
     global eye_data_dict
@@ -203,7 +227,8 @@ def get_eye_tracker_data():
     eye_tracker.start_recording(eye_data_dict)
     eye_tracker.stop()
 
-# ---------------E4 DATA TRACKER---------------- #
+
+# ------------------------------------------ E4 DATA TRACKER ------------------------------------------ #
 def get_e4_data():
     #global calibration_done
     global e4_data_dict
@@ -214,19 +239,7 @@ def get_e4_data():
     e4.E4_SS_connect()
     e4.start_subscriptions()
 
-    # POSSIBLE FUTURE SOLUTION                                                                  #############################
-    # e4_calibration = {
-    #     ["E4"]:True
-    # }
-    # calibration_done.update(e4_calibration)
-
-
-    # while e4.recieve_data()[0] == "":
-    #     pass
-    # calibration_done["E4"] = True
-
     calibration_done["E4"] = True
-    print("Jag sker")
     all_done = False                                                                     ######################
     # while not all_done:
     #     if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
@@ -253,11 +266,13 @@ def get_e4_data():
     # e4.e4_stop()                      # Printar resterande grejer i bufferten. Ta bort eller få den att sluta printa. Raden behövs tekniskt sätt inte.
 
 
+# ------------------------------------------ DataFrame ------------------------------------------ #
 def init_df():
     global time_dict
-    global eeg_data_dict
+    global eye_data_dict
     global eeg_data_dict
     global e4_data_dict
+    global prediction_dict
     global full_data_dict
     global full_df
     global training_dict
@@ -265,7 +280,7 @@ def init_df():
     full_df = pd.DataFrame(dtype='object')
 
     time_dict = {
-        "time":datetime.now().strftime("%d-%m-%YT%H-%M-%S")
+        "time":datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
     }
 
     eye_data_dict = {
@@ -292,32 +307,37 @@ def init_df():
         "Gsr": 0
     }
 
-    if settings_dict["Training"] == True:
-        training_dict = {
-            "Name":"Jane Doe",
-            "Age": None,
-            "Initial pulse": None,
-            "Arousal": None,
-            "Valence": None,
-            "Gender" : None,
-            "Stress": 0
-        }
+    prediction_dict = {
+        "Valence":0,
+        "Arousal":0
+    }
+
+    # if settings_dict["Training"] == True:
+    #     training_dict = {
+    #         "Name":"Jane Doe",
+    #         "Age": None,
+    #         "Initial pulse": None,
+    #         "Arousal": None,
+    #         "Valence": None,
+    #         "Gender" : None,
+    #         "Stress": 0
+    #     }
         
-        training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
-        training_dict["Age"] = Pop_up.get_age()
-        training_dict["Gender"] = Pop_up.get_gender()
-        training_dict["Arousal"] = Pop_up.test_arousal() + 1
-        training_dict["Valence"] = Pop_up.test_valence() + 1
-        training_dict["Stress"] = Pop_up.get_stress()
-        full_data_dict.update(training_dict)
+    #     training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
+    #     training_dict["Age"] = Pop_up.get_age()
+    #     training_dict["Gender"] = Pop_up.get_gender()
+    #     training_dict["Arousal"] = Pop_up.test_arousal() + 1
+    #     training_dict["Valence"] = Pop_up.test_valence() + 1
+    #     training_dict["Stress"] = Pop_up.get_stress()
+    #     full_data_dict.update(training_dict)
 
     full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
     full_data_dict.update(eeg_data_dict)
     full_data_dict.update(e4_data_dict)
+    full_data_dict.update(prediction_dict)
 
     full_df = full_df.append(full_data_dict, ignore_index = True)
-
 
     
 def update_dataframe():
@@ -335,7 +355,7 @@ def update_dataframe():
     delta = 0
     while delta <= max_time:
         delta = time.time() - start
-        full_data_dic = {}
+        full_data_dict = {}
         time.sleep(1)
 
         # Clear terminal
@@ -346,49 +366,83 @@ def update_dataframe():
 
         # time_dict["time"] = time.gmtime()
         # This gives the format - dd/mm/yy-HH:MM:SS
-        time_dict["time"] = datetime.now().strftime("%d-%m-%YT%H-%M-%S")
+        time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
 
         # 
-        full_data_dic.update(time_dict)
+        full_data_dict.update(time_dict)
 
         # Eye tracker
-        full_data_dic.update(eye_data_dict)
+        full_data_dict.update(eye_data_dict)
         
         # Eeg
-        full_data_dic.update(eeg_data_dict)
+        full_data_dict.update(eeg_data_dict)
 
         # E4
-        full_data_dic.update(e4_data_dict)
+        full_data_dict.update(e4_data_dict)
+
+        # Prediction
+        full_data_dict.update(prediction_dict)
         
         # Training
         training_time = 300
 
-        if settings_dict["Training"] == True:
-            if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
-                training_dict["Initial pulse"] = e4_data_dict["Pulse"]
-            if time.time() - data_collection_timer > training_time:
-                training_dict["Arousal"] = Pop_up.test_arousal() + 1
-                training_dict["Valence"] = Pop_up.test_valence() + 1
-                training_dict["Stress"] = Pop_up.get_stress()
+        # if settings_dict["Training"] == True:
+        #     if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
+        #         training_dict["Initial pulse"] = e4_data_dict["Pulse"]
+        #     if time.time() - data_collection_timer > training_time:
+        #         training_dict["Arousal"] = Pop_up.test_arousal() + 1
+        #         training_dict["Valence"] = Pop_up.test_valence() + 1
+        #         training_dict["Stress"] = Pop_up.get_stress()
 
-                data_collection_timer = time.time()
-            full_data_dic.update(training_dict)
-            training_dict["Valence"] = None
-            training_dict["Arousal"] = None
-            training_dict["Stress"] = 0
+        #         data_collection_timer = time.time()
+        #     full_data_dict.update(training_dict)
+        #     training_dict["Valence"] = None
+        #     training_dict["Arousal"] = None
+        #     training_dict["Stress"] = 0
+
+        predict_series()
 
         # dataframe
-        full_df = full_df.append(full_data_dic,ignore_index=True, sort=False)
+        full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
         print(f"{full_df}\n--------------------------------")                                     ###########################
 
 
-def save_df(df, path, save_as_ext = '.csv'):
-    filename = 'output_data'    # get last part of path
+# ------------------------------------------ AI ------------------------------------------ #
+def predict_series():
+    global eeg_predict_values
+    full_data_dict["Gender"] = settings_dict["Gender"]
+    full_data_dict["Age"] = settings_dict["Age"]
+    eeg_predict_values = pd.Series(full_data_dict)
 
-    if settings_dict["Training"] == True:
-        filename += "_"
-        filename += training_dict["Name"]
+    drop_list = ["time", "x", "y", "Explorer", "Terminal", "Code", "Pulse", "Bvp", "Gsr", "Valence", "Arousal"]
+    eeg_predict_values.drop(drop_list, inplace=True)
+    
+    predict_frame = pd.DataFrame(eeg_predict_values)
+    predict_frame= predict_frame.transpose()
+
+    predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
+
+    scaled = scale(predict_frame)
+    new_value = [ 0., -1.,  1.,  0.,  1.,  1., -1.,  1.,  0.]
+
+    prediction_dict["Valence"] = svm_valence.predict(scaled)[0]
+    prediction_dict["Arousal"] = svm_arousal.predict(scaled)[0]
+
+
+def load_models():
+    global svm_arousal, svm_valence
+    svm_arousal = pickle.load(open("Server/ML/Models/SVM_Arousal_model.sav", 'rb'))
+    svm_valence = pickle.load(open("Server/ML/Models/SVM_Valence_model.sav", 'rb'))
+
+
+# ------------------------------------------ Files ------------------------------------------ #
+def save_df(df, path, save_as_ext = '.csv'):
+    filename = 'output_data' + str(full_data_dict["time"])    # get last part of path
+
+    # if settings_dict["Training"] == True:
+    #     filename += "_"
+    #     filename += training_dict["Name"]
 
     # checks if path exists on comupter
     if not (os.path.exists(path)):
@@ -422,7 +476,6 @@ def save_df(df, path, save_as_ext = '.csv'):
         text_file = open(str(path + "/" + filename), "w")
         text_file.write(html)
         text_file.close()
-        print("ERROR - Save html not found")
         
 
     elif save_as_ext == '.ods':
@@ -445,102 +498,16 @@ def read_settings(settings_path):
         settings_dict = json.load(wow)
 
 
-#### TESTFUNKTION
-def TEST_create_mock_dataframe(test_time):    
-    mock_full_df = pd.DataFrame()
-
-    # Init dataframe
-    # full_data_dict = {}
-    # eye_data_dict = {}
-    # eeg_data_dict = {}
-
-    time_dict = {
-        "time":"time0"
-    }
-
-    eye_data_dict = {
-    "x":0,
-    "y":0
-    }
-
-    eeg_data_dict = {
-        "Engagement":0,
-        "Excitement":0,
-        "Long term excitement":0,
-        "Stress/Frustration":0,
-        "Relaxation":0,
-        "Interest/Affinity":0,
-        "Focus":0
-        }
-    e4_data_dict = {
-        "Pulse":0,
-        "Bvp":0,
-        "Gsr": 0
-    }
-    full_data_dict.update(time_dict)
-    full_data_dict.update(e4_data_dict)
-    full_data_dict.update(eye_data_dict)
-    full_data_dict.update(eeg_data_dict)
-
-    mock_full_df = mock_full_df.append(full_data_dict, ignore_index = True)
-
-    start = time.time()
-    while time.time() - start < test_time:
-        time.sleep(1)
-
-        rand_x = random.randint(0,10)
-        rand_y = random.randint(0,10)
-        
-        rand_Engagment = random.randint(0,10)
-        rand_Excitement = random.randint(0,10)
-        rand_Long_Excitement = random.randint(0,10)
-        rand_Frustration = random.randint(0,10)
-        rand_Relaxation = random.randint(0,10)
-        rand_Interest = random.randint(0,10)
-        rand_Focus = random.randint(0,10)
-        
-        eye_data_dict["x"] = rand_x
-        eye_data_dict["y"] = rand_y
-        
-        eeg_data_dict["Engagement"] = rand_Engagment
-        eeg_data_dict["Excitement"] = rand_Excitement
-        eeg_data_dict["Long term excitement"] = rand_Long_Excitement
-        eeg_data_dict["Focus"] = rand_Focus
-        eeg_data_dict["Interest/Affinity"] = rand_Interest
-        eeg_data_dict["Relaxation"] = rand_Relaxation
-        eeg_data_dict["Stress/Frustration"] = rand_Frustration
-
-        e4_data_dict["Pulse"] = random.randint(50,150)
-        e4_data_dict["Bvp"] = random.randint(50,150)
-        e4_data_dict["Gsr"] = random.randint(50,150)
-        full_data_dict.update(time_dict)
-        full_data_dict.update(eye_data_dict)
-        full_data_dict.update(e4_data_dict)
-        full_data_dict.update(eeg_data_dict)
-
-        mock_full_df = mock_full_df.append(full_data_dict, ignore_index = True)
-
-        # Print in terminal
-        # os.system('cls' if os.name == 'nt' else 'clear')
-        print(f"{mock_full_df}\n--------------------------------")
-
-    return mock_full_df
-
-def TEST_full_mock(path, format, test_time):
-    mock_df = TEST_create_mock_dataframe(test_time=test_time)
-    save_df(mock_df, path, format)                ################# LÄGG TILL EGEN PATH
-
-    exit()
-
+# ------------------------------------------ Threads ------------------------------------------ #
 def start_threads():
     global full_df
     threads = []
 
-    if settings_dict["extension"] == True:
-        print("Server thread starts")
-        com_thread = threading.Thread(target=tcp_communication, daemon=True)
-        com_thread.start()
-        threads.append(com_thread)
+                                                                    ############################# FIXA
+    print("tcp thread starts")
+    tcp_thread = threading.Thread(target=tcp_communication, daemon=True)
+    tcp_thread.start()
+    threads.append(tcp_thread)
 
     if settings_dict["EEG"] == True:
         #start thread/-s needed for EEG
@@ -551,7 +518,7 @@ def start_threads():
     else:
         calibration_done["EEG"] = True
 
-    if settings_dict["Eye tracker"] == True:
+    if settings_dict["Eyetracker"] == True:
         #start thread/-s needed for Eye tracker
         print("Eye thread starts")
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
@@ -572,7 +539,7 @@ def start_threads():
     if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
         print("E4 thread starts")
-        e4_thread = threading.Thread(target=get_e4_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
+        e4_thread = threading.Thread(target=get_e4_data)
         e4_thread.start()
         threads.append(e4_thread)
     else:
@@ -587,6 +554,7 @@ def start_threads():
 
     return threads
 
+
 def join_threads(threads):
     print(threads)
     for t in threads:
@@ -595,6 +563,7 @@ def join_threads(threads):
         print(f"{str(t)} is now closed")
 
 
+# ------------------------------------------ Dashboard ------------------------------------------ # 
 def start_heatmap():
     global full_df
 
@@ -604,7 +573,39 @@ def start_heatmap():
             all_done = True
 
     print("calibration done - starting the heatmap creation")
-    dashboard.heatmap_thread(full_df.iloc[1:], max_time)
+    image_cache = []
+    start = time.time()
+    print("\n\n", full_df["time"].iloc[-1])
+    last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
+
+    # Run whole session (maybe future instead of max_time just have bool that check if user extension is connected)
+    while time.time() - start < max_time:
+        # Save constantly the newest row (date) in the dataframe
+        current_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
+
+        # Check if the newest row (date) is older than 30 seconds then take screen shot
+        if current_time - last_time > datetime.timedelta(0,20):
+            print("TAKE PICTURE")
+            # If cache is larger than 4 => (120 second with 4 images has gone by) we should save and clear
+            if len(image_cache) >= 3:
+                # Append last image
+                image_cache.append(dashboard.screenshot_img(full_df["time"].iloc[-1]))
+                # Create gif from the 120 seconds gone by made up by 4 images 30 seconds apart
+                dashboard.create_heatmap_gif(image_cache, full_df)
+                # Clear cache to continue the next 2 minutes and forward the whole session...
+                image_cache.clear()
+                # # Update last time
+                # image_cache.append(dashboard.screenshot_img(full_df["time"].iloc[-1]))
+            else:
+                # If 4 images (120 seconds gone by) is NOT done just add and continue
+                image_cache.append(dashboard.screenshot_img(full_df["time"].iloc[-1]))
+            last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
+        # Sleep 1 second to match up with dataframe update and to reduce CPU usage
+        time.sleep(1)
+
+    # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
+    dashboard.create_heatmap_dashboard()
+
 
 def make_dashboard():
     global full_df
@@ -621,6 +622,8 @@ def make_dashboard():
     except:
         print("[ERROR] - dashboard failed")
 
+
+# ------------------------------------------ Main ------------------------------------------ #
 if __name__ == "__main__":
     # load settings from settings file
     try:
@@ -631,8 +634,16 @@ if __name__ == "__main__":
     # initiate global empty dataframe
     init_df()
 
+    # load AI models
+    #load_models()
+    try:
+        load_models()
+    except:
+        print("[ERROR] - could not load AI models")
+
     # start localy hosted server
     setup_server()
+    
     # start all available hardware threads and return array of activated threads
     threads = start_threads()
 
@@ -643,8 +654,8 @@ if __name__ == "__main__":
     join_threads(threads)
 
     # Save dataframe to a path and with specified format
-    save_format = settings_dict["Save_format"]
-    save_path = settings_dict["Save_path"]
+    save_format = settings_dict["FileFormat"]
+    save_path = settings_dict["SaveLocation"]
     save_df(full_df, save_path, save_format)
 
     #print(full_df.columns)

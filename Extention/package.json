@@ -82,7 +82,26 @@
                 "type":"boolean",
                 "default":true,
                 "description": "Enabling calibration may increase startup time"
+              },
+
+              "Hardware.EEG" :{
+                "type": "boolean",
+                "default": false,
+                "description": "Activate EEG"
+              },
+
+              "Hardware.E4": {
+                "type": "boolean",
+                "default": false,
+                "description": "Activate E4"
+              },
+
+              "Hardware.Eyetracker": {
+                "type": "boolean",
+                "default": false,
+                "description": "Activate Eyetracker"
               }
+
             }
           },
           {

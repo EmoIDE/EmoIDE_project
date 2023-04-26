@@ -21,7 +21,7 @@ const { json } = require('stream/consumers');
 var client = new net.Socket();
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-const DevicesStatus = {"wristBand":false,"eyeTracker":false,"brainTracker":false}
+const DevicesStatus = {"E4":false,"Eyetracker":false,"EGG":false}
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -48,7 +48,7 @@ class DevicesDataProvider {
 	  // Define the items to display in the tree view
 	  this.items = [
 		{
-		  id: 'wristBand',
+		  id: 'E4',
 		  label: 'Empatica E4',
 		  active: false,
 		  iconPath: "$(gear)"
@@ -60,7 +60,7 @@ class DevicesDataProvider {
 			iconPath: "$(gear)"
 		},
 		{
-			id: 'brainTracker',
+			id: 'EEG',
 			label: 'Brainscanner',
 			active: false,
 			iconPath: "$(gear)"
@@ -113,30 +113,31 @@ const stats = new StatisticsDataProvider();
 
 function activate(context) {
 
-	var SAMViewProvider ={
-		resolveWebviewView:function(thisWebview){
-			thisWebview.webview.options={enableScripts:true}
-			thisWebview.webview.html=GetSAMView();
-		}
-	};
-	SAMViewProvider.thisWebview.vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider);
-
 	function UpdateSAMIndex(index)
 	{
-		const valPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index])
-		const imgVal = SAMViewProvider.webview.asWebviewUri(valPath);
-		const aroPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index+2])
-		const imgAro = SAMViewProvider.webview.asWebviewUri(aroPath);
 
-		SAMViewProvider.postMessage({SamVal: imgVal.toString(),SamAro: imgAro.toString()});
+		var SAMViewProvider ={
+			resolveWebviewView:function(thisWebview){
+				const valPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index])
+				const imgVal = thisWebview.webview.asWebviewUri(valPath);
+		
+				const aroPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index+2])
+				const imgAro = thisWebview.webview.asWebviewUri(aroPath);
+				thisWebview.webview.options={enableScripts:true}
+				thisWebview.webview.html=GetSAMView();
+				thisWebview.webview.postMessage({SamVal: imgVal.toString(),SamAro: imgAro.toString()});
+			}
+		};
+		vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider);
+
+		
 	}
 	
 	vscode.workspace.getConfiguration('')
 	vscode.window.createTreeView("Devices",{treeDataProvider:devices})
 	vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
 
-	UpdateSAMIndex(1);
-	
+	UpdateSAMIndex(0);
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
 	statusbarPulse.command = "statusWindow.open";
@@ -155,17 +156,25 @@ function activate(context) {
 		const user_settings = vscode.workspace.getConfiguration().get("User");
 		const hardware_settings = vscode.workspace.getConfiguration().get("Hardware");
 		const extension_settings = vscode.workspace.getConfiguration().get("Extension");
-		
+		//
 		//merge json
 		const merge_json = Object.assign(user_settings, hardware_settings, extension_settings);
 		
-	
+		// merge_json["EEG"] = devices["EEG"]
+		// merge_json["Eyetracker"] = devices["Eyetracker"]
+		// merge_json["E4"] = devices["E4"]
+		// merge_json["extension"] = true
+		// merge_json["training"] = false
+
+
 		vscode.window.showInformationMessage("trying to write settings");
 
-		const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/extension_settings.json");
+		const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/settings.json");
 		const fileUri = vscode.Uri.file(onDiskPath.path);
-		fs.writeFileSync(fileUri.fsPath, JSON.stringify(merge_json));
+		fs.writeFileSync(fileUri.fsPath, JSON.stringify(merge_json, null, 4));
 		
+		const update_json = {"function": "settings_update"};
+		client.write(JSON.stringify(update_json));
 		vscode.window.showInformationMessage("settings updated");
 
 	})
@@ -200,6 +209,7 @@ function activate(context) {
 	
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
 			connectToServer();
+			
 			const gettingEyeData = setInterval(getCurrentPulse, 1000);
 		}),
 
@@ -231,7 +241,7 @@ function activate(context) {
 			
 			
 		}),
-
+		
 
 
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
@@ -250,7 +260,6 @@ return `<!DOCTYPE html>
 		<p>Arousal</p>
 		<img  id="SAMArousal" src="" width="90" />
 	</div>
-
 	<div id=valence align = "left">
 		<p>Valence</p>
   		<img id="SAMValence" src="" width="90" />
