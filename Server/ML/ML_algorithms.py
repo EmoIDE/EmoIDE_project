@@ -12,7 +12,7 @@ def read_data(filepath):
         data_df = pd.read_csv(filepath)
     except:
         print("file not found")
-    return data_df
+        return data_df
 
 # filter out needed df colums for ML
 def ML_dataframe(data):
@@ -56,6 +56,7 @@ if __name__ == "__main__":
     # get the data and filter out necessary dataframe colums
     file_data = read_data("C:/Users/David/Documents/GitHub/EmoIDE_project/Server/Training_output/output_data_Emil.csv")
     ml_data = ML_dataframe(file_data)
+    print(ml_data)
     
     # run algorithms
     random_forest(ml_data)

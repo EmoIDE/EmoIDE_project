@@ -185,7 +185,6 @@ def create_heatmap_dashboard():
             carousel_html += f'<img src="{os.path.join(folder, image)}">'
         carousel_html += '</div>'
         folder_carousel.append((folder, carousel_html))
-    print(folder_carousel)
     # Render the data in the Jinja2 template
     html = template.render({'folder_carousels': folder_carousel})
 
