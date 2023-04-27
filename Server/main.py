@@ -409,10 +409,10 @@ def update_dataframe():
         #     training_dict["Arousal"] = None
         #     training_dict["Stress"] = 0
 
-        try:
-            predict_series()
-        except:
-            print("prediction failed - prediction_dict not updated")
+        # try:
+        predict_series(full_data_dict)
+        # except:
+        #     print("prediction failed - prediction_dict not updated")
         # dataframe
         full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
@@ -420,8 +420,12 @@ def update_dataframe():
 
 
 # ------------------------------------------ AI ------------------------------------------ #
-def predict_series():
+def predict_series(full_data_dict):
+    global svm_dataset
     global eeg_predict_values
+    global prediction_dict
+    svm_dataset = pd.read_csv("Server/ML/Models/SVM_dataset.csv")
+    svm_dataset.drop('Unnamed: 0', axis=1, inplace=True)
     full_data_dict["Gender"] = settings_dict["Gender"]
     full_data_dict["Age"] = settings_dict["Age"]
     eeg_predict_values = pd.Series(full_data_dict)
@@ -433,18 +437,20 @@ def predict_series():
     predict_frame= predict_frame.transpose()
 
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
+    # print(predict_frame)
 
-    # svm_dataset = svm_dataset.append(predict_frame) ####SEBBE MÅSTE FIXA DETTA, DEN LATA LILLA ODÅGAN
-
-    scaled = scale(predict_frame)
+    svm_dataset = svm_dataset.append(predict_frame) ####SEBBE MÅSTE FIXA DETTA, DEN LATA LILLA ODÅGAN
+    # print(svm_dataset)
+    scaled = scale(svm_dataset)
 
 
     # svm_valence.predict(scaled)[0]
     # print(svm_dataset)
     # print(scaled)
+    prediction_dict["Valence"] = svm_valence.predict([scaled[-1]])[0]
+    prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
+    # prediction_dict["Arousal"] = svm_arousal.predict([[ 0.,  1., -1.,  0., -1., -1., -1., -1.,  0.]])[0]
 
-    prediction_dict["Valence"] = svm_valence.predict(scaled)[0]
-    prediction_dict["Arousal"] = svm_arousal.predict(scaled)[0]
 
 
 def load_models():
