@@ -82,6 +82,7 @@ def setup_server():
     tcp_socket.listen()
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")  
 
+
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
