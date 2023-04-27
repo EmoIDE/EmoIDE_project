@@ -511,9 +511,9 @@ def TEST_create_mock_dataframe(test_time):
         eeg_data_dict["Relaxation"] = rand_Relaxation
         eeg_data_dict["Stress/Frustration"] = rand_Frustration
 
-        e4_data_dict["Pulse"] = random.randint(50,150)
-        e4_data_dict["Bvp"] = random.randint(50,150)
-        e4_data_dict["Gsr"] = random.randint(50,150)
+        e4_data_dict["Pulse"] = random.randint(40,220)
+        e4_data_dict["Bvp"] = random.randint(0,100)
+        e4_data_dict["Gsr"] = random.randint(0,100)
         full_data_dict.update(time_dict)
         full_data_dict.update(eye_data_dict)
         full_data_dict.update(e4_data_dict)
