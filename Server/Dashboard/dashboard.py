@@ -76,9 +76,9 @@ def create_combined_dashboard(df):
     dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
     staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
     images = []
-    text_list = ["1", "2"]
+    text_list = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
     staple_images = []
-    stress_list = [random.randint(60, 200) for f in range(0, len(staples))]
+    stress_list = [random.randint(50, 200) for f in range(0, len(staples))]
     for folder in staples:
         folder_path = os.path.join(dirpath, folder)
         staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
