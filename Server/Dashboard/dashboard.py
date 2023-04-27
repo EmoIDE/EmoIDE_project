@@ -60,6 +60,59 @@ def create_dashboard(df):
 
 
 
+def create_combined_dashboard(df):
+    excitement_list = df['Excitement'].tolist()
+    engagement_list = df['Engagement'].tolist()
+    long_excitement_list = df['Long term excitement'].tolist()
+    stress_list = df['Stress/Frustration'].tolist()
+    relaxation_list = df['Relaxation'].tolist()
+    interest_list = df['Interest/Affinity'].tolist()
+    focus_list = df['Focus'].tolist()
+    pulse_list = df['Pulse'].tolist()
+    gsr_list = df["Gsr"].tolist()
+    bvp_list = df["Bvp"].tolist()
+    index_list = df.index.tolist()
+
+    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
+    staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
+    text_list = []
+    staple_images = []
+    stress_list = [random.randint(50, 200) for f in range(0, len(staples))]
+    for folder in staples:
+        text_list.append(folder)
+        folder_path = os.path.join(dirpath, folder)
+        staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
+
+    data = {
+        'title': 'test',
+        'excitement_list': excitement_list,
+        'index_list': index_list,
+        'engagement_list': engagement_list,
+        'long_excitement_list': long_excitement_list,
+        'stress_list': stress_list,
+        'relaxation_list': relaxation_list,
+        'interest_list': interest_list,
+        'focus_list': focus_list,
+        'pulse_list': pulse_list,
+        "gsr_list": gsr_list,
+        "bvp_list": bvp_list,
+        'folder_staples': staples,
+        'image_list': staple_images,
+        'stress_list': stress_list,
+        'text_list': text_list
+    }
+    try:
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+        template = env.get_template("combined_template.html")
+        html = template.render(data)
+
+        # Save the rendered HTML to a file
+        filename = "/combined_dashboard.html"
+        with open(str(output_path + filename), "w") as f:
+            f.write(html)
+    except Exception as e:
+        print(e)
+
 
 
 def get_df_in_time_range(start_time, end_time, df):
@@ -183,7 +236,9 @@ def create_heatmap_dashboard():
         for image in images:
             carousel_html += f'<img src="{os.path.join(folder, image)}">'
         carousel_html += '</div>'
-        folder_carousel.append((folder, carousel_html))
+        stress_level = random.randint(60, 250)
+
+        folder_carousel.append((folder, carousel_html, stress_level))
     # Render the data in the Jinja2 template
     html = template.render({'folder_carousels': folder_carousel})
 

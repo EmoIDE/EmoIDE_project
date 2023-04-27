@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combined Dashboard</title>
+</head>
+<body>
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div id="main-body">
+    <style>
+  body {
+ flex-direction: column;
+ align-items: center;
+}
+
+.slider::-webkit-slider-thumb {
+ -webkit-appearance: none;
+ margin: 0;
+ margin-top: -9px;
+ width: 22px;
+ height: 23px;
+ background: #555;
+ cursor: pointer;
+ border-radius: 12px;
+}
+
+.slider::-webkit-slider-runnable-track {
+ -webkit-appearance: none;
+ height: 6px;
+ width: 22px;
+ background-color: #f0f0f0;
+ margin-left: 14px;
+ margin-right: 14px;
+}
+
+.line {
+ border-bottom: 2px solid #ebeef1 ;
+ margin-bottom: 20px;
+ margin-top: 20px;
+ width: 80%;
+ margin:auto;
+}
+
+.slider-container {
+ position: relative;
+ display: flex;
+ justify-content: flex-start;
+ align-items: center;
+ width: 45%;
+ margin: 0 auto;
+ border-radius: 6px;
+ z-index: 2;
+}
+
+.slider-bg {
+ position: absolute;
+ bottom: 0;
+ width: 100%;
+ height: 5px;
+ background-color: #f0f0f0;
+ border-radius: 6px;
+ z-index: 1;
+}
+
+.slider {
+ -webkit-appearance: none;
+ position: absolute;
+ bottom: 0;
+ height: 5px;
+ margin: 0;
+ background-color: #f0f0f0;
+ border-radius: 6px;
+ outline: none;
+ z-index: 2;
+}
+
+.staples {
+ display: flex;
+ width: 100%;
+ padding-bottom: 25px;
+ align-items: center;
+ margin-bottom: 25px;
+ position: relative;
+ z-index: 1;
+}
+
+.staple {
+ width: 30px;
+ margin-right: 10px;
+ margin-left: 10px;
+ border-radius: 6px;
+ background-color: #E2E4E7;
+}
+
+.staple:hover {
+ cursor: pointer;
+}
+
+.active-staple {
+ background-color: #ff6b6b;
+}
+
+.image-gallery {
+ display: flex;
+ justify-content: center;
+ margin-bottom: 20px;
+}
+
+.images {
+ position: relative;
+}
+.staple-wrapper {
+ position: relative;
+ margin-left: 10px;
+ margin-right: 10px;
+}
+
+.image {
+ display: none;
+ width: 640px;
+ height: 360px;
+ object-fit: contain;
+}
+.staple-text {
+ display: none;
+ position: absolute;
+ bottom: 20px;
+ text-align: center;
+ width: 100%;
+ white-space: nowrap; /* Prevent text from wrapping to a new line */
+}
+
+.active {
+ display: block;
+}
+
+.arrow {
+ background: none;
+ border: none;
+ font-size: 4rem;
+ cursor: pointer;
+}
+
+.left-arrow {
+ margin-right: 10px;
+}
+
+.right-arrow {
+ margin-left: 10px;
+}
+
+.dots {
+ display: flex;
+ justify-content: center;
+ margin-top: 10px;
+}
+
+.dot {
+ display: inline-block;
+ width: 15px;
+ height: 15px;
+ margin: 0 40px;
+ border-radius: 50%;
+ background-color: #bbb;
+}
+.dot:hover{
+ cursor: pointer;
+}
+.active {
+ background-color: black;
+}
+</style>
+ <div class="category">
+   <h2>Heatmap</h2>
+ </div>
+ <div class="image-gallery">
+   <button id="left-arrow" class="arrow left-arrow">&lt;</button>
+   <div class="images">
+     
+     <img src="c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-27-24.png" class="image active" id="image1">
+     
+     <img src="c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-27-45.png" class="image " id="image2">
+     
+     <img src="c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-28-06.png" class="image " id="image3">
+     
+     <img src="c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-28-27.png" class="image " id="image4">
+     
+   </div>
+   <button id="right-arrow" class="arrow right-arrow">&gt;</button>
+ </div>
+ <div class="dots">
+     <span class="dot active"></span>
+     <span class="dot"></span>
+     <span class="dot"></span>
+     <span class="dot"></span>
+   </div>
+
+ <div class="line"></div>
+
+ <div class="slider-container">
+   <div class="staples">
+     
+     <div id="staple1" class="staple"></div>
+     
+     <div id="staple2" class="staple"></div>
+     
+     <div id="staple3" class="staple"></div>
+     
+     <div id="staple4" class="staple"></div>
+     
+     <div id="staple5" class="staple"></div>
+     
+     <div id="staple6" class="staple"></div>
+     
+     <div id="staple7" class="staple"></div>
+     
+     <div id="staple8" class="staple"></div>
+     
+   </div>
+   <span class="staple-text"></span>
+   <div class="slider-bg"></div>
+   <input type="range" min="1" max="4" value="1" id="slider" class="slider">
+ </div>
+
+
+ <script>
+   const slider = document.getElementById("slider");
+const stapleHeights = [ "51",  "154",  "127",  "156",  "83",  "60",  "147",  "140" ];
+const imageSets = [
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-27-24.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-27-45.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-28-06.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24/26-04-2023T15-28-27.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24 - kopia/26-04-2023T15-27-24.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24 - kopia/26-04-2023T15-27-45.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24 - kopia/26-04-2023T15-28-06.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-24 - kopia/26-04-2023T15-28-27.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25/26-04-2023T15-27-24.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25/26-04-2023T15-27-45.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25/26-04-2023T15-28-06.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25/26-04-2023T15-28-27.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25 - kopia/26-04-2023T15-27-24.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25 - kopia/26-04-2023T15-27-45.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25 - kopia/26-04-2023T15-28-06.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-27-25 - kopia/26-04-2023T15-28-27.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14/26-04-2023T15-41-14.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14/26-04-2023T15-41-35.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14/26-04-2023T15-41-56.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14/26-04-2023T15-42-17.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14 - kopia/26-04-2023T15-41-14.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14 - kopia/26-04-2023T15-41-35.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14 - kopia/26-04-2023T15-41-56.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-14 - kopia/26-04-2023T15-42-17.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17/26-04-2023T15-41-14.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17/26-04-2023T15-41-35.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17/26-04-2023T15-41-56.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17/26-04-2023T15-42-17.png"
+     
+   ],
+ 
+   [
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17 - kopia/26-04-2023T15-41-14.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17 - kopia/26-04-2023T15-41-35.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17 - kopia/26-04-2023T15-41-56.png",
+     
+       "c:/Users/David/Documents/GitHub/EmoIDE_project/Server/Dashboard/Heatmaps/26-04-2023T15-41-17 - kopia/26-04-2023T15-42-17.png"
+     
+   ]
+ 
+];
+const stapleTexts = [
+ 
+   "26-04-2023T15-27-24",
+ 
+   "26-04-2023T15-27-24 - kopia",
+ 
+   "26-04-2023T15-27-25",
+ 
+   "26-04-2023T15-27-25 - kopia",
+ 
+   "26-04-2023T15-41-14",
+ 
+   "26-04-2023T15-41-14 - kopia",
+ 
+   "26-04-2023T15-41-17",
+ 
+   "26-04-2023T15-41-17 - kopia"
+ 
+];
+const images = document.querySelectorAll(".image");
+const staples = document.querySelectorAll(".staple");
+const leftArrow = document.getElementById("left-arrow");
+const rightArrow = document.getElementById("right-arrow");
+let currentImageIndex = 0;
+const textContainer = document.querySelector('.staple-text');
+
+function showImage(index) {
+ images.forEach((image) => {
+   image.classList.remove("active");
+ });
+ images[index].classList.add("active");
+ dots.forEach((dot, dotIndex) => {
+   if (dotIndex === index) {
+     dot.classList.add("active");
+   } else {
+     dot.classList.remove("active");
+   }
+ });
+}
+const dots = document.querySelectorAll(".dot");
+const dotIndicators = document.querySelectorAll('.dot-indicator');
+dots.forEach((dot, index) => {
+ dot.addEventListener('click', () => {
+   currentImageIndex = index;
+   showImage(currentImageIndex);
+ });
+});
+slider.addEventListener("input", () => {
+ const value = slider.value;
+
+ staples.forEach((staple, index) => {
+   staple.style.height = `${stapleHeights[index]}px`;
+   staple.classList.remove("active-staple");
+ });
+
+ const selectedStaple = staples[value - 1];
+ selectedStaple.classList.add("active-staple");
+ updateStapleTextPosition(value);
+
+ dotIndicators.forEach((indicator, index) => {
+   if (index === currentImageIndex) {
+     indicator.classList.add("active-dot");
+   } else {
+     indicator.classList.remove("active-dot");
+   }
+ });
+
+ imageSets[value - 1].forEach((src, index) => {
+   images[index].src = src;
+ });
+
+ currentImageIndex = 0;
+ showImage(currentImageIndex);
+ if (value == 1) {
+   dotIndicators[0].classList.add("active-dot");
+ }
+});
+
+
+leftArrow.addEventListener("click", () => {
+ currentImageIndex--;
+ if (currentImageIndex < 0) {
+   currentImageIndex = images.length - 1;
+ }
+ showImage(currentImageIndex);
+});
+
+rightArrow.addEventListener("click", () => {
+ currentImageIndex++;
+ if (currentImageIndex >= images.length) {
+   currentImageIndex = 0;
+ }
+ showImage(currentImageIndex);
+});
+
+pause = false
+setInterval(() => {
+  if(!pause) {
+    currentImageIndex++;
+    if (currentImageIndex >= images.length) {
+      currentImageIndex = 0;
+    }
+    showImage(currentImageIndex)
+  }
+}, 2000)
+
+document.querySelector('.images').addEventListener('mouseenter', () => {pause = !pause})
+document.querySelector('.images').addEventListener('mouseleave', () => {pause = !pause})
+
+function updateStapleTextPosition(value) {
+ const selectedStaple = staples[value - 1];
+ const stapleOffsetLeft = selectedStaple.offsetLeft;
+ const stapleWidth = selectedStaple.clientWidth;
+ const textContainerWidth = textContainer.clientWidth;
+
+ textContainer.style.left = `${stapleOffsetLeft + (stapleWidth / 2) - (textContainerWidth / 2)}px`;
+ textContainer.style.display = 'block';
+ textContainer.textContent = stapleTexts[value - 1];
+}
+
+function setSliderWidth() {
+ const stapleContainer = document.querySelector(".staples");
+ const stapleWidth = staples[0].offsetWidth;
+ const gapBetweenStaples = parseInt(getComputedStyle(staples[0]).marginRight) + parseInt(getComputedStyle(staples[0]).marginLeft);
+ const totalStapleWidth = (stapleWidth + gapBetweenStaples) * staples.length
+ slider.style.width = `${totalStapleWidth - 1}px`;
+}
+
+function switchToStaple(index) {
+ slider.value = index + 1;
+ slider.dispatchEvent(new Event("input"));
+}
+
+staples.forEach((staple, index) => {
+ staple.addEventListener("click", () => {
+   switchToStaple(index);
+ });
+});
+
+
+
+setSliderWidth();
+slider.setAttribute("max", staples.length);
+slider.setAttribute("min", 1);
+slider.setAttribute("step", 1);
+updateStapleTextPosition(1);
+slider.dispatchEvent(new Event("input"));
+ </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .logo {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .category {
+      text-align: center;
+      color: black;
+      padding: 10px;
+    }
+    #main-body {
+      margin-top:10%;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+    
+.chart-container {
+  height: 400px;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+  </style>
+
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div class="category">
+    <h2>EEG Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart1"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart2"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart3"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart4"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart5"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart6"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart7"></canvas>
+    </div>
+  </div>
+  <div class="category">
+    <h2>E4 Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart8"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart9"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart10"></canvas>
+    </div>
+  </div>
+  
+<script>
+  var ctx1 = document.getElementById('chart1');
+      var chart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Excitement (%)',
+            data: [0.0,95.14727883299022,28.265789633454684,24.709341258278016,3.445586736680406,64.82943533510944,52.116962348961785,14.014850333656604,16.90771819603716,27.775210355196588,58.53765912119779,45.77641072963405,],
+            borderColor: "#B22222"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: 'Dina känslor som vi kommer sälja till Kina för en förmögenhet.'
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx2 = document.getElementById('chart2');
+      var chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Engagement (%)',
+            data: [0.0,58.98160883446458,7.674660052912651,26.67878629050645,99.57106606315016,43.516727106920996,71.86205127208363,90.3691779947899,9.313342292907134,29.787738329641268,29.598746887138294,42.753619509340915,],
+            borderColor: "#4D81F0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx3 = document.getElementById('chart3');
+      var chart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Long Term Excitement (%)',
+            data: [0.0,73.75856245533785,9.626370527591032,57.37520814068888,16.495329509685252,35.48386199486953,10.094036465887768,73.59816263809158,53.506681868886155,35.930920666167076,95.22555691207954,22.16975785013222,],
+            borderColor: "#FF69B4"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx4 = document.getElementById('chart4');
+      var chart4 = new Chart(ctx4, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Stress (%)',
+            data: [5100,15400,12700,15600,8300,6000,14700,14000,],
+            borderColor: "#FFFACD"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx5 = document.getElementById('chart5');
+      var chart5 = new Chart(ctx5, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Relaxation (%)',
+            data: [0.0,44.71547087530369,35.61880680019407,9.970061088023098,83.06302474560891,23.073868310579783,55.218322983927024,36.388519212735595,18.181572673101332,6.59612208404906,40.297426407293294,28.198449962923753,],
+            borderColor: "#FF7F50"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx6 = document.getElementById('chart6');
+      var chart6 = new Chart(ctx6, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Interest (%)',
+            data: [0.0,95.65021056726245,87.88295962813383,80.7050323993138,12.5194461881301,93.26256894561747,79.53742462188885,99.70475508796906,62.579729244970885,34.85914245159986,28.945910512292482,90.64030724090686,],
+            borderColor: "#D2F04D"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx7 = document.getElementById('chart7');
+      var chart7 = new Chart(ctx7, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Focus (%)',
+            data: [0.0,22.39952281566432,28.628191141192026,5.58837252393255,86.98503403742038,28.15654405962227,39.120633460952135,94.05835966994304,19.75772053024647,30.465818411131252,46.95793514334735,48.48332196497896,],
+            borderColor: "#4DF0B0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx8 = document.getElementById('chart8');
+      var chart8 = new Chart(ctx8, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Pulse',
+            data: [0.0,70.0,93.0,60.0,90.0,84.0,85.0,91.0,66.0,68.0,75.0,75.0,],
+            borderColor: "#F95858"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:40,
+          max:220,
+        }
+      }
+    }
+      });
+
+
+      var ctx9 = document.getElementById('chart9');
+      var chart9 = new Chart(ctx9, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Galvanic Skin Response (%)',
+            data: [0.0,20.0,10.0,20.0,10.0,20.0,20.0,10.0,10.0,10.0,10.0,10.0,],
+            borderColor: "#F958C3"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx10 = document.getElementById('chart10');
+      var chart10 = new Chart(ctx10, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          datasets: [{
+            label: 'Blood Volume Pulse',
+            data: [0.0,-100.0,-94.0,-37.0,43.0,48.0,22.0,-45.0,-2.0,-78.0,10.0,-27.0,],
+            borderColor: "#F9C158"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:-100,
+          max:100,
+        }
+      }
+    }
+      });
+</script>
+  </div>
+</body>
+</html>

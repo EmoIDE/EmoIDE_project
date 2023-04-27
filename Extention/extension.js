@@ -4,15 +4,19 @@ let StatusRed =	"StatusInactive.png"
 let statusbarPulse;
 
 const SAMValence = [
-	"Assets/SAMIcons/Valence/SAMValence1.png",
-	"Assets/SAMIcons/Valence/SAMValence2.png",
-	"Assets/SAMIcons/Valence/SAMValence3.png",
-	"Assets/SAMIcons/Valence/SAMValence4.png",
-	"Assets/SAMIcons/Valence/SAMValence5.png"
+	"https://i.imgur.com/hgjLFYE.png",
+	"https://i.imgur.com/A8Ou2sB.png",
+	"https://i.imgur.com/5R4oEDS.png",
+	"https://i.imgur.com/4vKzBoP.png",
+	"https://i.imgur.com/3RBGUOs.png"
 ]
 const SAMArousal = [ //TODO: Add Arousal Icons
+	"https://i.imgur.com/OBQHlEK.png",
+	"https://i.imgur.com/d2OXaVz.png",
+	"https://i.imgur.com/c2QTq2w.png",
+	"https://i.imgur.com/AidtLz0.png",
+	"https://i.imgur.com/Np92D15.png"
 ]
-
 const { debug } = require('console');
 const vscode = require('vscode');
 const fs = require('fs');
@@ -107,37 +111,84 @@ class DevicesDataProvider {
 		  return treeItem;
 		}
   }
+  class SAMViewProvider {
+	static get viewType() { return 'SAMView'; }
 
-const devices = new DevicesDataProvider();
-const stats = new StatisticsDataProvider();
+	constructor(_extensionUri) {
+	  this._extensionUri = _extensionUri;
+	  this._view = undefined;
+	}
+  
+	resolveWebviewView(webviewView, context, _token) {
+	  webviewView.webview.options = {
+		// Allow scripts in the webview
+		enableScripts: true,
+  
+		localResourceRoots: [
+		  this._extensionUri
+		]
+	  };
+  
+	  webviewView.webview.html = this.GetSAMView(0,0);
+	  this._view = webviewView;
+	}
+  
+	UpdateSAMIndex(indexVal,indexAro) {
+	  if (this._view) {
+		this._view.webview.html = this.GetSAMView(indexVal,indexAro);
+	  	}
+	}
+	GetSAMView(indexVal,indexAro) {
+
+		return `<!DOCTYPE html>
+		  <html lang="en">
+		  <head>
+			  <meta charset="UTF-8">
+		  </head>
+		  <body>
+			<div id=arousal align = "left">
+				<p>Arousal</p>
+				<img  id="SAMArousal" src="${SAMArousal[indexAro]}"/>
+			</div>
+		
+			<div id=valence align = "left">
+				<p>Valence</p>
+				  <img id="SAMValence" src="${SAMValence[indexVal]}"/>
+			</div>
+			<script>
+				const imgAro = document.getElementById('SAMArousal');
+				const vscode = acquireVsCodeApi();
+				window.addEventListener('message', event => {
+					const imgVal = document.getElementById('SAMValence');
+					
+					switch (message.command) {
+						case 'Valence':
+							imgVal.src = message.data.SAMVal;
+							break;
+						case 'Arousal':
+							imgAro.src = message.data.SamAro;
+							break;
+					}
+				});
+			</script>
+			</body>
+			</html>`;
+		  }
+}
+
+
+
 
 function activate(context) {
-
-	function UpdateSAMIndex(index)
-	{
-
-		var SAMViewProvider ={
-			resolveWebviewView:function(thisWebview){
-				const valPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index])
-				const imgVal = thisWebview.webview.asWebviewUri(valPath);
-		
-				const aroPath = vscode.Uri.joinPath(context.extensionUri, SAMValence[index+2])
-				const imgAro = thisWebview.webview.asWebviewUri(aroPath);
-				thisWebview.webview.options={enableScripts:true}
-				thisWebview.webview.html=GetSAMView();
-				thisWebview.webview.postMessage({SamVal: imgVal.toString(),SamAro: imgAro.toString()});
-			}
-		};
-		vscode.window.registerWebviewViewProvider("SAMView", SAMViewProvider);
-
-		
-	}
-	
+	const SAMProv = new SAMViewProvider(context.extensionUri);
+	const devices = new DevicesDataProvider();
+	const stats = new StatisticsDataProvider();
 	vscode.workspace.getConfiguration('')
 	vscode.window.createTreeView("Devices",{treeDataProvider:devices})
 	vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
 
-	UpdateSAMIndex(0);
+	
+	vscode.workspace.getConfiguration('')
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
 	statusbarPulse.command = "statusWindow.open";
@@ -178,10 +229,10 @@ function activate(context) {
 		vscode.window.showInformationMessage("settings updated");
 
 	})
-
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider("SAMView", SAMProv));
 	context.subscriptions.push(
 		vscode.commands.registerCommand('statusWindow.open', () => {
-		  // Create and show a new webview
+		  // Create and show a new webviewtpulse
 		  const panel = vscode.window.createWebviewPanel(
 			'statusWindow.open', // Identifies the type of the webview. Used internally
 			'Status', // Title of the panel displayed to the user
@@ -190,7 +241,7 @@ function activate(context) {
 				enableScripts: true
 			} // Webview options. More on these later.
 		  );
-		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/dashboard.html");
+		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/combined_dashboard.html");
 		  const fileUri = vscode.Uri.file(onDiskPath.path);
 
 		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
@@ -199,7 +250,7 @@ function activate(context) {
 		
 		vscode.commands.registerCommand('EmoIDE.UpdateSAM', () => 
 		{
-			UpdateSAMIndex(1);
+			SAMProv.UpdateSAMIndex(1,3);
 		}),
 
 		vscode.commands.registerCommand('EmoIDE.showSettings', () => {
@@ -238,8 +289,6 @@ function activate(context) {
 					vscode.window.showInformationMessage('Device "'+deviceId+'"failed to connect');
 				}
 			}
-			
-			
 		}),
 		
 
@@ -249,37 +298,7 @@ function activate(context) {
 	})
 	);
 }
-function GetSAMView() {
-return `<!DOCTYPE html>
-  <html lang="en">
-  <head>
-	  <meta charset="UTF-8">
-  </head>
-  <body>
-	<div id=arousal align = "left">
-		<p>Arousal</p>
-		<img  id="SAMArousal" src="" width="90" />
-	</div>
-	<div id=valence align = "left">
-		<p>Valence</p>
-  		<img id="SAMValence" src="" width="90" />
-	</div>
-	
-	<script>
-		const vscode = acquireVsCodeApi();
-		window.addEventListener('message', event => {
-			console.log("message recieved");
-			const message = event.data;
-			const imgVal = document.getElementById('SAMValence');
-			const imgAro = document.getElementById('SAMArousal');
-			imgVal.src = message.SamVal;
-			imgAro.src = message.SamAro;
-			});
-	</script>
-  </body>
-  </html>`;
-  }
-  
+
   function connectToServer(){
 	client.connect(6969, '127.0.0.1', function() {
 		console.log('Connected');
@@ -293,6 +312,7 @@ function getCurrentPulse(){
 	var json_data = {"function": "getPulse"}
 	client.write(JSON.stringify(json_data));
 }
+
 client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]

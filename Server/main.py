@@ -92,13 +92,13 @@ def tcp_communication():
     # loop and try to connect to extention
     extension_connected = False
     connect_test = 0
-    while not extension_connected and connect_test < 2:
+    while not extension_connected and connect_test < 4:
         try:
             connect_test += 1
             conn, client = tcp_socket.accept()
             extension_connected = True
         except:
-            print("not connected")
+            print("Tries to connect to extension")
     try:
         print(f"Connected to {client}")
     except:
@@ -122,7 +122,7 @@ def tcp_communication():
         # mest för att testa så klienten och servern kan kommunicera
         
 
-        print(recived_msg)
+        #print(recived_msg)
         if recived_msg == "settings_update":
             read_settings(SETTINGS_PATH)
             print(settings_dict)
@@ -192,8 +192,13 @@ async def import_EEG_data():
 
     cortex_api = EEG.EEG()
     await cortex_api.connect()
-    await cortex_api.setup()
-    
+    try:
+        await cortex_api.setup()
+    except:
+        print("[ERROR] - EEG setup")
+        calibration_done["EEG"] = True
+        return 0
+
     #wait for first message
     #await cortex_api.get_eeg_data()
 
@@ -348,7 +353,7 @@ def init_df():
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
     
-def update_dataframe(mock = False):
+def update_dataframe(print_it = True, mock = False):
     global full_df
     global max_time
     calibration_done["Dataframe"] = True
@@ -370,7 +375,7 @@ def update_dataframe(mock = False):
             mock_all_dicts()
 
         # Clear terminal
-        #os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+        # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
         # time
         # time_dict["time"] = time.localtime()
@@ -411,14 +416,15 @@ def update_dataframe(mock = False):
         #     training_dict["Arousal"] = None
         #     training_dict["Stress"] = 0
 
-        # try:
-        predict_series(full_data_dict)
-        # except:
-        #     print("prediction failed - prediction_dict not updated")
+        try:
+            predict_series(full_data_dict)
+        except:
+            print("prediction failed - prediction_dict not updated")
         # dataframe
         full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
-        print(f"{full_df}\n--------------------------------")                                     ###########################
+        if print_it == True:
+            print(f"{full_df}\n--------------------------------")                                     ###########################
 
 
 def mock_all_dicts():
@@ -449,7 +455,7 @@ def predict_series(full_data_dict):
     global prediction_dict
     svm_dataset = pd.read_csv("Server/ML/Models/SVM_dataset.csv")
     svm_dataset.drop('Unnamed: 0', axis=1, inplace=True)
-    full_data_dict["Gender"] = settings_dict["Gender"]
+    full_data_dict["Gender"] = "Male"#settings_dict["Gender"]
     full_data_dict["Age"] = settings_dict["Age"]
     eeg_predict_values = pd.Series(full_data_dict)
 
@@ -471,8 +477,10 @@ def predict_series(full_data_dict):
     # print(svm_dataset)
     # print(scaled)
     prediction_dict["Valence"] = svm_valence.predict([scaled[-1]])[0]
-    prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
-    # prediction_dict["Arousal"] = svm_arousal.predict([[ 0.,  1., -1.,  0., -1., -1., -1., -1.,  0.]])[0]
+    if random.randrange(0, 100) > 50:
+        prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
+    else:
+        prediction_dict["Arousal"] = svm_arousal.predict([[ 0.,  1., -1.,  0., -1., -1., -1., -1.,  0.]])[0]
 
 
 
@@ -599,7 +607,9 @@ def start_threads():
 
     # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
-    df_thread = threading.Thread(target=update_dataframe(True), daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
+    print_df = False
+    mock = True
+    df_thread = threading.Thread(target=update_dataframe(print_df, mock), daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
     threads.append(df_thread)
     thread_names.append("df_thread")
@@ -661,14 +671,15 @@ def start_heatmap():
         time.sleep(1)
 
     # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
-    dashboard.create_heatmap_dashboard()
+    # dashboard.create_heatmap_dashboard()
+    dashboard.create_combined_dashboard(full_df)
 
 
 def make_dashboard():
     global full_df
 
     try:
-        dashboard.create_dashboard(full_df)
+        dashboard.create_combined_dashboard(full_df)
     except:
         print("[ERROR] - dashboard failed")
 

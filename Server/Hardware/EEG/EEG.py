@@ -39,7 +39,7 @@ class EEG:
         try:
             self.cortex = await websockets.connect(self.socket_url)
         except:
-            print("[ERROR] EEG connection failed. Check if application is running on the computer")
+            print("[ERROR] - EEG connection failed. Check if application is running on the computer")
 
 
     async def request_access(self):
@@ -68,7 +68,7 @@ class EEG:
             await self.cortex.send(json.dumps(has_access_rights_json))
             msg = await self.cortex.recv()
         except:
-            print("[ERROR] EEG request_access")
+            print("[ERROR] - EEG request_access")
 
         if (json.loads(msg)["result"]["accessGranted"] == True):
             return
@@ -178,26 +178,24 @@ class EEG:
 
 
     async def setup(self):
-        try:
-            #check access rights
-            await self.request_access()
+       
+        #check access rights
+        await self.request_access()
 
-            #get headset id
-            await self.get_headset_id()
+        #get headset id
+        await self.get_headset_id()
 
-            #authorize(get token)
-            await self.authorize()
+        #authorize(get token)
+        await self.authorize()
 
-            #create session
-            await self.create_session()
+        #create session
+        await self.create_session()
 
-            #subscribe to data stream        
-            await self.subscribe()
+        #subscribe to data stream        
+        await self.subscribe()
 
-            #print("Setup done")
-        except:
-            print("[ERROR] - EEG setup")
-
+        #print("Setup done")
+      
 
     async def get_eeg_data(self):
         data_arr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]

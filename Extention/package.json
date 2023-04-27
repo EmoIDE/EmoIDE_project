@@ -117,8 +117,8 @@
                 
                 "User.Gender":{
                   "type": "string",
-                  "default": "null",
-                  "enum": ["male","female"]
+                  "default": "Male",
+                  "enum": ["Male","Female"]
                 },
 
                 "User.RestingHeartRate":{

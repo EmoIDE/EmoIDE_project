@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Heatmap</title>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+    * {
+      margin:0;
+      padding:0;
+    }
+
+    body {
+      width:100%;
+      height:100vh;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      position: relative;
+      max-width:1000px;
+      width:95%;
+      height:100%;
+      margin:auto;
+
+      display:flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .heatmap {
+      position: relative;
+      width:100%;
+      height: calc(440px + 30px);
+    }
+    .moment {
+      width:100%;
+      height:100%;
+      position: absolute;
+      top:0;
+      left:0;
+      opacity:0;
+      transition: all 1s ease-in-out;
+    }
+    .moment.active {
+      opacity: 1;
+    }
+
+
+
+    .controller {
+      position: relative;
+      width:100%;
+      height:100px;
+      background-color:rgb(255, 255, 255);
+      display:flex;
+    }
+    .controller::after {
+      content:'';
+      position: absolute;
+      top:50%;
+      left:0;
+      width:100%;
+      height:2px;
+      background-color:gray;
+      z-index:0;
+    }
+    .time {
+      position: relative;
+      width:50px;
+      height:100%;
+      background-color:rgb(192, 192, 192);
+      margin-right: 10px;
+      z-index:1;
+      transition: all .4s ease-in-out;
+    }
+    .time p {
+      font-family: 'Roboto', sans-serif;
+      display:inline;
+      width:100%;
+      position: absolute;
+      bottom:-20px;
+      left:0%;
+      transform:translate(-100%);
+      white-space: nowrap;
+      font-weight: bold;
+      color:gray;
+      opacity:0;
+      transition: all .4s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="heatmap">
+      {% for folder, carousel_html in folder_carousels %}
+        <div class="moment" data-link={{ folder }}>
+          {{ carousel_html }}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="controller">
+      {% for folder, carousel_html in folder_carousels %}
+      <div class="time" data-link={{ folder }}>
+        <p>{{folder}}</p>
+      </div>
+      {% endfor %} 
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('.carousel').slick({
+        autoplay: true,
+        autoplaySpeed: 1000,
+        dots: true,
+        infinite: true,
+        speed: 500,
+        fade: true,
+        cssEase: 'linear'
+      });
+    });
+
+
+    document.querySelectorAll('.time').forEach((item) => {
+      item.addEventListener('click', () => {
+        moment = item.dataset.link;
+        const images = document.querySelectorAll('.moment')
+
+        images.forEach((image) => {
+          if(image.dataset.link == moment) {
+            image.style.opacity = 1;
+            $('.carousel').slick('slickGoTo', 0);
+          } else {
+            image.style.opacity = 0;
+          }
+        })
+
+        const timeline = document.querySelectorAll('.time')
+        timeline.forEach((time) => {
+          if(time.dataset.link == moment) {
+            // Active
+            time.style.backgroundColor = "rgb(153, 153, 153)";
+            time.firstElementChild.style.opacity = 1;
+          } else {
+            // Not Active
+            time.style.backgroundColor = "rgb(193, 193, 193)";
+            time.firstElementChild.style.opacity = 0;
+          }
+        })
+      })
+    })
+  </script>
+</body>
+</html>
