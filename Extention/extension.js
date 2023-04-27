@@ -23,8 +23,7 @@ const fs = require('fs');
 var net = require('net');
 const { json } = require('stream/consumers');
 var client = new net.Socket();
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+
 const DevicesStatus = {"E4":false,"Eyetracker":false,"EGG":false}
 /**
  * @param {vscode.ExtensionContext} context
@@ -42,7 +41,6 @@ class StatisticsDataProvider
 	}
 	getChildren(element)
 	{
-
        return element
 	}
 }
