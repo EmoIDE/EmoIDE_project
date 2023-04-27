@@ -34,6 +34,7 @@ import random
 from matplotlib.backends.backend_pdf import PdfPages
 
 from sklearn.preprocessing import scale
+import joblib
 
 
 format = "%d-%m-%YT%H-%M-%S"
@@ -408,11 +409,11 @@ def update_dataframe():
         #     training_dict["Arousal"] = None
         #     training_dict["Stress"] = 0
 
-        try:
-            predict_series()
-        except:
-            print("prediction failed - prediction_dict not updated")
-
+        # try:
+        #     predict_series()
+        # except:
+        #     print("prediction failed - prediction_dict not updated")
+        predict_series()
         # dataframe
         full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
@@ -434,8 +435,14 @@ def predict_series():
 
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
 
+    svm_dataset.append(predict_frame)
+
     scaled = scale(predict_frame)
-    new_value = [ 0., -1.,  1.,  0.,  1.,  1., -1.,  1.,  0.]
+
+
+    # svm_valence.predict(scaled)[0]
+    print(svm_dataset)
+    # print(scaled)
 
     prediction_dict["Valence"] = svm_valence.predict(scaled)[0]
     prediction_dict["Arousal"] = svm_arousal.predict(scaled)[0]
@@ -443,15 +450,12 @@ def predict_series():
 
 def load_models():
     global svm_arousal, svm_valence
-    with open('Server/ML/Models/SVM_Arousal_model_new.sav', 'rb') as f:
-    # load the pickled object using the correct encoding
-        svm_arousal = pickle.load(f)
+    global svm_dataset
+    svm_arousal = joblib.load("Server/ML/Models/SVM_Arousal_model_job.sav")
+    svm_valence = joblib.load("Server/ML/Models/SVM_Valence_model_job.sav")
+    svm_dataset = pd.read_csv("Server/ML/Models/SVM_dataset.csv")
+    svm_dataset.drop('Unnamed: 0', axis=1, inplace=True)
 
-    with open('Server/ML/Models/SVM_Valence_model_new.sav', 'rb') as f:
-    # load the pickled object using the correct encoding
-        svm_valence = pickle.load(f)
-    #svm_arousal = pickle.load(open("Server/ML/Models/SVM_Arousal_model_new.sav", 'rb'))
-    #svm_valence = pickle.load(open("Server/ML/Models/SVM_Valence_model_new.sav", 'rb'))
 
 
 # ------------------------------------------ Files ------------------------------------------ #
