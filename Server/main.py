@@ -492,13 +492,13 @@ def TEST_create_mock_dataframe(test_time):
         rand_x = random.randint(0,10)
         rand_y = random.randint(0,10)
         
-        rand_Engagment = random.randint(0,10)
-        rand_Excitement = random.randint(0,10)
-        rand_Long_Excitement = random.randint(0,10)
-        rand_Frustration = random.randint(0,10)
-        rand_Relaxation = random.randint(0,10)
-        rand_Interest = random.randint(0,10)
-        rand_Focus = random.randint(0,10)
+        rand_Engagment = random.random()
+        rand_Excitement = random.random()
+        rand_Long_Excitement = random.random()
+        rand_Frustration = random.random()
+        rand_Relaxation = random.random()
+        rand_Interest = random.random()
+        rand_Focus = random.random()
         
         eye_data_dict["x"] = rand_x
         eye_data_dict["y"] = rand_y
@@ -597,19 +597,23 @@ def make_dashboard():
     global full_df
 
     # Heatmap dashboard
-    try:
-        dashboard.capture_screen(full_df["time"].iloc[-1])
-        dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
-    except:
-        print("[ERROR] - heatmap failed")
+    #try:
+        #dashboard.capture_screen(full_df["time"].iloc[-1])
+        #dashboard.create_heatmap(full_df["time"].iloc[-1], full_df)
+        #pass
+    #except Exception as a:
+        #print(a)
+        #print("[ERROR] - heatmap failed")
     # graphs
-    try:
-        dashboard.create_dashboard(full_df)
-    except:
-        print("[ERROR] - dashboard failed")
+    #try:
+        #dashboard.create_dashboard(full_df)
+    #except Exception as e:
+        #print(e)
+        #print("[ERROR] - dashboard failed")
     try:
         dashboard.create_combined_dashboard(full_df)
-    except:
+    except Exception as e:
+        print(e)
         print("[ERROR] - combined dashboard failed")
 
 if __name__ == "__main__":
@@ -639,7 +643,7 @@ if __name__ == "__main__":
     #save_df(full_df, save_path, save_format)
 
     #print(full_df.columns)
-    full_df = TEST_create_mock_dataframe(50)
+    full_df = TEST_create_mock_dataframe(10)
     make_dashboard()
     
     exit()

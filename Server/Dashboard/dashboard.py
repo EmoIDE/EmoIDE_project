@@ -78,7 +78,7 @@ def create_combined_dashboard(df):
     images = []
     text_list = ["1", "2"]
     staple_images = []
-    stress_list = [random.randint(60, 250) for f in range(0, len(staples))]
+    stress_list = [random.randint(60, 200) for f in range(0, len(staples))]
     for folder in staples:
         folder_path = os.path.join(dirpath, folder)
         staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
@@ -101,15 +101,17 @@ def create_combined_dashboard(df):
         'stress_list': stress_list,
         'text_list': text_list
     }
+    try:
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+        template = env.get_template("combined_template.html")
+        html = template.render(data)
 
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
-    template = env.get_template("combined_template.html")
-    html = template.render(data)
-
-    # Save the rendered HTML to a file
-    filename = "/combined_dashboard.html"
-    with open(str(output_path + filename), "w") as f:
-        f.write(html)
+        # Save the rendered HTML to a file
+        filename = "/combined_dashboard.html"
+        with open(str(output_path + filename), "w") as f:
+            f.write(html)
+    except Exception as e:
+        print(e)
 
 
 

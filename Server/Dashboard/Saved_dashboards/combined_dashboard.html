@@ -4,28 +4,783 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Combined Dashboard</title>
-
-  
-  
-
-  
-  
 </head>
 <body>
   <div class="logo">
     <h1>EmoIDE Dashboard</h1>
   </div>
-  <div id="container">
-    
-    
+  <div id="main-body">
+    <style>
+   body {
+  flex-direction: column;
+  align-items: center;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  margin: 0;
+  margin-top: -9px;
+  width: 22px;
+  height: 23px;
+  background: #555;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.slider::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  height: 6px;
+  width: 22px;
+  background-color: #f0f0f0;
+  margin-left: 14px;
+  margin-right: 14px;
+}
+
+.line {
+  border-bottom: 2px solid #e2e4e7;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  width: 80%;
+}
+
+.slider-container {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 45%;
+  margin: 0 auto;
+  border-radius: 6px;
+  z-index: 2;
+}
+
+.slider-bg {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 5px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  z-index: 1;
+}
+
+.slider {
+  -webkit-appearance: none;
+  position: absolute;
+  bottom: 0;
+  height: 5px;
+  margin: 0;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  outline: none;
+  z-index: 2;
+}
+
+.staples {
+  display: flex;
+  width: 100%;
+  padding-bottom: 25px;
+  align-items: center;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+.staple {
+  width: 30px;
+  margin-right: 10px;
+  margin-left: 10px;
+  border-radius: 6px;
+  background-color: #E2E4E7;
+}
+
+.staple:hover {
+  cursor: pointer;
+}
+
+.active-staple {
+  background-color: #ff6b6b;
+}
+
+.image-gallery {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.images {
+  position: relative;
+}
+.staple-wrapper {
+  position: relative;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.image {
+  display: none;
+  width: 640px;
+  height: 360px;
+  object-fit: contain;
+}
+.staple-text {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap; /* Prevent text from wrapping to a new line */
+}
+
+.active {
+  display: block;
+}
+
+.arrow {
+  background: none;
+  border: none;
+  font-size: 4rem;
+  cursor: pointer;
+}
+
+.left-arrow {
+  margin-right: 10px;
+}
+
+.right-arrow {
+  margin-left: 10px;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dot {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin: 0 40px;
+  border-radius: 50%;
+  background-color: #bbb;
+}
+.dot:hover{
+  cursor: pointer;
+}
+.active {
+  background-color: black;
+}
+</style>
+  
+  <div class="image-gallery">
+    <button id="left-arrow" class="arrow left-arrow">&lt;</button>
+    <div class="images">
+      
+      <img src="D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-27-24.png" class="image active" id="image1">
+      
+      <img src="D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-27-45.png" class="image " id="image2">
+      
+      <img src="D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-28-06.png" class="image " id="image3">
+      
+      <img src="D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-28-27.png" class="image " id="image4">
+      
+    </div>
+    <button id="right-arrow" class="arrow right-arrow">&gt;</button>
   </div>
-    
-    
+  <div class="dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
 
-  
-  
+  <div class="line"></div>
 
+  <div class="slider-container">
+    <div class="staples">
+      
+      <div id="staple1" class="staple"></div>
+      
+      <div id="staple2" class="staple"></div>
+      
+    </div>
+    <span class="staple-text"></span>
+    <div class="slider-bg"></div>
+    <input type="range" min="1" max="4" value="1" id="slider" class="slider">
+  </div>
+
+
+  <script>
+    const slider = document.getElementById("slider");
+const stapleHeights = [ "237",  "156" ];
+const imageSets = [
   
+    [
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-27-24.png",
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-27-45.png",
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-28-06.png",
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples1/26-04-2023T15-28-27.png"
+      
+    ],
   
+    [
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples2/image1.png",
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples2/image2.png",
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples2/image3.png",
+      
+        "D:/codez/EmoIDE_project/Server/Dashboard/Heatmaps/staples2/image4.png"
+      
+    ]
+  
+];
+const stapleTexts = [
+  
+    "1",
+  
+    "2"
+  
+];
+const images = document.querySelectorAll(".image");
+const staples = document.querySelectorAll(".staple");
+const leftArrow = document.getElementById("left-arrow");
+const rightArrow = document.getElementById("right-arrow");
+let currentImageIndex = 0;
+const textContainer = document.querySelector('.staple-text');
+
+function showImage(index) {
+  images.forEach((image) => {
+    image.classList.remove("active");
+  });
+  images[index].classList.add("active");
+  dots.forEach((dot, dotIndex) => {
+    if (dotIndex === index) {
+      dot.classList.add("active");
+    } else {
+      dot.classList.remove("active");
+    }
+  });
+}
+const dots = document.querySelectorAll(".dot");
+const dotIndicators = document.querySelectorAll('.dot-indicator');
+dots.forEach((dot, index) => {
+  dot.addEventListener('click', () => {
+    currentImageIndex = index;
+    showImage(currentImageIndex);
+  });
+});
+slider.addEventListener("input", () => {
+  const value = slider.value;
+
+  staples.forEach((staple, index) => {
+    staple.style.height = `${stapleHeights[index]}px`;
+    staple.classList.remove("active-staple");
+  });
+
+  const selectedStaple = staples[value - 1];
+  selectedStaple.classList.add("active-staple");
+  updateStapleTextPosition(value);
+
+  dotIndicators.forEach((indicator, index) => {
+    if (index === currentImageIndex) {
+      indicator.classList.add("active-dot");
+    } else {
+      indicator.classList.remove("active-dot");
+    }
+  });
+
+  imageSets[value - 1].forEach((src, index) => {
+    images[index].src = src;
+  });
+
+  currentImageIndex = 0;
+  showImage(currentImageIndex);
+  if (value == 1) {
+    dotIndicators[0].classList.add("active-dot");
+  }
+});
+
+
+leftArrow.addEventListener("click", () => {
+  currentImageIndex--;
+  if (currentImageIndex < 0) {
+    currentImageIndex = images.length - 1;
+  }
+  showImage(currentImageIndex);
+});
+
+rightArrow.addEventListener("click", () => {
+  currentImageIndex++;
+  if (currentImageIndex >= images.length) {
+    currentImageIndex = 0;
+  }
+  showImage(currentImageIndex);
+});
+function updateStapleTextPosition(value) {
+  const selectedStaple = staples[value - 1];
+  const stapleOffsetLeft = selectedStaple.offsetLeft;
+  const stapleWidth = selectedStaple.clientWidth;
+  const textContainerWidth = textContainer.clientWidth;
+
+  textContainer.style.left = `${stapleOffsetLeft + (stapleWidth / 2) - (textContainerWidth / 2)}px`;
+  textContainer.style.display = 'block';
+  textContainer.textContent = stapleTexts[value - 1];
+}
+
+function setSliderWidth() {
+  const stapleContainer = document.querySelector(".staples");
+  const stapleWidth = staples[0].offsetWidth;
+  const gapBetweenStaples = parseInt(getComputedStyle(staples[0]).marginRight) + parseInt(getComputedStyle(staples[0]).marginLeft);
+  const totalStapleWidth = (stapleWidth + gapBetweenStaples) * staples.length
+  slider.style.width = `${totalStapleWidth - 1}px`;
+}
+
+function switchToStaple(index) {
+  slider.value = index + 1;
+  slider.dispatchEvent(new Event("input"));
+}
+
+staples.forEach((staple, index) => {
+  staple.addEventListener("click", () => {
+    switchToStaple(index);
+  });
+});
+
+
+
+setSliderWidth();
+slider.setAttribute("max", staples.length);
+slider.setAttribute("min", 1);
+slider.setAttribute("step", 1);
+updateStapleTextPosition(1);
+slider.dispatchEvent(new Event("input"));
+  </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .logo {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .category {
+      text-align: center;
+      color: black;
+      padding: 10px;
+    }
+    #main-body {
+      margin-top:10%;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+    
+.chart-container {
+  height: 400px;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+  </style>
+
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div class="category">
+    <h2>EEG Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart1"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart2"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart3"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart4"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart5"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart6"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart7"></canvas>
+    </div>
+  </div>
+  <div class="category">
+    <h2>E4 Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart8"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart9"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart10"></canvas>
+    </div>
+  </div>
+  
+<script>
+  var ctx1 = document.getElementById('chart1');
+      var chart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Excitement (%)',
+            data: [0.0,22.773861053269396,96.47833780158652,47.18760111841767,1.403901845173483,24.303472875378397,42.91451027756453,51.86425443160856,97.28252710385364,5.384015963301914,46.109801316498924,],
+            borderColor: "#B22222"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: 'Dina känslor som vi kommer sälja till Kina för en förmögenhet.'
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx2 = document.getElementById('chart2');
+      var chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Engagement (%)',
+            data: [0.0,21.90474079615681,18.491518362906444,16.28561273999218,74.63372244974174,20.96428485170033,54.403790469992444,68.94587262552011,44.14835366520173,58.64944853025696,50.94313159889888,],
+            borderColor: "#4D81F0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx3 = document.getElementById('chart3');
+      var chart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Long Term Excitement (%)',
+            data: [0.0,94.42228127698651,1.0230468288418781,70.70804034927707,92.18186955269506,6.101809999152219,32.03064298840794,61.955443938883136,69.49045983700711,80.49441808069645,94.27179201474732,],
+            borderColor: "#FF69B4"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx4 = document.getElementById('chart4');
+      var chart4 = new Chart(ctx4, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Stress (%)',
+            data: [23700,15600,],
+            borderColor: "#FFFACD"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx5 = document.getElementById('chart5');
+      var chart5 = new Chart(ctx5, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Relaxation (%)',
+            data: [0.0,73.38789501758463,30.380501371496305,55.56742995181006,23.615511279181646,12.061521319266411,90.66153669440068,3.081987135264974,80.51530949511294,45.25282585606827,91.50687188222356,],
+            borderColor: "#FF7F50"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx6 = document.getElementById('chart6');
+      var chart6 = new Chart(ctx6, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Interest (%)',
+            data: [0.0,77.55018338958894,88.73309864653338,3.4447347251387206,12.285262301373233,74.18323051851556,0.594324904487098,97.85943015595808,15.25538960376056,36.154012380428554,96.52175564372023,],
+            borderColor: "#D2F04D"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx7 = document.getElementById('chart7');
+      var chart7 = new Chart(ctx7, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Focus (%)',
+            data: [0.0,86.17537990093996,52.76721950636717,78.45219924978622,9.11516472040267,47.846163558992785,96.78520314828619,72.65152146435248,19.70406563188988,48.09514591958178,2.9900869636454552,],
+            borderColor: "#4DF0B0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx8 = document.getElementById('chart8');
+      var chart8 = new Chart(ctx8, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Pulse',
+            data: [0,73,70,150,60,118,120,125,72,91,93,],
+            borderColor: "#F95858"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:40,
+          max:220,
+        }
+      }
+    }
+      });
+
+
+      var ctx9 = document.getElementById('chart9');
+      var chart9 = new Chart(ctx9, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Galvanic Skin Response (%)',
+            data: [0,8000,5200,9700,5800,11600,11800,8500,9300,11400,5900,],
+            borderColor: "#F958C3"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx10 = document.getElementById('chart10');
+      var chart10 = new Chart(ctx10, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,],
+          datasets: [{
+            label: 'Blood Volume Pulse',
+            data: [0,50,74,105,103,127,76,129,91,67,119,],
+            borderColor: "#F9C158"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:-100,
+          max:100,
+        }
+      }
+    }
+      });
+</script>
+  </div>
 </body>
 </html>

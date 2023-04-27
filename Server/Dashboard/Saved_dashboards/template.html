@@ -1,9 +1,5 @@
-<html>
-<head>
-  <title>{{ title }}</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    {% block template_styles %}
     * {
       box-sizing: border-box;
     }
@@ -17,17 +13,20 @@
       text-align: center;
       background-color: #333;
       color: white;
-      padding: 10px;
+      padding: 20px;
       position: fixed;
       top: 0;
       width: 100%;
+      z-index: 1000;
     }
     .category {
       text-align: center;
       color: black;
       padding: 10px;
     }
-    
+    #main-body {
+      margin-top:10%;
+    }
     .container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -52,14 +51,11 @@
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
 }
-  {% endblock %}
   </style>
-</head>
-<body>
+
   <div class="logo">
     <h1>EmoIDE Dashboard</h1>
   </div>
-  {% block template_content
   <div class="category">
     <h2>EEG Data</h2>
   </div>
@@ -100,11 +96,8 @@
       <canvas id="chart10"></canvas>
     </div>
   </div>
-  {% endblock %}
-</body>
   
 <script>
-{% block template_scripts %}
   var ctx1 = document.getElementById('chart1');
       var chart1 = new Chart(ctx1, {
         type: 'line',
@@ -423,5 +416,4 @@
       }
     }
       });
-      {% endblock %}
-</script></html>
+</script>
