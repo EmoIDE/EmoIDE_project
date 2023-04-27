@@ -144,7 +144,7 @@ def tcp_communication():
             pulse = e4_data_dict["Pulse"]
             data = {
                 "function": "getCurrentPulse",
-                "data": random.randint(80, 120)
+                "data": pulse   # random.randint(80, 120)
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
@@ -164,12 +164,10 @@ def tcp_communication():
                     "Interest/Affinity":random.random(),
                     "Focus":random.random()
                 }
-
             }
             eeg_data_json = json.dumps(eeg_data)
             
             conn.sendall(eeg_data_json.encode('utf-8'))
-
 
         # new save location     # msg: "set_save_path: [SPACE] root/path/location"
         elif "set_save_path:" in recived_msg:
@@ -612,6 +610,7 @@ def join_threads(threads):
             t.join()
             print(f"{thread_names[i]}: {str(t)} is now closed")
             i += 1
+            print(f"Still running: {thread_names[i:]}\n")
         except:
             print(f"failed to join {t}")
 
