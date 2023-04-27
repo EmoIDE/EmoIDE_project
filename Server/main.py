@@ -48,7 +48,7 @@ e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
 max_time = 20
-SETTINGS_PATH = "C:/Users/sebastian.johanss11/Desktop/EmoIDE_project/Server/settings.json"
+SETTINGS_PATH = "D:/codez/EmoIDE_project/Server/settings.json"
 
 #extension settings
 settings_dict = {
@@ -607,6 +607,10 @@ def make_dashboard():
         dashboard.create_dashboard(full_df)
     except:
         print("[ERROR] - dashboard failed")
+    try:
+        dashboard.create_combined_dashboard(full_df)
+    except:
+        print("[ERROR] - combined dashboard failed")
 
 if __name__ == "__main__":
     # load settings from settings file
@@ -619,7 +623,7 @@ if __name__ == "__main__":
     init_df()
 
     # start localy hosted server
-    setup_server()
+    #setup_server()
     # start all available hardware threads and return array of activated threads
     threads = start_threads()
 
@@ -627,15 +631,15 @@ if __name__ == "__main__":
     time.sleep(max_time+4)
 
     # closing all the active threads
-    join_threads(threads)
+    #join_threads(threads)
 
     # Save dataframe to a path and with specified format
-    save_format = settings_dict["Save_format"]
-    save_path = settings_dict["Save_path"]
-    save_df(full_df, save_path, save_format)
+    #save_format = settings_dict["Save_format"]
+    #save_path = settings_dict["Save_path"]
+    #save_df(full_df, save_path, save_format)
 
     #print(full_df.columns)
-
+    full_df = TEST_create_mock_dataframe(50)
     make_dashboard()
     
     exit()
