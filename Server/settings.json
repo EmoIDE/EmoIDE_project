@@ -5,7 +5,7 @@
     "Glasses": "no",
     "E4StreamingPort": "28000",
     "EyeTrackerCalibration": true,
-    "EEG": true,
+    "EEG": false,
     "E4": false,
     "Eyetracker": false,
     "ServerPort": "4700",

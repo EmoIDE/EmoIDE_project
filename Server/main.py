@@ -83,6 +83,7 @@ def setup_server():
     tcp_socket.listen()
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")  
 
+
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
@@ -349,7 +350,7 @@ def init_df():
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
     
-def update_dataframe():
+def update_dataframe(mock = False):
     global full_df
     global max_time
     calibration_done["Dataframe"] = True
@@ -367,6 +368,9 @@ def update_dataframe():
         full_data_dict = {}
         time.sleep(1)
 
+        if mock == True:
+            mock_all_dicts()
+
         # Clear terminal
         #os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
@@ -377,7 +381,7 @@ def update_dataframe():
         # This gives the format - dd/mm/yy-HH:MM:SS
         time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
 
-        # 
+        # time
         full_data_dict.update(time_dict)
 
         # Eye tracker
@@ -418,6 +422,27 @@ def update_dataframe():
 
         print(f"{full_df}\n--------------------------------")                                     ###########################
 
+
+def mock_all_dicts():
+    global eye_data_dict
+    global eeg_data_dict
+    global e4_data_dict
+
+    eye_data_dict["x"] = random.random()
+    eye_data_dict["y"] = random.random()
+    eeg_data_dict = {
+            "Engagement":random.random(),
+            "Excitement":random.random(),
+            "Long term excitement":random.random(),
+            "Stress/Frustration":random.random(),
+            "Relaxation":random.random(),
+            "Interest/Affinity":random.random(),
+            "Focus":random.random()
+    }
+
+    e4_data_dict["Bvp"] = random.randrange(-100, 100)
+    e4_data_dict["Gsr"] = random.randrange(1, 3) / 10
+    e4_data_dict["Pulse"] = random.randrange(60, 100)
 
 # ------------------------------------------ AI ------------------------------------------ #
 def predict_series(full_data_dict):
@@ -576,7 +601,7 @@ def start_threads():
 
     # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
-    df_thread = threading.Thread(target=update_dataframe, daemon=True)
+    df_thread = threading.Thread(target=update_dataframe(True), daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
     threads.append(df_thread)
     thread_names.append("df_thread")
