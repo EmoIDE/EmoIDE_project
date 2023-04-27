@@ -409,11 +409,10 @@ def update_dataframe():
         #     training_dict["Arousal"] = None
         #     training_dict["Stress"] = 0
 
-        # try:
-        #     predict_series()
-        # except:
-        #     print("prediction failed - prediction_dict not updated")
-        predict_series()
+        try:
+            predict_series()
+        except:
+            print("prediction failed - prediction_dict not updated")
         # dataframe
         full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
@@ -435,13 +434,13 @@ def predict_series():
 
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
 
-    svm_dataset.append(predict_frame)
+    # svm_dataset = svm_dataset.append(predict_frame) ####SEBBE MÅSTE FIXA DETTA, DEN LATA LILLA ODÅGAN
 
     scaled = scale(predict_frame)
 
 
     # svm_valence.predict(scaled)[0]
-    print(svm_dataset)
+    # print(svm_dataset)
     # print(scaled)
 
     prediction_dict["Valence"] = svm_valence.predict(scaled)[0]
