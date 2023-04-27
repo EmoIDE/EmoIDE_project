@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combined Dashboard</title>
+
+  {% block template_styles %}
+  {% endblock %}
+
+  {% block heatmap_styles %}
+  {% endblock %}
+</head>
+<body>
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div id="container">
+    {% block heatmap_content %}
+    {% endblock %}
+  </div>
+    {% block template_content %}
+    {% endblock %}
+
+  {% block template_scripts %}
+  {% endblock %}
+
+  {% block heatmap_scripts %}
+  {% endblock %}
+</body>
+</html>

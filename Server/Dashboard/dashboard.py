@@ -18,6 +18,7 @@ from PIL import Image
 format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
 
+
 def create_dashboard(df):
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
     template = env.get_template("template.html")
@@ -59,6 +60,56 @@ def create_dashboard(df):
     pass
 
 
+def create_combined_dashboard(df):
+    excitement_list = df['Excitement'].tolist()
+    engagement_list = df['Engagement'].tolist()
+    long_excitement_list = df['Long term excitement'].tolist()
+    stress_list = df['Stress/Frustration'].tolist()
+    relaxation_list = df['Relaxation'].tolist()
+    interest_list = df['Interest/Affinity'].tolist()
+    focus_list = df['Focus'].tolist()
+    pulse_list = df['Pulse'].tolist()
+    gsr_list = df["Gsr"].tolist()
+    bvp_list = df["Bvp"].tolist()
+    index_list = df.index.tolist()
+
+    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
+    staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
+    images = []
+    text_list = ["1", "2"]
+    staple_images = []
+    stress_list = [random.randint(60, 250) for f in range(0, len(staples))]
+    for folder in staples:
+        folder_path = os.path.join(dirpath, folder)
+        staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
+
+    data = {
+        'title': 'test',
+        'excitement_list': excitement_list,
+        'index_list': index_list,
+        'engagement_list': engagement_list,
+        'long_excitement_list': long_excitement_list,
+        'stress_list': stress_list,
+        'relaxation_list': relaxation_list,
+        'interest_list': interest_list,
+        'focus_list': focus_list,
+        'pulse_list': pulse_list,
+        "gsr_list": gsr_list,
+        "bvp_list": bvp_list,
+        'folder_staples': staples,
+        'image_list': staple_images,
+        'stress_list': stress_list,
+        'text_list': text_list
+    }
+
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
+    template = env.get_template("combined_template.html")
+    html = template.render(data)
+
+    # Save the rendered HTML to a file
+    filename = "/combined_dashboard.html"
+    with open(str(output_path + filename), "w") as f:
+        f.write(html)
 
 
 
@@ -171,21 +222,23 @@ class bcolors:
 def create_heatmap_dashboard():
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
     template = env.get_template("heatmap_template.html")
+    data = {}
 
     dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
 
-    folders = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
-    folder_carousel = []
-    for folder in folders:
+    staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
+    images = []
+    text_list = ["1", "2"]
+    staple_images = []
+    stress_list = [random.randint(60, 250) for f in range(0, len(staples))]
+    for folder in staples:
         folder_path = os.path.join(dirpath, folder)
-        images = [os.path.join(folder_path, i) for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))]
-        carousel_html = '<div class="carousel">'
-        for image in images:
-            carousel_html += f'<img src="{os.path.join(folder, image)}">'
-        carousel_html += '</div>'
-        folder_carousel.append((folder, carousel_html))
+        staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
     # Render the data in the Jinja2 template
-    html = template.render({'folder_carousels': folder_carousel})
+    print(staples)
+    print(staple_images)
+    print(stress_list)
+    html = template.render({'folder_staples': staples, "image_list": staple_images, "stress_list": stress_list, "text_list": text_list})
 
     # Save the rendered HTML to a file
     filename = "/heatmap.html"
@@ -214,7 +267,7 @@ def create_heatmap_gif(img_cache, df):
             if len(x) <= 5 or len(y) <= 5:
                 print(f'{bcolors.WARNING}Image{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath + "/" + screenshot["date"] + ".png"}{bcolors.ENDC} not enough data to create heatmap')
 
-                screenshot["img"].save(dirpath + "/" + screenshot["date"] + ".png")
+                screenshot["img"].save(dirpath + "/staples" +i+ ".png")
             else:
                 img = screenshot["img"]
 
@@ -236,7 +289,7 @@ def create_heatmap_gif(img_cache, df):
                 plt.ylim([img.height, 0])
                 plt.axis('off')
 
-                plt.savefig(dirpath + "/" + screenshot["date"] + ".png", dpi=300, format='png', bbox_inches='tight')
+                plt.savefig(dirpath + "/staple/" + i+1 + ".png", dpi=300, format='png', bbox_inches='tight')
 
             print(f'Finished processing {bcolors.OKGREEN}{int(((i + 1) / len(img_cache)) * 100)}{bcolors.ENDC} % of all images')
 
