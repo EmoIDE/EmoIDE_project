@@ -339,4 +339,5 @@ slider.setAttribute("min", 1);
 slider.setAttribute("step", 1);
 updateStapleTextPosition(1);
 slider.dispatchEvent(new Event("input"));
+window.addEventListener("resize", () => {updateStapleTextPosition(slider.value)})
  </script>
