@@ -243,6 +243,7 @@ def get_eye_tracker_data():
 
 # ------------------------------------------ E4 DATA TRACKER ------------------------------------------ #
 def get_e4_data():
+    '''Creates a E4 connection if possible and starts recieving that from the E4 device'''
     #global calibration_done
     global e4_data_dict
 
@@ -281,6 +282,8 @@ def get_e4_data():
 
 # ------------------------------------------ DataFrame ------------------------------------------ #
 def init_df():
+    '''Initialises the dataframe and creates all columns. Also creates all the dictionaries that later
+    will be used to update the dataframe'''
     global time_dict
     global eye_data_dict
     global eeg_data_dict
@@ -450,6 +453,8 @@ def mock_all_dicts():
 
 # ------------------------------------------ AI ------------------------------------------ #
 def predict_series(full_data_dict):
+    '''Recieves the data from the full data dict, reformats it and changes the values in prediction dict based
+    on the predictions of the train AI model'''
     global svm_dataset
     global eeg_predict_values
     global prediction_dict
@@ -485,6 +490,7 @@ def predict_series(full_data_dict):
 
 
 def load_models():
+    '''Loads the AI models and the dataset they were trained on'''
     global svm_arousal, svm_valence
     global svm_dataset
     svm_arousal = joblib.load("Server/ML/Models/SVM_Arousal_model_job.sav")
@@ -496,6 +502,14 @@ def load_models():
 
 # ------------------------------------------ Files ------------------------------------------ #
 def save_df(df, path, save_as_ext = '.csv'):
+    '''Saves the dataframe
+    arguments:
+    
+    df : pandas dataframe, the dataframe that will be converted and saved
+    path : str, the path to where the dataframe will be saved
+    save_as_ext : str, what format the file should be saved in. Currently supports csv, pdf, tsv,
+    html, ods, xlsx. csv is the default option
+    '''
     filename = 'output_data' + str(full_data_dict["time"])    # get last part of path
 
     # if settings_dict["Training"] == True:
@@ -550,6 +564,7 @@ def save_df(df, path, save_as_ext = '.csv'):
 
 
 def read_settings(settings_path):
+    '''Reads the settings from the json file "settings.json"'''
     global settings_dict
     
     with open(settings_path, "r") as wow:

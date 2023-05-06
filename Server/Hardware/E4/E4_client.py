@@ -5,17 +5,26 @@ import re
 import neurokit2 as nk
 
 class E4:
+    '''
+    An e4 object that can connect to a E4 device and recieve data from that device
+    
+    Arguments: 
+    ip : str, the ip of the extension server
+    port : int, the port to the e4 streaming server application
+    '''
     def __init__(self, ip :str, port : int) -> None:
+        '''Initiates the E4 object'''
         self.server_ip = ip
         self.server_port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
 
         self.EDA_signal = []
         self.EDA_timer = 0
-            # tcp socket är en steam of data
 
 
     def E4_SS_connect(self):
+        '''Establishes a connection with an available E4 device connected to the E4 streaming server on
+        the specefied port'''
         try:
             #Kan ta bort alla prints här när vi väl får det att fungera
             self.client_socket.connect((self.server_ip, self.server_port))
@@ -40,6 +49,7 @@ class E4:
             print("[ERROR] - Connection to E4 Streaming Server failed")
         
     def start_subscriptions(self):
+        '''Starts subscribing to a datastream for the BVP, IBI and GSR from the connected device'''
         requests = ['device_subscribe bvp ON\n', 'device_subscribe ibi ON\n', 'device_subscribe gsr ON\n']
 
         try:
@@ -53,6 +63,7 @@ class E4:
             print("[ERROR] - Can not subscribe to stream")
     
     def recieve_data(self):
+        '''Recieves data from the connected E4 device an returns the last given values of each type'''
         msg_arr = []
         start = time.time()
         delta = 0
@@ -67,6 +78,7 @@ class E4:
         return self.get_latest_values(msg_arr)
 
     def e4_stop(self):
+        '''Ends all data streaming subscriptions to the device and disconnects the device from the application'''
         requests = ['device_subscribe bvp OFF\n', 'device_subscribe ibi OFF\n', 'device_subscribe gsr OFF\n']
         try:
             for i in requests:
@@ -84,6 +96,11 @@ class E4:
         print("e4 disconnected")
 
     def get_latest_values(self, arr):
+        '''
+        Recives a list of string values in the format "value-type time value" and returns a with the last 
+        value in the list of each type. The function also processes the gsr value and returns tonic and phasic
+        values based on the gsr values
+        '''
         fixed_arr = []
         for i in arr:
             end_of_id = i.find(" ")
