@@ -9,7 +9,7 @@
     "E4": false,
     "Eyetracker": false,
     "ServerPort": "4700",
-    "FileFormat": ".csv",
+    "FileFormat": ".tsv",
     "SaveLocation": "C:\\Users\\David\\Documents\\GitHub\\EmoIDE_project\\Server\\Output",
     "DonateData": "false",
     "Pop-ups": true,

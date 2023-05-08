@@ -2,6 +2,14 @@
 let StatusGreen = "StatusActive.png"
 let StatusRed =	"StatusInactive.png"
 let statusbarPulse;
+let connectingToServer = false
+
+const { debug } = require('console');
+const vscode = require('vscode');
+const fs = require('fs');
+var net = require('net');
+const { json } = require('stream/consumers');
+var client = new net.Socket();
 
 const SAMValence = [
 	"https://i.imgur.com/hgjLFYE.png",
@@ -17,12 +25,6 @@ const SAMArousal = [ //TODO: Add Arousal Icons
 	"https://i.imgur.com/AidtLz0.png",
 	"https://i.imgur.com/Np92D15.png"
 ]
-const { debug } = require('console');
-const vscode = require('vscode');
-const fs = require('fs');
-var net = require('net');
-const { json } = require('stream/consumers');
-var client = new net.Socket();
 
 const DevicesStatus = {"E4":false,"Eyetracker":false,"EGG":false}
 /**
@@ -72,18 +74,7 @@ class DevicesDataProvider {
 	}
   
 	getChildren(element) {
-	  if (!element) {
-		// return top-level items
-		return Promise.resolve(this.items);
-	  } else {
-		// return children of a given item
-		const item = this.items.find(item => item.id === element.id);
-		if (item && item.children) {
-		  return Promise.resolve(item.children);
-		} else {
-		  return Promise.resolve([]);
-		}
-	  }
+		return element
 	}
   
 	getTreeItem(element) {
@@ -98,7 +89,6 @@ class DevicesDataProvider {
 			  },
 			iconPath: element.iconPath
 		  };
-
 		// Determine which icon to use based on the item's state
 		let selectedIcon = '';
 		if (element.functional) {
@@ -171,21 +161,18 @@ class DevicesDataProvider {
 			</script>
 			</body>
 			</html>`;
-		  }
+		}
 }
 
-
-
-
 function activate(context) {
-	const SAMProv = new SAMViewProvider(context.extensionUri);
+	var SAMProv = new SAMViewProvider(context.extensionUri);
+	
 	const devices = new DevicesDataProvider();
 	const stats = new StatisticsDataProvider();
 	vscode.workspace.getConfiguration('')
 	vscode.window.createTreeView("Devices",{treeDataProvider:devices})
 	vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
 
-	
 	vscode.workspace.getConfiguration('')
 
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
@@ -193,11 +180,6 @@ function activate(context) {
 	statusbarPulse.text = "$(pulse) 0";
 	statusbarPulse.color = "#42f551";
 	statusbarPulse.show();
-
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
 
 	vscode.workspace.onDidChangeConfiguration( () =>{
 
@@ -215,7 +197,6 @@ function activate(context) {
 		// merge_json["extension"] = true
 		// merge_json["training"] = false
 
-
 		vscode.window.showInformationMessage("trying to write settings");
 
 		const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/settings.json");
@@ -227,39 +208,49 @@ function activate(context) {
 		vscode.window.showInformationMessage("settings updated");
 
 	})
-	context.subscriptions.push(vscode.window.registerWebviewViewProvider("SAMView", SAMProv));
+	
 	context.subscriptions.push(
-		vscode.commands.registerCommand('statusWindow.open', () => {
-		  // Create and show a new webviewtpulse
-		  const panel = vscode.window.createWebviewPanel(
-			'statusWindow.open', // Identifies the type of the webview. Used internally
-			'Status', // Title of the panel displayed to the user
-			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-			{
-				enableScripts: true
-			} // Webview options. More on these later.
-		  );
-		  const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/combined_dashboard.html");
-		  const fileUri = vscode.Uri.file(onDiskPath.path);
 
-		  panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
-		  
-		}),
-		
+		vscode.window.registerWebviewViewProvider("SAMView", SAMProv),
+
+		//Registering all commands
 		vscode.commands.registerCommand('EmoIDE.UpdateSAM', () => 
 		{
-			SAMProv.UpdateSAMIndex(1,3);
-		}),
 
+		}),
+		vscode.commands.registerCommand('statusWindow.open', () => {
+			// Create and show a new webviewtpulse
+			const panel = vscode.window.createWebviewPanel(
+			  'statusWindow.open', // Identifies the type of the webview. Used internally
+			  'Status', // Title of the panel displayed to the user
+			  vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+			  {
+				  enableScripts: true
+			  } // Webview options. More on these later.
+			);
+			const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/combined_dashboard.html");
+			const fileUri = vscode.Uri.file(onDiskPath.path);
+  
+			panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');
+			
+		}),
 		vscode.commands.registerCommand('EmoIDE.showSettings', () => {
 			// Open the settings editor
 			vscode.commands.executeCommand('workbench.action.openSettings', '@ext:EmoIDETeam.EmoIDE');
 		}),
 	
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
-			connectToServer();
-			
+			connectingToServer = !connectingToServer
+			if (connectingToServer)
+			{
+				connectToServer();
+			}
+			else
+			{
+				client.write(JSON.stringify({"function":"disconnect"}))
+			}
 			const gettingEyeData = setInterval(getCurrentPulse, 1000);
+			setInterval(getSamIndex,1000)
 		}),
 
 		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
@@ -275,7 +266,6 @@ function activate(context) {
 			{
 				//Try connection through server
 				devices[deviceId] = true
-
 				//If connection was successful:
 				if (devices[deviceId] == true)
 				{
@@ -288,51 +278,71 @@ function activate(context) {
 				}
 			}
 		}),
-		
-
-
+		vscode.commands.registerCommand('EmoIDE.startRecording', () =>{
+			var data = {"function":"toggle_session"}
+			client.write(JSON.stringify(data));
+		}),
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
 		vscode.window.showInformationMessage('We recommend taking a break ☕');
 	})
 	);
-}
 
-  function connectToServer(){
-	client.connect(6969, '127.0.0.1', function() {
-		console.log('Connected');
-		var json_data = {"function": "ping"}
+	function connectToServer(){
+	
+		client.connect(6969, '127.0.0.1', function() {
+			console.log('Connected');
+			var json_data = {"function": "ping"}
+			client.write(JSON.stringify(json_data));
+		});
+	};
+	function getCurrentPulse(){
+		var json_data = {"function": "getPulse"}
 		client.write(JSON.stringify(json_data));
-		
+	}
+	function getSamIndex()
+	{
+		var json_data = {"function":"get_emotion"}
+		var valence = json_data["Valence"]
+		var arousal = json_data["Arousal"]
+		vscode.window.showInformationMessage("valence:"+valence,"Arounsal ;):"+arousal)
+		client.write(JSON.stringify({"function":"get_emotion"}));
+		SAMProv.UpdateSAMIndex(valence,arousal);
+	}
+	client.on('data', function(data){
+		var json_data = JSON.parse(data.toString());
+		var type_of_data = json_data["function"]
+		if (type_of_data == "ping") {
+			console.log("ping funka");
+			//gör något med infon som servern skickar
+			//sparar/visar data på något snyggt sätt
+			//vscode.window.showInformation Message('received ping');
+		}
+		if (type_of_data == "getCurrentPulse") {
+			//gör något med infon som servern skickar
+			//sparar/visar data på något snyggt sätt
+			//console.log("ss");
+			var pulse = json_data["data"]
+			statusbarPulse.text = "$(pulse)" + pulse.toString();
+		}
+		if (type_of_data == "get_emotion") {
+	
+			var valence = json_data["Valence"]
+			var arousal = json_data["Arousal"]
+			vscode.window.showInformationMessage("valence:"+valence,"Arounsal ;):"+arousal)
+			client.write(JSON.stringify({"function":"get_emotion"}));
+			SAMProv.UpdateSAMIndex(valence,arousal);
+		}
+	
+	
 	});
-};
-
-function getCurrentPulse(){
-	var json_data = {"function": "getPulse"}
-	client.write(JSON.stringify(json_data));
+	client.on('close', function() {
+		vscode.window.showInformationMessage('Connection closed');
+	});
 }
 
-client.on('data', function(data){
-	var json_data = JSON.parse(data.toString());
-	var type_of_data = json_data["function"]
-	if (type_of_data == "ping") {
-		console.log("ping funka");
-		//gör något med infon som servern skickar
-		//sparar/visar data på något snyggt sätt
-		//vscode.window.showInformation Message('received ping');
-	}
-	if (type_of_data == "getCurrentPulse") {
-		//gör något med infon som servern skickar
-		//sparar/visar data på något snyggt sätt
-		console.log("ss");
-		var pulse = json_data["data"]
-		statusbarPulse.text = "$(pulse)" + pulse.toString();
-	}
+// TCP communication
 
 
-});
-client.on('close', function() {
-	vscode.window.showInformationMessage('Connection closed');
-});
 // This method is called when your extension is deactivated
 function deactivate() {}
 

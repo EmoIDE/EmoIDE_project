@@ -162,6 +162,12 @@
           
         },
         {
+          "command": "EmoIDE.startRecording",
+          "when": "view == Devices",
+          "group": "navigation"
+          
+        },
+        {
           "command": "statusWindow.open",
           "when": "view == SAMView",
           "group": "navigation"
@@ -207,6 +213,11 @@
         "command": "EmoIDE.showSettings",
         "title": "Open User Settings",
         "icon": "$(gear)"
+      },
+      {
+        "command": "EmoIDE.startRecording",
+        "title": "begin device recording",
+        "icon": "$(debug-breakpoint)"
       },
       {
         "command": "EmoIDE.ConnectToDevice",

@@ -43,7 +43,7 @@ format = "%d-%m-%YT%H-%M-%S"
 # global variables
 # socket settings
 HOST_IP = "127.0.0.1" #lokala IPN, localhost
-PORT = 6969 #lustigt. najs.
+PORT = 6969
 extension_connected = False
 time_dict = {}
 eeg_data_dict = {}
@@ -51,7 +51,9 @@ eye_data_dict = {}
 e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
-max_time = 10
+session_on = False
+max_time = 100
+server_on = True
 bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 
@@ -81,57 +83,69 @@ def setup_server():
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_socket.bind((HOST_IP, PORT))
     tcp_socket.listen()
-    print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")  
+    print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")
 
+def connect_to_extension(tcp_socket):
+    # loop and try to connect to extention
+    ret_list = [None, None, False]
+    extension_connected = False
+    print("Tries to connect to extension")
+    while not extension_connected:
+        try:
+            conn, client = tcp_socket.accept()
+            extension_connected = True
+            ret_list = [conn, client, extension_connected]
+        except:
+            print("Failed to connect to extension, trying again")
+    return ret_list
 
 #handles the connection to the extension
 def tcp_communication():
     global extension_connected
+    global tcp_socket
+    global session_on
     tcp_socket.settimeout(10)
-
-    # loop and try to connect to extention
-    extension_connected = False
-    connect_test = 0
-    while not extension_connected and connect_test < 4:
-        try:
-            connect_test += 1
-            conn, client = tcp_socket.accept()
-            extension_connected = True
-        except:
-            print("Tries to connect to extension")
-    try:
-        print(f"Connected to {client}")
-    except:
-        print("Failed to connect to extension")
-        return 0
     
+    ret_list = connect_to_extension(tcp_socket)
+    conn = ret_list[0]
+    client = ret_list[1]
+    extension_connected = ret_list[2]
+
+    print(f"Connected to {client}")
 
     # Commands
-    start = time.time()
-    delta = 0
-    while delta <= max_time:
-        delta = time.time() - start
+    while extension_connected:
         try:
             data_received = conn.recv(1024).decode('utf-8')
+
+            json_data = json.loads(data_received)
+            recived_msg = json_data["function"]
         except:
-            print("no message")
-        if not data_received.strip():
-            break
-        json_data = json.loads(data_received)
-        recived_msg = json_data["function"]
-        # mest för att testa så klienten och servern kan kommunicera
-        
+            print("no message from extension")
+        # message empty
+        # if not data_received.strip():
+        #     break
+
 
         #print(recived_msg)
         if recived_msg == "settings_update":
             read_settings(SETTINGS_PATH)
             print(settings_dict)
 
-        if recived_msg == "getEmotion":
+        elif recived_msg == "get_emotion":
             conn.sendall(json.dumps(prediction_dict).encode('utf-8'))
             print("changed SAM on extension")
+        
+        elif recived_msg == "toggle_session":
+            session_on = not session_on
+            print(f"Toggle session to: {session_on}")
+        
+        elif recived_msg == "disconnect":
+            extension_connected = False
+            conn.close()
+            print(f"Disconnected from: {client}")
 
-        if recived_msg == "ping":
+        elif recived_msg == "ping":
             print("ping")
             data = {
                 "function": "ping",
@@ -180,8 +194,6 @@ def tcp_communication():
             format_pos = recived_msg.find("set_save_format:")
             picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
             settings_dict["Save_format"] = picked_format
-            
-    conn.close()
 
 
 # ------------------------------------------ EEG ------------------------------------------ #
@@ -209,8 +221,7 @@ async def import_EEG_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     
-    start = time.time()
-    while time.time() - start < max_time:
+    while session_on:
         time.sleep(1)
         eeg_data_dict = await cortex_api.get_eeg_data()
 
@@ -260,8 +271,7 @@ def get_e4_data():
     #         all_done = True
     print("e4 start recording")
 
-    start = time.time()
-    while time.time() - start < max_time:
+    while session_on:
         data = e4.recieve_data()
         hr = data[0]
         bvp = data[1]
@@ -358,76 +368,70 @@ def init_df():
     
 def update_dataframe(print_it = True, mock = False):
     global full_df
-    global max_time
     calibration_done["Dataframe"] = True
-    all_done = False                                                                     ######################
-    while not all_done:
-        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
-            all_done = True
+    # all_done = True                                                                     ######################
+    # while not all_done:
+    #     if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+    #         all_done = True
 
     data_collection_timer = time.time()
 
     start = time.time()
-    delta = 0
-    while delta <= max_time:
-        delta = time.time() - start
-        full_data_dict = {}
-        time.sleep(1)
 
-        if mock == True:
-            mock_all_dicts()
+    while server_on:
+        while session_on:
+            delta = time.time() - start
+            full_data_dict = {}
+            time.sleep(1)
 
-        # Clear terminal
-        # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+            if mock == True:
+                mock_all_dicts()
 
-        # time
-        # time_dict["time"] = time.localtime()
+            # Clear terminal
+            # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
-        # time_dict["time"] = time.gmtime()
-        # This gives the format - dd/mm/yy-HH:MM:SS
-        time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
+            # time
+            time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
+            full_data_dict.update(time_dict)
 
-        # time
-        full_data_dict.update(time_dict)
+            # Eye tracker
+            full_data_dict.update(eye_data_dict)
+            
+            # Eeg
+            full_data_dict.update(eeg_data_dict)
 
-        # Eye tracker
-        full_data_dict.update(eye_data_dict)
-        
-        # Eeg
-        full_data_dict.update(eeg_data_dict)
+            # E4
+            full_data_dict.update(e4_data_dict)
 
-        # E4
-        full_data_dict.update(e4_data_dict)
+            # Prediction
+            full_data_dict.update(prediction_dict)
+            
+            # Training
+            training_time = 300
 
-        # Prediction
-        full_data_dict.update(prediction_dict)
-        
-        # Training
-        training_time = 300
+            # if settings_dict["Training"] == True:
+            #     if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
+            #         training_dict["Initial pulse"] = e4_data_dict["Pulse"]
+            #     if time.time() - data_collection_timer > training_time:
+            #         training_dict["Arousal"] = Pop_up.test_arousal() + 1
+            #         training_dict["Valence"] = Pop_up.test_valence() + 1
+            #         training_dict["Stress"] = Pop_up.get_stress()
 
-        # if settings_dict["Training"] == True:
-        #     if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
-        #         training_dict["Initial pulse"] = e4_data_dict["Pulse"]
-        #     if time.time() - data_collection_timer > training_time:
-        #         training_dict["Arousal"] = Pop_up.test_arousal() + 1
-        #         training_dict["Valence"] = Pop_up.test_valence() + 1
-        #         training_dict["Stress"] = Pop_up.get_stress()
+            #         data_collection_timer = time.time()
+            #     full_data_dict.update(training_dict)
+            #     training_dict["Valence"] = None
+            #     training_dict["Arousal"] = None
+            #     training_dict["Stress"] = 0
 
-        #         data_collection_timer = time.time()
-        #     full_data_dict.update(training_dict)
-        #     training_dict["Valence"] = None
-        #     training_dict["Arousal"] = None
-        #     training_dict["Stress"] = 0
+            try:
+                predict_series(full_data_dict)
+            except:
+                print("prediction failed - prediction_dict not updated")
+            # dataframe
+            full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
-        try:
-            predict_series(full_data_dict)
-        except:
-            print("prediction failed - prediction_dict not updated")
-        # dataframe
-        full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
-
-        if print_it == True:
-            print(f"{full_df}\n--------------------------------")                                     ###########################
+            if print_it == True:
+                print(f"{full_df}\n--------------------------------")                                     ###########################
 
 
 def mock_all_dicts():
@@ -473,7 +477,7 @@ def predict_series(full_data_dict):
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
     # print(predict_frame)
 
-    svm_dataset = svm_dataset.append(predict_frame) ####SEBBE MÅSTE FIXA DETTA, DEN LATA LILLA ODÅGAN
+    svm_dataset = svm_dataset.append(predict_frame)
     # print(svm_dataset)
     scaled = scale(svm_dataset)
 
@@ -622,7 +626,7 @@ def start_threads():
 
     # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
-    print_df = False
+    print_df = True
     mock = True
     df_thread = threading.Thread(target=update_dataframe(print_df, mock), daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
@@ -725,6 +729,8 @@ if __name__ == "__main__":
 
     # stop main thread until everything is finished         ############# Remake to a bool check so that it isn't time relyable
     time.sleep(max_time+4)
+
+    server_on = False
 
     # closing all the active threads
     join_threads(threads)

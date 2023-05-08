@@ -41,7 +41,7 @@
  margin-bottom: 20px;
  margin-top: 20px;
  width: 80%;
- margin-bottom:20px;
+ margin:auto;
 }
 
 .slider-container {
@@ -155,8 +155,7 @@
 .dots {
  display: flex;
  justify-content: center;
- margin-top: 20px;
- margin-bottom:20px;
+ margin-top: 10px;
 }
 
 .dot {
@@ -229,7 +228,7 @@
 
  <script>
    const slider = document.getElementById("slider");
-const stapleHeights = [ "51",  "154",  "127",  "156",  "83",  "60",  "147",  "140" ];
+const stapleHeights = [ "102",  "157",  "95",  "175",  "106",  "82",  "118",  "178" ];
 const imageSets = [
  
    [
@@ -476,6 +475,7 @@ slider.setAttribute("min", 1);
 slider.setAttribute("step", 1);
 updateStapleTextPosition(1);
 slider.dispatchEvent(new Event("input"));
+window.addEventListener("resize", () => {updateStapleTextPosition(slider.value)})
  </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -581,10 +581,10 @@ slider.dispatchEvent(new Event("input"));
       var chart1 = new Chart(ctx1, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Excitement (%)',
-            data: [0.0,95.14727883299022,28.265789633454684,24.709341258278016,3.445586736680406,64.82943533510944,52.116962348961785,14.014850333656604,16.90771819603716,27.775210355196588,58.53765912119779,45.77641072963405,],
+            data: [0.0,],
             borderColor: "#B22222"
           }]
         },
@@ -613,10 +613,10 @@ slider.dispatchEvent(new Event("input"));
       var chart2 = new Chart(ctx2, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Engagement (%)',
-            data: [0.0,58.98160883446458,7.674660052912651,26.67878629050645,99.57106606315016,43.516727106920996,71.86205127208363,90.3691779947899,9.313342292907134,29.787738329641268,29.598746887138294,42.753619509340915,],
+            data: [0.0,],
             borderColor: "#4D81F0"
           }]
         },
@@ -645,10 +645,10 @@ slider.dispatchEvent(new Event("input"));
       var chart3 = new Chart(ctx3, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Long Term Excitement (%)',
-            data: [0.0,73.75856245533785,9.626370527591032,57.37520814068888,16.495329509685252,35.48386199486953,10.094036465887768,73.59816263809158,53.506681868886155,35.930920666167076,95.22555691207954,22.16975785013222,],
+            data: [0.0,],
             borderColor: "#FF69B4"
           }]
         },
@@ -677,10 +677,10 @@ slider.dispatchEvent(new Event("input"));
       var chart4 = new Chart(ctx4, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Stress (%)',
-            data: [5100,15400,12700,15600,8300,6000,14700,14000,],
+            data: [10200,15700,9500,17500,10600,8200,11800,17800,],
             borderColor: "#FFFACD"
           }]
         },
@@ -709,10 +709,10 @@ slider.dispatchEvent(new Event("input"));
       var chart5 = new Chart(ctx5, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Relaxation (%)',
-            data: [0.0,44.71547087530369,35.61880680019407,9.970061088023098,83.06302474560891,23.073868310579783,55.218322983927024,36.388519212735595,18.181572673101332,6.59612208404906,40.297426407293294,28.198449962923753,],
+            data: [0.0,],
             borderColor: "#FF7F50"
           }]
         },
@@ -741,10 +741,10 @@ slider.dispatchEvent(new Event("input"));
       var chart6 = new Chart(ctx6, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Interest (%)',
-            data: [0.0,95.65021056726245,87.88295962813383,80.7050323993138,12.5194461881301,93.26256894561747,79.53742462188885,99.70475508796906,62.579729244970885,34.85914245159986,28.945910512292482,90.64030724090686,],
+            data: [0.0,],
             borderColor: "#D2F04D"
           }]
         },
@@ -773,10 +773,10 @@ slider.dispatchEvent(new Event("input"));
       var chart7 = new Chart(ctx7, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Focus (%)',
-            data: [0.0,22.39952281566432,28.628191141192026,5.58837252393255,86.98503403742038,28.15654405962227,39.120633460952135,94.05835966994304,19.75772053024647,30.465818411131252,46.95793514334735,48.48332196497896,],
+            data: [0.0,],
             borderColor: "#4DF0B0"
           }]
         },
@@ -805,10 +805,10 @@ slider.dispatchEvent(new Event("input"));
       var chart8 = new Chart(ctx8, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Pulse',
-            data: [0.0,70.0,93.0,60.0,90.0,84.0,85.0,91.0,66.0,68.0,75.0,75.0,],
+            data: [0.0,],
             borderColor: "#F95858"
           }]
         },
@@ -837,10 +837,10 @@ slider.dispatchEvent(new Event("input"));
       var chart9 = new Chart(ctx9, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Galvanic Skin Response (%)',
-            data: [0.0,20.0,10.0,20.0,10.0,20.0,20.0,10.0,10.0,10.0,10.0,10.0,],
+            data: [0.0,],
             borderColor: "#F958C3"
           }]
         },
@@ -869,10 +869,10 @@ slider.dispatchEvent(new Event("input"));
       var chart10 = new Chart(ctx10, {
         type: 'line',
         data: {
-          labels: [0,1,2,3,4,5,6,7,8,9,10,11,],
+          labels: [0,],
           datasets: [{
             label: 'Blood Volume Pulse',
-            data: [0.0,-100.0,-94.0,-37.0,43.0,48.0,22.0,-45.0,-2.0,-78.0,10.0,-27.0,],
+            data: [0.0,],
             borderColor: "#F9C158"
           }]
         },
