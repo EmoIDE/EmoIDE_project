@@ -8,7 +8,11 @@
 #Wake up
 import os
 import sys
-import jinja2
+import random
+import datetime
+import threading
+import time
+import socket
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -20,21 +24,18 @@ from ML import Pop_up
 import Dashboard.dashboard as dashboard
 
 # imports
+import jinja2
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import threading
-import time
-import socket
 import asyncio
 import json
-import datetime
-import pickle
-import random
+import joblib
+
 from matplotlib.backends.backend_pdf import PdfPages
 
 from sklearn.preprocessing import scale
-import joblib
+
 
 
 format = "%d-%m-%YT%H-%M-%S"
