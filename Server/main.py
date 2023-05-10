@@ -238,6 +238,7 @@ def get_eye_tracker_data():
     global calibration_done
     global eye_data_dict
     global full_df
+    global session_on
 
     eye_tracker = EyeTracker(1, max_time)
     eye_tracker.setup()
@@ -249,7 +250,8 @@ def get_eye_tracker_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
 
-    eye_tracker.start_recording(eye_data_dict)
+
+    eye_tracker.start_recording(eye_data_dict, session_on)
     eye_tracker.stop()
 
 
