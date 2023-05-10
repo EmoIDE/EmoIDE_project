@@ -43,10 +43,9 @@ class EyeTracker:
 
         return zone_destribution
 
-    def start_recording(self, dict):
+    def start_recording(self, dict, session_status):
         # Start recording data to cache
-        start = time.time()
-        while time.time() - start < self.recording_length:
+        while session_status:
             self.store_to_cache(self.eye_tracker.get_gaze_position(), dict)
             time.sleep(self.frequency)
 
