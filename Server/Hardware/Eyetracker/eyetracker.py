@@ -83,7 +83,7 @@ class EyeTracker:
                 # print(zone['zone'], " : ", zone['count'], " / ", sum([z['count'] for z in self.zones]), " = ", round((zone['count']/sum([z['count'] for z in self.zones]))*100,2))
                 dict[zone['zone']] = round((zone['count']/sum([z['count'] for z in self.zones]))*100,2)
             except:
-                print("ERROR zone = 0")
+                print("[ERROR] zone = 0")
 
     def stop(self):
         # Clear cache, stop eyetracker may take 5 seconds

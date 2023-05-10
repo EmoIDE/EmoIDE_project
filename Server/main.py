@@ -37,7 +37,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 from sklearn.preprocessing import scale
 
 
-
 format = "%d-%m-%YT%H-%M-%S"
 
 
@@ -45,7 +44,6 @@ format = "%d-%m-%YT%H-%M-%S"
 # socket settings
 HOST_IP = "127.0.0.1" #lokala IPN, localhost
 PORT = 6969
-extension_connected = False
 time_dict = {}
 eeg_data_dict = {}
 eye_data_dict = {}
@@ -80,39 +78,54 @@ calibration_done = {
 # ------------------------------------------ Server ------------------------------------------ #
 # start serverside with a tcp socket. AF - Address Family (IPv4). Sock_stream - type (TCP)
 def setup_server():
-    global tcp_socket
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_socket.bind((HOST_IP, PORT))
     tcp_socket.listen()
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")
+    return tcp_socket
 
-def connect_to_extension(tcp_socket):
+def connect_to_extension():
+    global tcp_socket
     # loop and try to connect to extention
     ret_list = [None, None, False]
     extension_connected = False
     print("Tries to connect to extension")
     while not extension_connected:
-        try:
-            conn, client = tcp_socket.accept()
-            extension_connected = True
-            ret_list = [conn, client, extension_connected]
-        except:
-            print("Failed to connect to extension, trying again")
+        #try:
+        print("wow")
+        conn, client = tcp_socket.accept()
+        print("wow2")
+        
+        #extension_connected = True
+        ret_list = [conn, client, extension_connected]
+       # except:
+            #print("Failed to connect to extension, trying again")
     return ret_list
 
 #handles the connection to the extension
-def tcp_communication():
-    global extension_connected
-    global tcp_socket
+def tcp_communication(tcp_socket):
     global session_on
     tcp_socket.settimeout(10)
     
-    ret_list = connect_to_extension(tcp_socket)
-    conn = ret_list[0]
-    client = ret_list[1]
-    extension_connected = ret_list[2]
+    extension_connected = False
+    print("Tries to connect to extension")
+    while True:
+        #try:
+        print("wow")
+        conn, client = tcp_socket.accept()
+        print("wow2")
+        
+        #extension_connected = True
+    
+    # conn = ret_list[0]
+    # client = ret_list[1]
+    # extension_connected = ret_list[2]
 
     print(f"Connected to {client}")
+
+    session_threads = []
+
+
 
     # Commands
     while extension_connected:
@@ -127,7 +140,6 @@ def tcp_communication():
         # if not data_received.strip():
         #     break
 
-
         #print(recived_msg)
         if recived_msg == "settings_update":
             read_settings(SETTINGS_PATH)
@@ -139,6 +151,11 @@ def tcp_communication():
         
         elif recived_msg == "toggle_session":
             session_on = not session_on
+            # if session starts, start the threads. If session ends, close the threads
+            if session_on:
+                session_threads = start_session_threads()
+            if not session_on:
+                join_threads(session_threads)
             print(f"Toggle session to: {session_on}")
         
         elif recived_msg == "disconnect":
@@ -166,21 +183,7 @@ def tcp_communication():
 
 
         elif recived_msg == "getEEG":
-            eeg = eeg_data_dict
-            #use real eeg data later
-            eeg_data = {
-                "function": "getEEGData",
-                "data": {
-                    "Engagement":random.random(),
-                    "Excitement":random.random(),
-                    "Long term excitement":random.random(),
-                    "Stress/Frustration":random.random(),
-                    "Relaxation":random.random(),
-                    "Interest/Affinity":random.random(),
-                    "Focus":random.random()
-                }
-            }
-            eeg_data_json = json.dumps(eeg_data)
+            eeg_data_json = json.dumps(eeg_data_dict)
             
             conn.sendall(eeg_data_json.encode('utf-8'))
 
@@ -379,60 +382,59 @@ def update_dataframe(print_it = True, mock = False):
 
     start = time.time()
 
-    while server_on:
-        while session_on:
-            delta = time.time() - start
-            full_data_dict = {}
-            time.sleep(1)
+    while session_on:
+        delta = time.time() - start
+        full_data_dict = {}
+        time.sleep(1)
 
-            if mock == True:
-                mock_all_dicts()
+        if mock == True:
+            mock_all_dicts()
 
-            # Clear terminal
-            # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+        # Clear terminal
+        # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
-            # time
-            time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
-            full_data_dict.update(time_dict)
+        # time
+        time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
+        full_data_dict.update(time_dict)
 
-            # Eye tracker
-            full_data_dict.update(eye_data_dict)
-            
-            # Eeg
-            full_data_dict.update(eeg_data_dict)
+        # Eye tracker
+        full_data_dict.update(eye_data_dict)
+        
+        # Eeg
+        full_data_dict.update(eeg_data_dict)
 
-            # E4
-            full_data_dict.update(e4_data_dict)
+        # E4
+        full_data_dict.update(e4_data_dict)
 
-            # Prediction
-            full_data_dict.update(prediction_dict)
-            
-            # Training
-            training_time = 300
+        # Prediction
+        full_data_dict.update(prediction_dict)
+        
+        # Training
+        training_time = 300
 
-            # if settings_dict["Training"] == True:
-            #     if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
-            #         training_dict["Initial pulse"] = e4_data_dict["Pulse"]
-            #     if time.time() - data_collection_timer > training_time:
-            #         training_dict["Arousal"] = Pop_up.test_arousal() + 1
-            #         training_dict["Valence"] = Pop_up.test_valence() + 1
-            #         training_dict["Stress"] = Pop_up.get_stress()
+        # if settings_dict["Training"] == True:
+        #     if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
+        #         training_dict["Initial pulse"] = e4_data_dict["Pulse"]
+        #     if time.time() - data_collection_timer > training_time:
+        #         training_dict["Arousal"] = Pop_up.test_arousal() + 1
+        #         training_dict["Valence"] = Pop_up.test_valence() + 1
+        #         training_dict["Stress"] = Pop_up.get_stress()
 
-            #         data_collection_timer = time.time()
-            #     full_data_dict.update(training_dict)
-            #     training_dict["Valence"] = None
-            #     training_dict["Arousal"] = None
-            #     training_dict["Stress"] = 0
+        #         data_collection_timer = time.time()
+        #     full_data_dict.update(training_dict)
+        #     training_dict["Valence"] = None
+        #     training_dict["Arousal"] = None
+        #     training_dict["Stress"] = 0
 
-            try:
-                predict_series(full_data_dict)
-            except:
-                print("prediction failed - prediction_dict not updated")
-            # dataframe
-            full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
+        try:
+            predict_series(full_data_dict)
+        except:
+            print("prediction failed - prediction_dict not updated")
+        # dataframe
+        full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
-            if print_it == True:
-                print(f"{full_df}\n--------------------------------")                                     ###########################
+        if print_it == True:
+            print(f"{full_df}\n--------------------------------")                                     ###########################
 
 
 def mock_all_dicts():
@@ -577,17 +579,19 @@ def read_settings(settings_path):
 
 
 # ------------------------------------------ Threads ------------------------------------------ #
-def start_threads():
+def start_tcp_thread(tcp_socket):
+    print("tcp thread starts")
+    tcp_thread = threading.Thread(target=tcp_communication(tcp_socket), daemon=True)
+    tcp_thread.start()
+
+    return tcp_thread
+
+
+def start_session_threads():
     global full_df
     global thread_names
-    thread_names = []
+    #thread_names = []
     threads = []
-
-    print("tcp thread starts")
-    tcp_thread = threading.Thread(target=tcp_communication, daemon=True)
-    tcp_thread.start()
-    threads.append(tcp_thread)
-    thread_names.append("tcp_thread")
 
     if settings_dict["EEG"] == True:
         #start thread/-s needed for EEG
@@ -595,7 +599,7 @@ def start_threads():
         eeg_thread = threading.Thread(target=start_eeg)
         eeg_thread.start()
         threads.append(eeg_thread)
-        thread_names.append("eeg_thread")
+        #thread_names.append("eeg_thread")
     else:
         calibration_done["EEG"] = True
 
@@ -605,13 +609,13 @@ def start_threads():
         eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
-        thread_names.append("eye_thread")
+        #thread_names.append("eye_thread")
 
         print("Heatmap thread starts")
         heatmap_thread = threading.Thread(target=start_heatmap)
         heatmap_thread.start()
         threads.append(heatmap_thread)
-        thread_names.append("heatmap_thread")
+        #thread_names.append("heatmap_thread")
     else:
         calibration_done["Eye tracker"] = True
     
@@ -621,7 +625,7 @@ def start_threads():
         e4_thread = threading.Thread(target=get_e4_data)
         e4_thread.start()
         threads.append(e4_thread)
-        thread_names.append("e4_thread")
+        #thread_names.append("e4_thread")
     else:
         calibration_done["E4"] = True
 
@@ -643,10 +647,10 @@ def join_threads(threads):
     i = 0
     for t in threads:
         try:
+            print(f"{str(t)} is now closed")
             t.join()
-            print(f"{thread_names[i]}: {str(t)} is now closed")
-            i += 1
-            print(f"Still running: {thread_names[i:]}\n")
+            #i += 1
+            #print(f"Still running: {thread_names[i:]}\n")
         except:
             print(f"failed to join {t}")
 
@@ -723,18 +727,9 @@ if __name__ == "__main__":
         print("[ERROR] - could not load AI models")
 
     # start localy hosted server
-    setup_server()
+    tcp_socket = setup_server()
     
-    # start all available hardware threads and return array of activated threads
-    threads = start_threads()
-
-    # stop main thread until everything is finished         ############# Remake to a bool check so that it isn't time relyable
-    time.sleep(max_time+4)
-
-    server_on = False
-
-    # closing all the active threads
-    join_threads(threads)
+    tcp_thread = start_tcp_thread(tcp_socket)
 
     # Save dataframe to a path and with specified format
     save_format = settings_dict["FileFormat"]

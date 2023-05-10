@@ -300,7 +300,7 @@ function activate(context) {
 		client.write(JSON.stringify(json_data));
 	}
 	function getSamIndex()
-	{
+	{				// arousal ;): undefined
 		var json_data = {"function":"get_emotion"}
 		var valence = json_data["Valence"]
 		var arousal = json_data["Arousal"]
