@@ -78,54 +78,30 @@ calibration_done = {
 # ------------------------------------------ Server ------------------------------------------ #
 # start serverside with a tcp socket. AF - Address Family (IPv4). Sock_stream - type (TCP)
 def setup_server():
+    global tcp_socket
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_socket.bind((HOST_IP, PORT))
     tcp_socket.listen()
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")
-    return tcp_socket
 
-def connect_to_extension():
+#handles the connection to the extension
+def tcp_communication():
+    global session_on
     global tcp_socket
-    # loop and try to connect to extention
-    ret_list = [None, None, False]
+    tcp_socket.settimeout(15)
+    
     extension_connected = False
     print("Tries to connect to extension")
     while not extension_connected:
-        #try:
-        print("wow")
-        conn, client = tcp_socket.accept()
-        print("wow2")
-        
-        #extension_connected = True
-        ret_list = [conn, client, extension_connected]
-       # except:
-            #print("Failed to connect to extension, trying again")
-    return ret_list
+        try:
+            conn, client = tcp_socket.accept()
+            extension_connected = True        
+            print(f"Connected to {client}")
+        except:
+            print("failed to connect to extension, trying again")
 
-#handles the connection to the extension
-def tcp_communication(tcp_socket):
-    global session_on
-    tcp_socket.settimeout(10)
-    
-    extension_connected = False
-    print("Tries to connect to extension")
-    while True:
-        #try:
-        print("wow")
-        conn, client = tcp_socket.accept()
-        print("wow2")
-        
-        #extension_connected = True
-    
-    # conn = ret_list[0]
-    # client = ret_list[1]
-    # extension_connected = ret_list[2]
-
-    print(f"Connected to {client}")
-
+    # when starting a session this list keeps track of active threads
     session_threads = []
-
-
 
     # Commands
     while extension_connected:
@@ -162,6 +138,7 @@ def tcp_communication(tcp_socket):
             extension_connected = False
             conn.close()
             print(f"Disconnected from: {client}")
+            break
 
         elif recived_msg == "ping":
             print("ping")
@@ -581,9 +558,9 @@ def read_settings(settings_path):
 
 
 # ------------------------------------------ Threads ------------------------------------------ #
-def start_tcp_thread(tcp_socket):
+def start_tcp_thread():
     print("tcp thread starts")
-    tcp_thread = threading.Thread(target=tcp_communication(tcp_socket), daemon=True)
+    tcp_thread = threading.Thread(target=tcp_communication(), daemon=True)
     tcp_thread.start()
 
     return tcp_thread
@@ -591,7 +568,6 @@ def start_tcp_thread(tcp_socket):
 
 def start_session_threads():
     global full_df
-    global thread_names
     #thread_names = []
     threads = []
 
@@ -638,7 +614,7 @@ def start_session_threads():
     df_thread = threading.Thread(target=update_dataframe(print_df, mock), daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
     threads.append(df_thread)
-    thread_names.append("df_thread")
+    # thread_names.append("df_thread")
     calibration_done["Dataframe"] = True
 
     return threads
@@ -729,9 +705,9 @@ if __name__ == "__main__":
         print("[ERROR] - could not load AI models")
 
     # start localy hosted server
-    tcp_socket = setup_server()
+    setup_server()
     
-    tcp_thread = start_tcp_thread(tcp_socket)
+    tcp_thread = start_tcp_thread()
 
     # Save dataframe to a path and with specified format
     save_format = settings_dict["FileFormat"]
