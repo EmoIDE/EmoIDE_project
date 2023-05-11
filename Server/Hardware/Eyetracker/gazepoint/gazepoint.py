@@ -6,8 +6,7 @@ from .tools import OpenGazeTracker
 
 class GazePoint(threading.Thread):
     def __init__(self, ip='127.0.0.1', port=4242):
-        threading.Thread.__init__(self)
-        self.daemon = True
+        threading.Thread.__init__(self, daemon=True)
         self.interrupted = threading.Lock()
 
         self.gaze_position = (None, None)

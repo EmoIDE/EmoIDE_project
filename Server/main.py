@@ -608,7 +608,7 @@ def start_session_threads():
     if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
         print("E4 thread starts")
-        e4_thread = threading.Thread(target=get_e4_data)
+        e4_thread = threading.Thread(target=get_e4_data, daemon=True)
         e4_thread.start()
         threads.append(e4_thread)
         #thread_names.append("e4_thread")
@@ -758,7 +758,6 @@ if __name__ == "__main__":
 
     # start localy hosted server
     tcp_thread = setup_server()
-
     threads = [tcp_thread]
     join_threads(threads)
 
