@@ -162,7 +162,7 @@
           
         },
         {
-          "command": "EmoIDE.startRecording",
+          "command": "EmoIDE.toggleRecording",
           "when": "view == Devices",
           "group": "navigation"
           
@@ -215,7 +215,7 @@
         "icon": "$(gear)"
       },
       {
-        "command": "EmoIDE.startRecording",
+        "command": "EmoIDE.toggleRecording",
         "title": "begin device recording",
         "icon": "$(debug-breakpoint)"
       },

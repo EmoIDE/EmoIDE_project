@@ -121,9 +121,10 @@ class DevicesDataProvider {
 	  this._view = webviewView;
 	}
   
-	UpdateSAMIndex(indexVal,indexAro) {
+	UpdateSAMIndex(valence,arousal) {
 	  if (this._view) {
-		this._view.webview.html = this.GetSAMView(indexVal,indexAro);
+		this._view.webview.html = this.GetSAMView(Math.max(0,valence),Math.max(0,arousal));
+		vscode.window.showInformationMessage("requesting SAM")
 	  	}
 	}
 	GetSAMView(indexVal,indexAro) {
@@ -166,7 +167,6 @@ class DevicesDataProvider {
 
 function activate(context) {
 	var SAMProv = new SAMViewProvider(context.extensionUri);
-	
 	const devices = new DevicesDataProvider();
 	const stats = new StatisticsDataProvider();
 	vscode.workspace.getConfiguration('')
@@ -174,7 +174,7 @@ function activate(context) {
 	vscode.window.createTreeView("SAMView",{treeDataProvider:stats})
 
 	vscode.workspace.getConfiguration('')
-
+	
 	statusbarPulse = vscode.window.createStatusBarItem(1, 2);
 	statusbarPulse.command = "statusWindow.open";
 	statusbarPulse.text = "$(pulse) 0";
@@ -212,12 +212,7 @@ function activate(context) {
 	context.subscriptions.push(
 
 		vscode.window.registerWebviewViewProvider("SAMView", SAMProv),
-
 		//Registering all commands
-		vscode.commands.registerCommand('EmoIDE.UpdateSAM', () => 
-		{
-
-		}),
 		vscode.commands.registerCommand('statusWindow.open', () => {
 			// Create and show a new webviewtpulse
 			const panel = vscode.window.createWebviewPanel(
@@ -241,6 +236,8 @@ function activate(context) {
 	
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
 			connectingToServer = !connectingToServer
+			const pulseInterval = setInterval(getCurrentPulse, 1000);
+			const SAMInterval = setInterval(GetSAM, 1000);
 			if (connectingToServer)
 			{
 				connectToServer();
@@ -249,8 +246,7 @@ function activate(context) {
 			{
 				client.write(JSON.stringify({"function":"disconnect"}))
 			}
-			const gettingEyeData = setInterval(getCurrentPulse, 1000);
-			setInterval(getSamIndex,1000)
+			
 		}),
 
 		vscode.commands.registerCommand("EmoIDE.ConnectToDevice",(deviceId) =>	{
@@ -278,73 +274,64 @@ function activate(context) {
 				}
 			}
 		}),
-		vscode.commands.registerCommand('EmoIDE.startRecording', () =>{
-			var data = {"function":"toggle_session"}
-			client.write(JSON.stringify(data));
+		vscode.commands.registerCommand('EmoIDE.toggleRecording', () =>{
+			client.write(JSON.stringify({"function":"toggle_session"}));
+			vscode.window.showInformationMessage('session toggled');
+
 		}),
 		vscode.commands.registerCommand('emoide.BreakNotif', () =>{
 		vscode.window.showInformationMessage('We recommend taking a break ☕');
 	})
 	);
 
-	function connectToServer(){
-	
-		client.connect(6969, '127.0.0.1', function() {
-			console.log('Connected');
-			var json_data = {"function": "ping"}
-			client.write(JSON.stringify(json_data));
-		});
-	};
-	function getCurrentPulse(){
-		var json_data = {"function": "getPulse"}
+function connectToServer(){
+	client.connect(6969, '127.0.0.1', function() {
+		console.log('Connected');
+		var json_data = {"function": "ping"}
 		client.write(JSON.stringify(json_data));
-	}
-	function getSamIndex()
-	{				// arousal ;): undefined
-		var json_data = {"function":"get_emotion"}
-		var valence = json_data["Valence"]
-		var arousal = json_data["Arousal"]
-		vscode.window.showInformationMessage("valence:"+valence,"Arounsal ;):"+arousal)
-		client.write(JSON.stringify({"function":"get_emotion"}));
-		SAMProv.UpdateSAMIndex(valence,arousal);
-	}
-	client.on('data', function(data){
-		var json_data = JSON.parse(data.toString());
-		var type_of_data = json_data["function"]
-		if (type_of_data == "ping") {
-			console.log("ping funka");
-			//gör något med infon som servern skickar
-			//sparar/visar data på något snyggt sätt
-			//vscode.window.showInformation Message('received ping');
-		}
-		if (type_of_data == "getCurrentPulse") {
-			//gör något med infon som servern skickar
-			//sparar/visar data på något snyggt sätt
-			//console.log("ss");
-			var pulse = json_data["data"]
-			statusbarPulse.text = "$(pulse)" + pulse.toString();
-		}
-		if (type_of_data == "get_emotion") {
-	
-			var valence = json_data["Valence"]
-			var arousal = json_data["Arousal"]
-			vscode.window.showInformationMessage("valence:"+valence,"Arounsal ;):"+arousal)
-			client.write(JSON.stringify({"function":"get_emotion"}));
-			SAMProv.UpdateSAMIndex(valence,arousal);
-		}
-	
-	
 	});
-	client.on('close', function() {
-		vscode.window.showInformationMessage('Connection closed');
-	});
+};
+function getCurrentPulse(){
+	var json_data = {"function": "getPulse"}
+	client.write(JSON.stringify(json_data));
 }
+function GetSAM()
+{
+	var json_data = {"function": "get_emotion"}
+	client.write(JSON.stringify(json_data));
+}
+client.on('data', function(data){
+	var json_data = JSON.parse(data.toString());
+	var type_of_data = json_data["function"]
+	if (type_of_data == "ping") {
+		console.log("ping funka");
+		//gör något med infon som servern skickar
+		//sparar/visar data på något snyggt sätt
+		//vscode.window.showInformation Message('received ping');
+	}
+	if (type_of_data == "getCurrentPulse") {
+		//gör något med infon som servern skickar
+		//sparar/visar data på något snyggt sätt
+		//console.log("ss");
+		var pulse = json_data["data"]
+		statusbarPulse.text = "$(pulse)" + pulse.toString();
+	}
+	if (type_of_data == "get_emotion") {
+		SAMProv.UpdateSAMIndex(json_data["Valence"]-1,json_data["Arousal"]-1);
+		vscode.window.showInformationMessage("valence:Arounsal")
+	}
 
+});
+client.on('close', function() {
+	vscode.window.showInformationMessage('Connection closed');
+});
+}
 // TCP communication
 
 
 // This method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() 
+{}
 
 module.exports = {
 	activate,

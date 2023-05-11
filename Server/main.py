@@ -83,6 +83,8 @@ def setup_server():
     tcp_socket.bind((HOST_IP, PORT))
     tcp_socket.listen()
     print(f"SERVER: Hosting on IP:{HOST_IP} and listening on port:{PORT}")
+    tcp_thread = start_tcp_thread()
+    return tcp_thread
 
 #handles the connection to the extension
 def tcp_communication():
@@ -95,7 +97,7 @@ def tcp_communication():
     while not extension_connected:
         try:
             conn, client = tcp_socket.accept()
-            extension_connected = True        
+            extension_connected = True
             print(f"Connected to {client}")
         except:
             print("failed to connect to extension, trying again")
@@ -103,11 +105,15 @@ def tcp_communication():
     # when starting a session this list keeps track of active threads
     session_threads = []
 
+    start = time.time()
+
     # Commands
     while extension_connected:
+        #if time.time() - start < 200:
+        #   session_on = False
+
         try:
             data_received = conn.recv(1024).decode('utf-8')
-
             json_data = json.loads(data_received)
             recived_msg = json_data["function"]
         except:
@@ -122,25 +128,33 @@ def tcp_communication():
             print(settings_dict)
 
         elif recived_msg == "get_emotion":
-            conn.sendall(json.dumps(prediction_dict).encode('utf-8'))
-            print("changed SAM on extension")
+            data = prediction_dict
+            data["function"] = "get_emotion"
+            conn.sendall(json.dumps(data).encode('utf-8'))
+            #print("changed SAM on extension")
         
         elif recived_msg == "toggle_session":
             session_on = not session_on
             # if session starts, start the threads. If session ends, close the threads
             if session_on:
+                init_df()
                 session_threads = start_session_threads()
             if not session_on:
+                # Save dataframe to a path and with specified format
+                save_format = settings_dict["FileFormat"]           ############## !!!!!!!!!!!  ".ODF" FINNS EJ. DET SKA VARA ".ODS"....... .XLXS funkar inte heller
+                save_path = settings_dict["SaveLocation"]
+                save_df(full_df, save_path, save_format)
+                
                 join_threads(session_threads)
             print(f"Toggle session to: {session_on}")
-        
-        elif recived_msg == "disconnect":
+
+        if recived_msg == "disconnect":
             extension_connected = False
+            print(f"Disconnecting from: {client}")
             conn.close()
-            print(f"Disconnected from: {client}")
             break
 
-        elif recived_msg == "ping":
+        if recived_msg == "ping":
             print("ping")
             data = {
                 "function": "ping",
@@ -149,7 +163,7 @@ def tcp_communication():
             conn.sendall(data_json.encode('utf-8'))
             print("Received a ping from the client & responded with pong.")
 
-        elif recived_msg == "getPulse":
+        if recived_msg == "getPulse":
             pulse = e4_data_dict["Pulse"]
             data = {
                 "function": "getCurrentPulse",
@@ -157,24 +171,6 @@ def tcp_communication():
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
-
-
-        elif recived_msg == "getEEG":
-            eeg_data_json = json.dumps(eeg_data_dict)
-            
-            conn.sendall(eeg_data_json.encode('utf-8'))
-
-        # new save location     # msg: "set_save_path: [SPACE] root/path/location"
-        elif "set_save_path:" in recived_msg:
-            path_pos = recived_msg.find("set_save_path:")
-            picked_path = recived_msg[path_pos+11:]             # hämtar alla tecken efter "set_save_path:"
-            settings_dict["Save_path"] = picked_path
-        
-        # new format type for saved file
-        elif "set_save_format:" in recived_msg:
-            format_pos = recived_msg.find("set_save_format:")
-            picked_format = recived_msg[format_pos+7:format_pos+11]             # hämtar 4 tecken efter "format:"       -> ex. '.csv'       FIXA FÖR .XLSX som är 5 tecken. Pinga endast ".xls"
-            settings_dict["Save_format"] = picked_format
 
 
 # ------------------------------------------ EEG ------------------------------------------ #
@@ -349,8 +345,13 @@ def init_df():
     full_df = full_df.append(full_data_dict, ignore_index = True)
 
     
-def update_dataframe(print_it = True, mock = False):
+def update_dataframe():
     global full_df
+    global session_on
+
+    print_it = True
+    mock = True
+
     calibration_done["Dataframe"] = True
     # all_done = True                                                                     ######################
     # while not all_done:
@@ -370,7 +371,7 @@ def update_dataframe(print_it = True, mock = False):
             mock_all_dicts()
 
         # Clear terminal
-        # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+        os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
         # time
         time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
@@ -436,6 +437,9 @@ def mock_all_dicts():
     e4_data_dict["Bvp"] = random.randrange(-100, 100)
     e4_data_dict["Gsr"] = random.randrange(1, 3) / 10
     e4_data_dict["Pulse"] = random.randrange(60, 100)
+    
+    prediction_dict["Arousal"] = random.randrange(1, 5)
+    prediction_dict["Valence"] = random.randrange(1, 5)
 
 # ------------------------------------------ AI ------------------------------------------ #
 def predict_series(full_data_dict):
@@ -483,7 +487,6 @@ def load_models():
     svm_valence = joblib.load("Server/ML/Models/SVM_Valence_model_job.sav")
     svm_dataset = pd.read_csv("Server/ML/Models/SVM_dataset.csv")
     svm_dataset.drop('Unnamed: 0', axis=1, inplace=True)
-
 
 
 # ------------------------------------------ Files ------------------------------------------ #
@@ -559,14 +562,19 @@ def read_settings(settings_path):
 
 # ------------------------------------------ Threads ------------------------------------------ #
 def start_tcp_thread():
+    '''Starts a thread for the tcp communication
+    '''
     print("tcp thread starts")
     tcp_thread = threading.Thread(target=tcp_communication(), daemon=True)
     tcp_thread.start()
-
     return tcp_thread
 
 
 def start_session_threads():
+    """
+    """
+    '''Starts threads that are active during a session 
+    '''
     global full_df
     #thread_names = []
     threads = []
@@ -574,7 +582,7 @@ def start_session_threads():
     if settings_dict["EEG"] == True:
         #start thread/-s needed for EEG
         print("EEG thread starts")
-        eeg_thread = threading.Thread(target=start_eeg)
+        eeg_thread = threading.Thread(target=start_eeg, daemon=True)
         eeg_thread.start()
         threads.append(eeg_thread)
         #thread_names.append("eeg_thread")
@@ -584,13 +592,13 @@ def start_session_threads():
     if settings_dict["Eyetracker"] == True:
         #start thread/-s needed for Eye tracker
         print("Eye thread starts")
-        eye_thread = threading.Thread(target=get_eye_tracker_data) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
+        eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
         #thread_names.append("eye_thread")
 
         print("Heatmap thread starts")
-        heatmap_thread = threading.Thread(target=start_heatmap)
+        heatmap_thread = threading.Thread(target=start_heatmap, daemon=True)
         heatmap_thread.start()
         threads.append(heatmap_thread)
         #thread_names.append("heatmap_thread")
@@ -609,9 +617,7 @@ def start_session_threads():
 
     # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
-    print_df = True
-    mock = True
-    df_thread = threading.Thread(target=update_dataframe(print_df, mock), daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
+    df_thread = threading.Thread(target=update_dataframe, daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
     threads.append(df_thread)
     # thread_names.append("df_thread")
@@ -619,8 +625,20 @@ def start_session_threads():
 
     return threads
 
-""" Closes all running threads included in the list """
+
 def join_threads(threads):
+    """
+    This function joins all the threads
+
+    This function will take a list of threads and joining them while printing out
+    their name.
+
+    Args:
+        threads (list): Inputed list of threads
+    
+    Raises:
+        Exception: If any exception occurs. Will print "failed to join {thread_name}"
+    """
     # print(threads)
     i = 0
     for t in threads:
@@ -634,6 +652,18 @@ def join_threads(threads):
 
 # ------------------------------------------ Dashboard ------------------------------------------ # 
 def start_heatmap():
+    """
+    This is the heatmap thread
+
+    This thread is used to continously take screenshots of the monitor in an interval
+    and save them as a heatmap for the dashboard to use.
+
+    Notes:
+        This function uses the object "dashboard" which is an instande of the module
+        "Dashboard.dashboard" located in {%projectPath}/Server/Dashboard/dashboard.py
+        And uses the function screenshot_img(capture_name) and create_heatmap_gif(img_cache, df)
+        from that instace.
+    """
     global full_df
 
     all_done = False                                                                     ######################
@@ -648,7 +678,7 @@ def start_heatmap():
     last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
 
     # Run whole session (maybe future instead of max_time just have bool that check if user extension is connected)
-    while time.time() - start < max_time:
+    while session_on:
         # Save constantly the newest row (date) in the dataframe
         current_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
 
@@ -678,6 +708,21 @@ def start_heatmap():
 
 
 def make_dashboard():
+    """
+    This function is responsible to create the dashboard
+
+    This function will create the combined dashboard from the current state of the
+    dataframe. This will be rendered as a jinja2 templated located in the folder:
+    {%projectPath}/Server/Dashboard/Saved_dashboard/combined_dashboard.html
+
+    Raises:
+        Exception: If any exception occurs. Will print "[ERROR] - dasboard failed"
+
+    Notes:
+        This function uses the object "dashboard" which is an instande of the module
+        "Dashboard.dashboard" located in {%projectPath}/Server/Dashboard/dashboard.py
+        And uses the function create_combined_dashboard(full_df) from that instace.
+    """
     global full_df
 
     try:
@@ -688,6 +733,13 @@ def make_dashboard():
 
 # ------------------------------------------ Main ------------------------------------------ #
 if __name__ == "__main__":
+    """
+    Main statement starting the server when run as a script
+
+    This statement will be run through and initalizes all necessary components to run
+    this project.
+    """
+
     # load settings from settings file
     try:
         read_settings(SETTINGS_PATH)
@@ -705,9 +757,10 @@ if __name__ == "__main__":
         print("[ERROR] - could not load AI models")
 
     # start localy hosted server
-    setup_server()
-    
-    tcp_thread = start_tcp_thread()
+    tcp_thread = setup_server()
+
+    threads = [tcp_thread]
+    join_threads(threads)
 
     # Save dataframe to a path and with specified format
     save_format = settings_dict["FileFormat"]
@@ -720,3 +773,28 @@ if __name__ == "__main__":
     
     exit()
 
+
+
+# DOCUMENTATION FORMAT (GOOGLE STYLE)
+"""
+Brief description of the function.
+
+More detailed description of the function's purpose, behavior,
+and any specific details that are important to understand.
+
+Args:
+    param1 (type): Description of param1.
+    param2 (type): Description of param2.
+
+Returns:
+    type: Description of the return value(s).
+
+Raises:
+    ExceptionType: Description of the exception(s) raised, if any.
+
+Examples:
+    Provide examples demonstrating how to use the function.
+
+Notes:
+    Additional notes or important information about the function.
+"""
