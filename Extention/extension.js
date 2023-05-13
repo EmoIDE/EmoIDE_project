@@ -124,7 +124,6 @@ class DevicesDataProvider {
 	UpdateSAMIndex(valence,arousal) {
 	  if (this._view) {
 		this._view.webview.html = this.GetSAMView(Math.max(0,valence),Math.max(0,arousal));
-		vscode.window.showInformationMessage("requesting SAM")
 	  	}
 	}
 	GetSAMView(indexVal,indexAro) {
@@ -163,6 +162,10 @@ class DevicesDataProvider {
 			</body>
 			</html>`;
 		}
+}
+function RequestclientData(functionName)
+{
+	client.write(JSON.stringify({"function": functionName}));
 }
 
 function activate(context) {
@@ -203,8 +206,7 @@ function activate(context) {
 		const fileUri = vscode.Uri.file(onDiskPath.path);
 		fs.writeFileSync(fileUri.fsPath, JSON.stringify(merge_json, null, 4));
 		
-		const update_json = {"function": "settings_update"};
-		client.write(JSON.stringify(update_json));
+		RequestclientData("settings_update");
 		vscode.window.showInformationMessage("settings updated");
 
 	})
@@ -244,7 +246,7 @@ function activate(context) {
 			}
 			else
 			{
-				client.write(JSON.stringify({"function":"disconnect"}))
+				RequestclientData("disconnect")
 			}
 			
 		}),
@@ -283,50 +285,47 @@ function activate(context) {
 		vscode.window.showInformationMessage('We recommend taking a break ☕');
 	})
 	);
-
 function connectToServer(){
 	client.connect(6969, '127.0.0.1', function() {
 		console.log('Connected');
-		var json_data = {"function": "ping"}
-		client.write(JSON.stringify(json_data));
+		RequestclientData("ping");
 	});
 };
+
 function getCurrentPulse(){
-	var json_data = {"function": "getPulse"}
-	client.write(JSON.stringify(json_data));
+	RequestclientData("getPulse");
 }
 function GetSAM()
 {
-	var json_data = {"function": "get_emotion"}
-	client.write(JSON.stringify(json_data));
+	RequestclientData("get_emotion")
 }
+
+// TCP communication
 client.on('data', function(data){
 	var json_data = JSON.parse(data.toString());
 	var type_of_data = json_data["function"]
-	if (type_of_data == "ping") {
+	switch (type_of_data) {
+	case "ping": 
 		console.log("ping funka");
+		break;
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
 		//vscode.window.showInformation Message('received ping');
-	}
-	if (type_of_data == "getCurrentPulse") {
+	case "getCurrentPulse": 
+		var pulse = json_data["data"]
+		statusbarPulse.text = "$(pulse)" + pulse.toString();
+		break;
 		//gör något med infon som servern skickar
 		//sparar/visar data på något snyggt sätt
 		//console.log("ss");
-		var pulse = json_data["data"]
-		statusbarPulse.text = "$(pulse)" + pulse.toString();
-	}
-	if (type_of_data == "get_emotion") {
+	case "get_emotion": 
 		SAMProv.UpdateSAMIndex(json_data["Valence"]-1,json_data["Arousal"]-1);
-		vscode.window.showInformationMessage("valence:Arounsal")
 	}
-
 });
 client.on('close', function() {
-	vscode.window.showInformationMessage('Connection closed');
+	vscode.window.showInformationMessage('Connection to server closed');
 });
 }
-// TCP communication
 
 
 // This method is called when your extension is deactivated

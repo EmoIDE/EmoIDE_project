@@ -5,3 +5,6 @@ jinja2==2.11.2
 asyncio==3.4.3
 matplotlib==3.7.1
 scikit-learn==1.2.2
+lxml
+neurokit2
+easygui
