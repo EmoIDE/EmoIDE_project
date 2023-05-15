@@ -19,6 +19,21 @@ format = "%d-%m-%YT%H-%M-%S"
 output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards'))
 
 def create_dashboard(df):
+    """
+    Generates a dashboard HTML file using a Jinja2 template.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame containing the data to populate the dashboard.
+
+    Notes:
+        -   The function assumes that the DataFrame contains specific columns, such as 'Excitement', 'Engagement',
+            'Long term excitement', 'Stress/Frustration', 'Relaxation', 'Interest/Affinity', 'Focus', 'Pulse', 'Gsr',
+            'Bvp', and 'time'.
+        -   The function retrieves data from the DataFrame and organizes it into lists for different dashboard components.
+        -   The data is then passed to a Jinja2 template to render the HTML dashboard.
+        -   The rendered HTML is saved to a file named 'dashboard.html'.
+    """
+
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
     template = env.get_template("template.html")
     excitement_list = df['Excitement'].tolist()
@@ -61,6 +76,22 @@ def create_dashboard(df):
 
 
 def create_combined_dashboard(df):
+    """
+    Generates a combined dashboard HTML file using a Jinja2 template.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame containing the data to populate the dashboard.
+
+    Notes:
+        -   The function assumes that the DataFrame contains specific columns, such as 'Excitement', 'Engagement',
+            'Long term excitement', 'Stress/Frustration', 'Relaxation', 'Interest/Affinity', 'Focus', 'Pulse', 'Gsr',
+            'Bvp', and 'time'.
+        -   The function retrieves data from the DataFrame and organizes it into lists for different dashboard components.
+        -   It also gathers information about image files in a specific directory.
+        -   The data is then passed to a Jinja2 template to render the HTML dashboard.
+        -   The rendered HTML is saved to a file named 'combined_dashboard.html'.
+    """
+
     excitement_list = df['Excitement'].tolist()
     engagement_list = df['Engagement'].tolist()
     long_excitement_list = df['Long term excitement'].tolist()
@@ -116,6 +147,24 @@ def create_combined_dashboard(df):
 
 
 def get_df_in_time_range(start_time, end_time, df):
+    """
+    Retrieves a subset of a DataFrame based on a specified time range.
+
+    Args:
+        start_time (datetime.datetime): The start time of the desired time range.
+        end_time (datetime.datetime): The end time of the desired time range.
+        df (pandas.DataFrame): The DataFrame containing the data to filter.
+
+    Returns:
+        pandas.DataFrame: A subset of the original DataFrame that falls within the specified time range.
+
+    Notes:
+        -   The function assumes that the DataFrame has a column named "time" containing datetime values.
+        -   The start_time and end_time are inclusive, meaning they are included in the filtered range.
+        -   The time range is determined based on the values in the "time" column of the DataFrame.
+        -   The function uses boolean masking to filter the DataFrame and retrieve rows within the specified range.
+    """
+
     time_series = df["time"]
     start_time_series = datetime.datetime.strftime(start_time, format)
     end_time_series = datetime.datetime.strftime(end_time, format)
@@ -126,7 +175,23 @@ def get_df_in_time_range(start_time, end_time, df):
 
 
 def create_heatmap(moment_time, df):
-    # Pseudo code
+    """
+    Creates a heatmap based on data from a specific moment in time.
+
+    Args:
+        moment_time (str): The moment in time for which the heatmap is created, formatted according to the specified format.
+        df (pandas.DataFrame): The DataFrame containing the data for generating the heatmap.
+
+    Notes:
+        - The function retrieves data from the DataFrame within a time range centered around the specified moment_time.
+        - The time range is defined as the two minutes before and including the moment_time.
+        - The x and y coordinates from the retrieved data are converted to pixel coordinates relative to the screen capture image.
+        - A heatmap is created by plotting the converted coordinates over the corresponding screen capture image.
+        - The heatmap image is saved as a PNG file in the "Heatmaps" directory relative to the current script's location, using the moment_time as the filename.
+        - The density of the plotted points is represented using a color gradient defined by the 'coolwarm' colormap.
+        - The resulting heatmap image is saved with a DPI of 300 and a tight bounding box.
+    """
+   
     before_moment = datetime.datetime.strptime(moment_time, format) - datetime.timedelta(minutes=2)
 
     x = get_df_in_time_range(before_moment, datetime.datetime.strptime(moment_time, format), df)['x'].to_numpy()
@@ -155,6 +220,18 @@ def create_heatmap(moment_time, df):
 
 
 def capture_screen(capture_name):
+    """
+    Captures a screenshot of the screen and saves it as an image file.
+
+    Args:
+        capture_name (str): The name of the captured screen image.
+
+    Notes:
+        - The function uses the pyautogui library to capture a screenshot of the screen.
+        - The captured screenshot is saved as a PNG image file in the "Screencaptures" directory relative to the current script's location.
+        - The captured screen image is named using the provided capture_name.
+    """
+
     myScreenshot = pyautogui.screenshot()
     myScreenshot.save(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{capture_name}.png')
 
@@ -222,6 +299,18 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def create_heatmap_dashboard():
+    """
+    Creates a heatmap dashboard by rendering a Jinja2 template with heatmap data.
+
+    Notes:
+        - The function uses a Jinja2 template to generate an HTML dashboard with heatmaps.
+        - Heatmap images are loaded from the "Heatmaps" directory relative to the current script's location.
+        - Each subdirectory in the "Heatmaps" directory represents a group of heatmaps.
+        - Heatmap images in each subdirectory are added to a carousel in the dashboard.
+        - A stress level value is randomly generated for each group of heatmaps.
+        - The generated HTML is saved to a file named "heatmap.html" in the specified output_path directory.
+    """
+
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
     template = env.get_template("heatmap_template.html")
 
@@ -251,6 +340,26 @@ def create_heatmap_dashboard():
     # return render(request, 'Saved_dashboards/heatmap_dashboard.html', {'folder_carousels': folder_carousel})
 
 def create_heatmap_gif(img_cache, df):
+    """
+    Creates heatmaps for a series of images based on the provided data.
+
+    Args:
+        img_cache (list): A list of dictionaries containing image information.
+        df (DataFrame): The DataFrame containing the data for generating heatmaps.
+
+    Raises:
+        FileExistsError: If directory already exists.
+
+    Notes:
+        - The function creates heatmaps for each image in the img_cache list.
+        - The heatmaps are created based on the x and y coordinates stored in the df DataFrame.
+        - Heatmap images are saved in the "Heatmaps" directory relative to the current script's location.
+        - A subdirectory is created in the "Heatmaps" directory using the capture date as its name.
+        - Heatmaps are saved as PNG images with filenames based on the capture date.
+        - If there is insufficient data to create a heatmap for an image, a warning message is printed, and the original image is saved without modification.
+        - The progress of processing each image is printed as a percentage.
+    """
+
     dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{img_cache[0]["date"]}'
 
     try:
@@ -298,6 +407,26 @@ def create_heatmap_gif(img_cache, df):
 
 
 def screenshot_img(capture_name):
+    """
+    Captures a screenshot and returns information about the capture.
+
+    Args:
+        capture_name (str): The name of the capture.
+
+    Returns:
+        dict: A dictionary containing the following information:
+            - "date": The capture name.
+            - "name": The absolute path to the captured image file.
+            - "img": The captured screenshot image.
+
+    Notes:
+        - The capture name is used as the value for the "date" key in the returned dictionary.
+        - The captured image file is saved in the "Screencaptures" directory relative to the current script's location.
+        - The file name is generated by appending ".png" to the capture name.
+        - The absolute path to the image file is stored as the value for the "name" key in the returned dictionary.
+        - The captured screenshot image is stored as the value for the "img" key in the returned dictionary.
+    """
+
     return {"date": capture_name, "name": f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{capture_name}.png', "img": pyautogui.screenshot()}
 
 
