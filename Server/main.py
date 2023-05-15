@@ -175,10 +175,12 @@ def tcp_communication():
 
 # ------------------------------------------ EEG ------------------------------------------ #
 async def import_EEG_data():
+    """Setups EEG and gets data, ends session when done"""
     global eeg_data_dict
     global calibration_done
     global max_time
 
+    #try to connect
     cortex_api = EEG.EEG()
     await cortex_api.connect()
     try:
@@ -188,9 +190,6 @@ async def import_EEG_data():
         calibration_done["EEG"] = True
         return 0
 
-    #wait for first message
-    #await cortex_api.get_eeg_data()
-
     calibration_done["EEG"] = True
 
     all_done = False
@@ -198,14 +197,17 @@ async def import_EEG_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
     
+    #gets data
     while session_on:
         time.sleep(1)
         eeg_data_dict = await cortex_api.get_eeg_data()
 
+    #end cortex session
     await cortex_api.end_session()
 
 
 def start_eeg():
+    """Starts eeg thread"""
     asyncio.run(import_EEG_data())
 
 
