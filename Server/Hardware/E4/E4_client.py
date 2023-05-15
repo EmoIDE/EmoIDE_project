@@ -5,15 +5,19 @@ import re
 import neurokit2 as nk
 
 class E4:
-    '''
-    An e4 object that can connect to a E4 device and recieve data from that device
-    
-    Arguments: 
-    ip : str, the ip of the extension server
-    port : int, the port to the e4 streaming server application
-    '''
+    """
+    An E4 object that can connect to an E4 device and recieve data from that device
+    """
+
     def __init__(self, ip :str, port : int) -> None:
-        '''Initiates the E4 object'''
+        """
+        Initalizes the E4 object.
+
+        Args:
+            ip (str): The IP of the extension server.
+            port (int): The port to the #4 streaming server application.
+        """
+
         self.server_ip = ip
         self.server_port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
@@ -23,8 +27,13 @@ class E4:
 
 
     def E4_SS_connect(self):
-        '''Establishes a connection with an available E4 device connected to the E4 streaming server on
-        the specefied port'''
+        """
+        Establishes a connection with an available E4 device connected to the E4 streaming server on the specified port.
+        
+        Raises:
+            Exception: If any exception occurs when trying to connect to the E4 streaming server.
+        """
+
         try:
             #Kan ta bort alla prints här när vi väl får det att fungera
             self.client_socket.connect((self.server_ip, self.server_port))
@@ -49,7 +58,13 @@ class E4:
             print("[ERROR] - Connection to E4 Streaming Server failed")
         
     def start_subscriptions(self):
-        '''Starts subscribing to a datastream for the BVP, IBI and GSR from the connected device'''
+        """
+        Starts subscribing to a data stream for the BVP, IBI, and GSR from the connected device.
+
+        Raises:
+            Exception: If any exception occurs while trying to subscribe to data stream.
+        """
+
         requests = ['device_subscribe bvp ON\n', 'device_subscribe ibi ON\n', 'device_subscribe gsr ON\n']
 
         try:
@@ -63,7 +78,13 @@ class E4:
             print("[ERROR] - Can not subscribe to stream")
     
     def recieve_data(self):
-        '''Recieves data from the connected E4 device an returns the last given values of each type'''
+        """
+        Receives data from the connected E4 device and returns the last given values of each type.
+
+        Raises:
+            Exception: If any exception occurs while trying to exctract data from subscribed data stream
+        """
+
         msg_arr = []
         start = time.time()
         delta = 0
@@ -78,7 +99,13 @@ class E4:
         return self.get_latest_values(msg_arr)
 
     def e4_stop(self):
-        '''Ends all data streaming subscriptions to the device and disconnects the device from the application'''
+        """
+        Ends all data streaming subscriptions to the device and disconnects the device from the application.
+
+        Raises:
+            ConnectionError: If there is an error stopping the data subscriptions or disconnecting from the E4 device.
+        """
+        
         requests = ['device_subscribe bvp OFF\n', 'device_subscribe ibi OFF\n', 'device_subscribe gsr OFF\n']
         try:
             for i in requests:
@@ -96,11 +123,20 @@ class E4:
         print("e4 disconnected")
 
     def get_latest_values(self, arr):
-        '''
-        Recives a list of string values in the format "value-type time value" and returns a with the last 
-        value in the list of each type. The function also processes the gsr value and returns tonic and phasic
-        values based on the gsr values
-        '''
+        """
+        Receives a list of string values in the format "value-type time value" and returns the last value in the list of each type.
+        The function also processes the GSR value and returns tonic and phasic values based on the GSR values.
+
+        Args:
+            arr (list): A list of string values in the format "value-type time value".
+
+        Returns:
+            list: A list with the last value in the list of each type.
+
+        Raises:
+            ValueError: If the provided list does not contain valid data values.
+        """
+
         fixed_arr = []
         for i in arr:
             end_of_id = i.find(" ")
