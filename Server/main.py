@@ -78,6 +78,21 @@ calibration_done = {
 # ------------------------------------------ Server ------------------------------------------ #
 # start serverside with a tcp socket. AF - Address Family (IPv4). Sock_stream - type (TCP)
 def setup_server():
+    """
+    Starts the server-side with a TCP socket.
+
+    Creates a TCP socket using the IPv4 address family (AF_INET) and TCP stream type (SOCK_STREAM).
+    Binds the socket to the specified host IP address and port number. Listens for incoming connections
+    and then starts a TCP thread to handle incoming connections and communication.
+    
+    Returns:
+        tcp_thread (Thread): The thread responsible for handling TCP communication.
+
+    Notes:
+        -   AF = Address Family (IPv4)
+        -   Sock_stream = type (TCP)
+        -   Creates TCP thread using function 'start_tcp_thread()'
+    """
     global tcp_socket
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_socket.bind((HOST_IP, PORT))
@@ -88,6 +103,22 @@ def setup_server():
 
 #handles the connection to the extension
 def tcp_communication():
+    """
+    Handles TCP communication (connection) between the server and the extension.
+
+    Waits for the extension to establish a connection with the server.
+    Receives messages from the extension, processes them accordingly, and sends responses back if necessary.
+    Handles commands such as "settings_update", "get_emotion", "toggle_session", "disconnect", "ping", and "getPulse".
+    Manages the session state and performs actions based on the received commands.
+
+    Raises:
+        Exception: If any exception occurs during socket connection between server and extension (if extension is not connected) .
+        Exception: If any exception occurs during socket recieving data (if extension is connected).
+    
+    Notes:
+        -   The function keeps executing and checking for socket connection if not connected to extension.
+        -   The function keeps executing and checking for recieved data if it's connected to the extension.
+    """
     global session_on
     global tcp_socket
     tcp_socket.settimeout(15)
@@ -175,7 +206,23 @@ def tcp_communication():
 
 # ------------------------------------------ EEG ------------------------------------------ #
 async def import_EEG_data():
-    """Setups EEG and gets data, ends session when done"""
+    """
+    Establishes a connection to the EEG, and starts receiving data from it.
+    
+    This asynchronouos function starts recording EEG data by initializing the api and setting up the api object.
+    The 'calibration_done' dictionary is updated to indicate that the EEG calibration is complete.
+    It then enters a loop to wait until all sensor calibrations are done before starting gathering data.
+    The EEG data is continuously updated. Finally, the EEG ends is session when 'session_on' flag is False.
+
+    Returns:
+        int: 0 if the cortex api setup fails.
+
+    Raises:
+        Exception: If any exception occurs during cortext setup
+    
+    Notes:
+        -   The function keeps executing and updating the 'eeg_data_dict' while the 'session_on' flag is True.
+    """
     global eeg_data_dict
     global calibration_done
     global max_time
@@ -207,12 +254,28 @@ async def import_EEG_data():
 
 
 def start_eeg():
-    """Starts eeg thread"""
+    """
+    Starts the EEG recorder.
+
+    This function executes the function 'import_EEG_data()' within an asyncio event loop. This
+    function starts the process of importing EEG data.
+    """
     asyncio.run(import_EEG_data())
 
 
 # ------------------------------------------ EYE TRACKER ------------------------------------------ #
 def get_eye_tracker_data():
+    """
+    Creates an EyeTracker object, establishes a connection to the Eye Tracker, and starts receiving data from it.
+    
+    Starts recording eye tracker data by initializing the 'eye_tracker' object and setting up the eye tracker.
+    The 'calibration_done' dictionary is updated to indicate that the eye tracker calibration is complete.
+    It then enters a loop to wait until all sensor calibrations are done before starting the recording.
+    The eye data is continuously updated. Finally, the eye tracker recording is stopped.
+
+    Notes:
+        -   The function keeps executing and updating the 'eye_data_dict' while the 'session_on' flag is True.
+    """
     global calibration_done
     global eye_data_dict
     global full_df
@@ -235,7 +298,19 @@ def get_eye_tracker_data():
 
 # ------------------------------------------ E4 DATA TRACKER ------------------------------------------ #
 def get_e4_data():
-    '''Creates a E4 connection if possible and starts recieving that from the E4 device'''
+    """
+    Creates an E4 connection and starts receiving data from the E4 device.
+
+    This function establishes a connection with the E4 device and starts receiving Bvp, Gsr, and Hr data
+    by initializing the 'e4_data_dict' and starting subscriptions. The calibration status is updated
+    in the 'calibration_done' dictionary. It then enters a loop to continuously receive data, extracting
+    the Hr, Bvp, and Gsr values. If the values are not empty, they are assigned to the corresponding keys
+    in 'e4_data_dict'. The 'Pulse' value is converted to a float and checked against a threshold before
+    assigning it.
+
+    Notes:
+        -   The function keeps executing while the 'session_on' flag is True.
+    """
     #global calibration_done
     global e4_data_dict
 
@@ -273,8 +348,18 @@ def get_e4_data():
 
 # ------------------------------------------ DataFrame ------------------------------------------ #
 def init_df():
-    '''Initialises the dataframe and creates all columns. Also creates all the dictionaries that later
-    will be used to update the dataframe'''
+    """
+    Initalizes the dataframe and creates all columns, along with the dictionaries used for updating the dataframe.
+
+    This function initializes the dataframe and dictionaries used for updating it. Global variables such as 'time_dict',
+    'eye_data_dict', 'eeg_data_dict', 'e4_data_dict', 'prediction_dict', 'full_data_dict', 'full_df',
+    and 'training_dict' are initialized. The 'full_df' is created as an empty DataFrame of object data type,
+    and the dictionaries are initialized with default values. The function updates 'full_data_dict' with
+    values from the dictionaries and appends it as the first row to the 'full_df' DataFrame.
+
+    Note:
+        -   The commented code related to the 'training_dict' is currently disabled.
+    """
     global time_dict
     global eye_data_dict
     global eeg_data_dict
@@ -348,6 +433,23 @@ def init_df():
 
     
 def update_dataframe():
+    """
+    Collects and updates data in the global dataframe.
+
+    This function continuously collects data from various sources such as, eye_data_dict,
+    time_dict, eeg_data_dict, e4_data_dict, and prediction_dict and updates the dataframe
+    which is then appended to the global 'full_df' DataFrame.
+
+    Raises:
+        Exception: If any exception occurs while calling 'predict_series(full_data_dict)'
+    
+    Notes:
+        -   The function keeps executing while the 'session_on' flag is True.
+        -   The function sets the 'calibration_done' flag for the 'Dataframe' key to True.
+        -   It retrieves mock data if the 'mock' flag is set to True instead of real data.
+        -   The terminal is cleared using OS-specific commands ('cls' for Windows and 'clear' for other systems).
+        -   If an exception occurs during the prediction process, a message is printed indicating the failure.
+    """
     global full_df
     global session_on
 
@@ -420,6 +522,12 @@ def update_dataframe():
 
 
 def mock_all_dicts():
+    """
+    Modifies and updates global dictionaries with mock data.
+
+    This function updates the global dictionaries eye_dat_dict, eeg_data_dict, e4_data_dict,
+    and prediciton_dict with randomly generate mock data.
+    """
     global eye_data_dict
     global eeg_data_dict
     global e4_data_dict
@@ -445,8 +553,21 @@ def mock_all_dicts():
 
 # ------------------------------------------ AI ------------------------------------------ #
 def predict_series(full_data_dict):
-    '''Recieves the data from the full data dict, reformats it and changes the values in prediction dict based
-    on the predictions of the train AI model'''
+    """
+    Recieves the data from the full data dict, reformats it and changes the values in prediction
+    dict based on the predictions of the trained AI model
+
+    The function reads an SVM dataset from a CSV file, modifies certain fields in the data,
+    and assigns it to a global variable. It then performs preprocessing steps such as dropping
+    unnecessary fields, applying one-hot encoding, and scaling the dataset. Using an AI model,
+    the function predicts values for 'Valence' and 'Arousal' based on the scaled dataset,
+    storing the predictions in the 'prediction_dict' fields.
+
+    Notes:
+        -   The 'svm_dataset' is read from a CSV file named 'SVM_dataset.csv' and modified by dropping the 'Unnamed: 0' column.
+        -   The scaled dataset is obtained using the 'scale' function.
+        -   If the random number is greater than 50, the predicted 'Arousal' value comes from the AI model; otherwise, a default value is used.
+    """
     global svm_dataset
     global eeg_predict_values
     global prediction_dict
@@ -482,7 +603,19 @@ def predict_series(full_data_dict):
 
 
 def load_models():
-    '''Loads the AI models and the dataset they were trained on'''
+    """
+    Loads the AI models and the dataset they were trained on
+
+    The function loads the Support Vector Machine (SVW) models for arousal and valence prediciton,
+    as well as the dataset used for training the models.
+
+    Notes:
+        -   The fucntion uses the 'joblib' library to load the SVM models from the specified file paths.
+        -   The dataset is loaded using 'pd.read_csv' function.
+        -   The 'svm_dataset' DataFrame has an 'Unnamed: 0' column, which is dropped for further processing.
+        -   The loaded models and dataset are stored in the respective global variables: 'svm_arousal', 'svm_valence',
+            and 'svm_dataset'.
+    """
     global svm_arousal, svm_valence
     global svm_dataset
     svm_arousal = joblib.load("Server/ML/Models/SVM_Arousal_model_job.sav")
@@ -493,14 +626,25 @@ def load_models():
 
 # ------------------------------------------ Files ------------------------------------------ #
 def save_df(df, path, save_as_ext = '.csv'):
-    '''Saves the dataframe
-    arguments:
+    """
+    Saves the dataframe
+
+    The function saves the DataFrame to a file at the given path with the specified file extension.
+    The file format options includes the following: [CSV, PDF, TSV, HTML, ODS, XLSX].
+
+    Args:
+        df (pandas.DataFrame): The DataFrame to be saved.
+        path (str): The path where the file should be saved.
+        save_as_ext (str, optional): The desired file extension. Defaults to '.csv'.
     
-    df : pandas dataframe, the dataframe that will be converted and saved
-    path : str, the path to where the dataframe will be saved
-    save_as_ext : str, what format the file should be saved in. Currently supports csv, pdf, tsv,
-    html, ods, xlsx. csv is the default option
-    '''
+    Returns:
+        int: 0 if the path does not exist.
+    
+    Notes:
+        -   The 'filename' is detemined by appending the 'full_data_dict["time"]'
+        -   The file formats supported are: CSV, PDF, TSV, HTML, ODS, and XLSX.
+        -   The function uses the module matplotlib.pyplot as 'plt' to save as pdf
+    """
     filename = 'output_data' + str(full_data_dict["time"])    # get last part of path
 
     # if settings_dict["Training"] == True:
@@ -555,7 +699,24 @@ def save_df(df, path, save_as_ext = '.csv'):
 
 
 def read_settings(settings_path):
-    '''Reads the settings from the json file "settings.json"'''
+    """
+    Reads the settings from the specified JSON file.
+
+    Reads the contents of the JSON file located at the given settings_path
+    (should point to settings.json). Updates the global variable
+    settings_dict with the loaded settings.
+
+    Args:
+        settings_path (str): The path to the JSON file containing the settings.
+
+    Raises:
+        FileNotFoundError: If the specified JSON file is not found.
+        JSONDecodeError: If the JSON file is invalid or cannot be parsed.
+
+    Notes:
+        - The JSON file must follow a valid JSON format.
+        - The settings_dict global variable is updated with the loaded settings.
+    """
     global settings_dict
     
     with open(settings_path, "r") as wow:
@@ -564,8 +725,20 @@ def read_settings(settings_path):
 
 # ------------------------------------------ Threads ------------------------------------------ #
 def start_tcp_thread():
-    '''Starts a thread for the tcp communication
-    '''
+    """
+    Starts a thread for the tcp communication
+
+    This thread is on of the elementary functions which handles creating the TCP communication
+    between the server and the extension. This further allows commands to be sent between the
+    extension and the server.
+
+    Returns:
+        Thread: The thread handling the tcp communication
+    
+    Notes:
+        -   This function uses the "tcp_communication()" function to use as a target for the thread
+        -   This function uses the "threading" module to create threads
+    """
     print("tcp thread starts")
     tcp_thread = threading.Thread(target=tcp_communication(), daemon=True)
     tcp_thread.start()
@@ -574,9 +747,24 @@ def start_tcp_thread():
 
 def start_session_threads():
     """
+    Starts threads that are active during a session
+
+    This function is called if the session starts and is responsible to start all the active threads.
+    It starts the threads required for EEG, Eye tracker, Emaptica E4, and updating the dataframe.
+
+    Returns:
+        list: A list of the started thread objects
+
+    Examples:
+        threads = start_session_threads()
+        # Output: [eeg_thread, eye_thread, heatmap_thread, e4_thread, df_thread]
+    
+    Notes:
+        -   The function checks the "settings_dict" dictionary to determine which threads to start based
+            on the active devices.
+        -   If a device is not active, the corresponding "calibration_done" flag is set to True.
+        -   This function uses the "threading" module to create threads
     """
-    '''Starts threads that are active during a session 
-    '''
     global full_df
     #thread_names = []
     threads = []
@@ -632,8 +820,8 @@ def join_threads(threads):
     """
     This function joins all the threads
 
-    This function will take a list of threads and joining them while printing out
-    their name.
+    This function will take the inputed list of threads and joining them while printing out
+    their names.
 
     Args:
         threads (list): Inputed list of threads
@@ -661,10 +849,10 @@ def start_heatmap():
     and save them as a heatmap for the dashboard to use.
 
     Notes:
-        This function uses the object "dashboard" which is an instande of the module
-        "Dashboard.dashboard" located in {%projectPath}/Server/Dashboard/dashboard.py
-        And uses the function screenshot_img(capture_name) and create_heatmap_gif(img_cache, df)
-        from that instace.
+        -   This function uses the object "dashboard" which is an instande of the module
+            "Dashboard.dashboard" located in {%projectPath}/Server/Dashboard/dashboard.py
+        -   And uses the function screenshot_img(capture_name) and create_heatmap_gif(img_cache, df)
+            from that instace.
     """
     global full_df
 
@@ -721,9 +909,9 @@ def make_dashboard():
         Exception: If any exception occurs. Will print "[ERROR] - dasboard failed"
 
     Notes:
-        This function uses the object "dashboard" which is an instande of the module
-        "Dashboard.dashboard" located in {%projectPath}/Server/Dashboard/dashboard.py
-        And uses the function create_combined_dashboard(full_df) from that instace.
+        -   This function uses the object "dashboard" which is an instande of the module
+            "Dashboard.dashboard" located in {%projectPath}/Server/Dashboard/dashboard.py
+        -   And uses the function create_combined_dashboard(full_df) from that instace.
     """
     global full_df
 
