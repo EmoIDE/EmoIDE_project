@@ -2,11 +2,29 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import glob
 
-filepath = "filepath med namn"#Sätt din filepath med här
+filepath = "filepath med namn"  # <-- Filepath here
 
 def first_clean(df):
-    '''Sätter första värdet till första obeserverade värdet för alla eegn värden, tar bort en 
-    av dubletterna vi får i början av varje dataframe och tar bort alla tomma valence och arousal rader'''
+    """
+    Performs the initial cleaning steps on the DataFrame.
+
+    Sets the first value of each EEG column to the first non-zero observed value.
+    Removes one of the duplicate rows at the beginning of the DataFrame.
+    Removes all rows with empty 'Valence' and 'Arousal' values.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame to be cleaned.
+
+    Returns:
+        pandas.DataFrame: The cleaned DataFrame.
+
+    Notes:
+        - The input DataFrame 'df' is not modified; a copy is created for cleaning.
+        - The first non-zero observed value for each EEG column is assigned to the first row.
+        - One of the duplicate rows at the beginning of the DataFrame is dropped.
+        - Rows with empty 'Valence' and 'Arousal' values are dropped.
+    """
+
     df_copy = df.copy(True)
     temp_df = df_copy.ne(0).idxmax().to_frame('pos').assign(val=lambda d: df_copy.lookup(d.pos, d.index))
     temp_df["val"]
