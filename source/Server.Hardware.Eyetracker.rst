@@ -1,0 +1,29 @@
+Server.Hardware.Eyetracker package
+==================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   Server.Hardware.Eyetracker.gazepoint
+
+Submodules
+----------
+
+Server.Hardware.Eyetracker.eyetracker module
+--------------------------------------------
+
+.. automodule:: Server.Hardware.Eyetracker.eyetracker
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: Server.Hardware.Eyetracker
+   :members:
+   :undoc-members:
+   :show-inheritance:
