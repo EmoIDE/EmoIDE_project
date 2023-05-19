@@ -136,35 +136,28 @@ def tcp_communication():
     # when starting a session this list keeps track of active threads
     session_threads = []
 
-    start = time.time()
-
     # Commands
     while extension_connected:
         #if time.time() - start < 200:
         #   session_on = False
 
         try:
-            data_received = conn.recv(1024).decode('utf-8')
-            json_data = json.loads(data_received)
-            recived_msg = json_data["function"]
+            recived_msg = conn.recv(1024).decode('utf-8')
+            print(f"decoded: {recived_msg}")
+            #json_data = json.loads(data_received)
+            #recived_msg = json_data["function"]
         except:
             print("no message from extension")
         # message empty
         # if not data_received.strip():
         #     break
 
-        #print(recived_msg)
-        if recived_msg == "settings_update":
-            read_settings(SETTINGS_PATH)
-            print(settings_dict)
-
-        elif recived_msg == "get_emotion":
-            data = prediction_dict
-            data["function"] = "get_emotion"
-            conn.sendall(json.dumps(data).encode('utf-8'))
-            #print("changed SAM on extension")
+        a = "toggle_session" in recived_msg
+        print(f"Sessong command: {a}")
+        b = "get_data" in recived_msg
+        print(f"get data command {b}")
         
-        elif recived_msg == "toggle_session":
+        if "toggle_session" in recived_msg:
             session_on = not session_on
             # if session starts, start the threads. If session ends, close the threads
             if session_on:
@@ -179,30 +172,34 @@ def tcp_communication():
                 join_threads(session_threads)
             print(f"Toggle session to: {session_on}")
 
-        if recived_msg == "disconnect":
+        if "disconnect" in recived_msg:
             extension_connected = False
             print(f"Disconnecting from: {client}")
             conn.close()
             break
 
-        if recived_msg == "ping":
-            print("ping")
+        if "get_data" in recived_msg:
+            print("Sending the shit")
             data = {
-                "function": "ping",
+                "TypeOfData":"Hardware",
+                "Pulse": e4_data_dict["Pulse"],
+                "Emotion": (prediction_dict["Arousal"],prediction_dict["Valence"])
+                }
+            data_json = json.dumps(data)
+            conn.sendall(data_json.encode("utf-8"))
+            #Shit has been sent
+
+        if  "Ping" in recived_msg:
+            print("IN PING")
+            data = {
+                "TypeOfData":"Ping",
+                "Ping": "Pong"  
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
             print("Received a ping from the client & responded with pong.")
 
-        if recived_msg == "getPulse":
-            pulse = e4_data_dict["Pulse"]
-            data = {
-                "function": "getCurrentPulse",
-                "data": pulse   # random.randint(80, 120)
-                }
-            data_json = json.dumps(data)
-            conn.sendall(data_json.encode('utf-8'))
-
+        
 
 # ------------------------------------------ EEG ------------------------------------------ #
 async def import_EEG_data():
