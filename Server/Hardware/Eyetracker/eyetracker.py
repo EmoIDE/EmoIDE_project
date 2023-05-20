@@ -32,7 +32,7 @@ class EyeTracker:
             {'x': (0.2, 1), 'y': (0.8, 1), 'zone': "Terminal", 'count' : 0}
         ]
 
-    def setup(self):
+    def setup(self, calibration_enabled):
         """
         Initializes the eye tracker and performs calibration.
 
@@ -47,7 +47,7 @@ class EyeTracker:
         """
 
         try:
-            self.eye_tracker = gazepoint.GazePoint()
+            self.eye_tracker = gazepoint.GazePoint(calibration_enabled)
         except:
             print("ERROR Gazepoint setup")
         return

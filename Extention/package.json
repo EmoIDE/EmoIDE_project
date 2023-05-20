@@ -39,7 +39,7 @@
           "Extension.FileFormat": {
             "type": "string",
             "default": ".csv",
-            "enum": [".pdf", ".tsv",".html",".ods", ".xlxs", ".csv"],
+            "enum": [".pdf", ".tsv",".html",".ods", ".xlsx", ".csv"],
             "description": "Format of file when data is saved"
           },
 

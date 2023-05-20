@@ -2,16 +2,16 @@ import time
 import threading
 
 from .tools import OpenGazeTracker
- 
+
 
 class GazePoint(threading.Thread):
-    def __init__(self, ip='127.0.0.1', port=4242):
+    def __init__(self, calibration_enabled, ip='127.0.0.1', port=4242):
         threading.Thread.__init__(self, daemon=True)
         self.interrupted = threading.Lock()
 
         self.gaze_position = (None, None)
 
-        self.open(ip, port)
+        self.open(ip, port, calibration_enabled)
         self.start()
         self.wait_until_running()
 
@@ -30,11 +30,14 @@ class GazePoint(threading.Thread):
         self.interrupted.release()
         self.close()
 
-    def open(self, ip, port):
+    def open(self, ip, port, calibration_enabled):
         print('Setting Up Gaze Point device, this takes about 10 seconds')
         try:
             self.tracker = OpenGazeTracker(ip=ip, port=port)
-            self.tracker.calibrate()
+            if calibration_enabled:
+                print("CALIBRATING")
+                self.tracker.calibrate()
+            print("NOT CALIBRATING")
             self.tracker.enable_send_data(True)
         except:
             print("Gazepoint failed")
