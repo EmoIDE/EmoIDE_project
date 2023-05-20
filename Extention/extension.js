@@ -297,20 +297,23 @@ function connectToServer(){
 // TCP communication
 client.on('data', function(data){
 	var dataResponse = JSON.parse(data.toString());
-	for (const key in dataResponse){
-	if (dataResponse["TypeOfData"]=="Hardware")
+	switch(dataResponse["TypeOfData"])
 	{
-		//Pulse
-		var pulse = dataResponse["Pulse"]
-		statusbarPulse.text = "$(pulse)" + pulse.toString();
-		//SAM
-		SAMProv.UpdateSAMIndex(dataResponse["Emotion"][1]-1,dataResponse["Emotion"][0]-1);
+		case "Hardware":
+		{
+			//Pulse
+			var pulse = dataResponse["Pulse"]
+			statusbarPulse.text = "$(pulse)" + pulse.toString();
+			//SAM
+			SAMProv.UpdateSAMIndex(dataResponse["Emotion"][1]-1,dataResponse["Emotion"][0]-1);
+			break;
+		}
+		case "Ping":
+		{
+			vscode.window.showInformationMessage(dataResponse["Ping"]);
+		}
 	}
-	if (dataResponse["TypeOfData"]=="Ping")
-	{
-		vscode.window.showInformationMessage(dataResponse["Ping"]);
-	}
-	}
+
 });
 client.on('close', function() {
 	vscode.window.showInformationMessage('Connection to server closed');
