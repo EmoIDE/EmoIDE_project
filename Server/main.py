@@ -195,6 +195,7 @@ def tcp_communication():
             print("Received a ping from the client & responded with pong.")
 
         if recived_msg == "getPulse":
+            print("WOW")
             pulse = e4_data_dict["Pulse"]
             data = {
                 "function": "getCurrentPulse",
