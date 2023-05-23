@@ -136,37 +136,31 @@ def tcp_communication():
     # when starting a session this list keeps track of active threads
     session_threads = []
 
-    start = time.time()
-
     # Commands
     while extension_connected:
         #if time.time() - start < 200:
         #   session_on = False
 
         try:
-            data_received = conn.recv(1024).decode('utf-8')
-            json_data = json.loads(data_received)
-            recived_msg = json_data["function"]
+            recived_msg = conn.recv(1024).decode('utf-8')
+            # print(f"decoded msg: {recived_msg}")
+            #json_data = json.loads(data_received)
+            #recived_msg = json_data["function"]
         except:
             print("no message from extension")
         # message empty
         # if not data_received.strip():
         #     break
 
-        #print(recived_msg)
-        if recived_msg == "settings_update":
-            read_settings(SETTINGS_PATH)
-            print(settings_dict)
-
-        elif recived_msg == "get_emotion":
-            data = prediction_dict
-            data["function"] = "get_emotion"
-            conn.sendall(json.dumps(data).encode('utf-8'))
-            #print("changed SAM on extension")
+        # a = "toggle_session" in recived_msg
+        # print(f"Sessong command: {a}")
+        # b = "get_data" in recived_msg
+        # print(f"get data command {b}")
         
-        elif recived_msg == "toggle_session":
+        if "toggle_session" in recived_msg:
             session_on = not session_on
             # if session starts, start the threads. If session ends, close the threads
+            print(f"Toggle session to: {session_on}")
             if session_on:
                 init_df()
                 session_threads = start_session_threads()
@@ -174,35 +168,43 @@ def tcp_communication():
                 # Save dataframe to a path and with specified format
                 save_format = settings_dict["FileFormat"]           ############## !!!!!!!!!!!  ".ODF" FINNS EJ. DET SKA VARA ".ODS"....... .XLXS funkar inte heller
                 save_path = settings_dict["SaveLocation"]
+                print(f"format: {save_format}")
                 save_df(full_df, save_path, save_format)
                 
+                print("saved the df. Now joining the threads")
                 join_threads(session_threads)
-            print(f"Toggle session to: {session_on}")
 
-        if recived_msg == "disconnect":
+        if "disconnect" in recived_msg:
             extension_connected = False
             print(f"Disconnecting from: {client}")
             conn.close()
             break
 
-        if recived_msg == "ping":
-            print("ping")
+        if "get_data" in recived_msg:
             data = {
-                "function": "ping",
+                "TypeOfData":"Hardware",
+                "Pulse": e4_data_dict["Pulse"],
+                "Emotion": (prediction_dict["Arousal"],prediction_dict["Valence"])
+                }
+            data_json = json.dumps(data)
+            conn.sendall(data_json.encode("utf-8"))
+
+        if "settings_update" in recived_msg:
+            read_settings(SETTINGS_PATH)
+            print("settings updated")
+
+
+        if  "Ping" in recived_msg:
+            print("IN PING")
+            data = {
+                "TypeOfData":"Ping",
+                "Ping": "Pong"  
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
             print("Received a ping from the client & responded with pong.")
 
-        if recived_msg == "getPulse":
-            print("WOW")
-            pulse = e4_data_dict["Pulse"]
-            data = {
-                "function": "getCurrentPulse",
-                "data": pulse   # random.randint(80, 120)
-                }
-            data_json = json.dumps(data)
-            conn.sendall(data_json.encode('utf-8'))
+    print("HERE - exited the extension connected while loop")
 
 
 # ------------------------------------------ EEG ------------------------------------------ #
@@ -283,7 +285,9 @@ def get_eye_tracker_data():
     global session_on
 
     eye_tracker = EyeTracker(1, max_time)
-    eye_tracker.setup()
+    calibration_enabled = settings_dict['EyeTrackerCalibration']
+    print(calibration_enabled)
+    eye_tracker.setup(calibration_enabled=calibration_enabled)
     print("setup done")
     calibration_done["Eye tracker"] = True
 
@@ -455,7 +459,7 @@ def update_dataframe():
     global session_on
 
     print_it = True
-    mock = True
+    mock = False
 
     calibration_done["Dataframe"] = True
     # all_done = True                                                                     ######################
@@ -476,7 +480,7 @@ def update_dataframe():
             mock_all_dicts()
 
         # Clear terminal
-        os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+        # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
 
         # time
         time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
@@ -574,7 +578,7 @@ def predict_series(full_data_dict):
     global prediction_dict
     svm_dataset = pd.read_csv("Server/ML/Models/SVM_dataset.csv")
     svm_dataset.drop('Unnamed: 0', axis=1, inplace=True)
-    full_data_dict["Gender"] = "Male"#settings_dict["Gender"]
+    full_data_dict["Gender"] = settings_dict["Gender"]
     full_data_dict["Age"] = settings_dict["Age"]
     eeg_predict_values = pd.Series(full_data_dict)
 
@@ -648,6 +652,8 @@ def save_df(df, path, save_as_ext = '.csv'):
     """
     filename = 'output_data' + str(full_data_dict["time"])    # get last part of path
 
+    print("WHOHO COOL STUFF SAVE DF")
+
     # if settings_dict["Training"] == True:
     #     filename += "_"
     #     filename += training_dict["Name"]
@@ -656,7 +662,7 @@ def save_df(df, path, save_as_ext = '.csv'):
     if not (os.path.exists(path)):
         print("Filepath does not exist")
         return 0
-
+    print("ABANDON ALL HOPE, YE WHO ENTER HERE (0)")
     if save_as_ext == '.pdf':
         filename = filename + save_as_ext
 
@@ -671,10 +677,12 @@ def save_df(df, path, save_as_ext = '.csv'):
         pp = PdfPages(filename = str(path + "/" + filename))
         pp.savefig(fig, bbox_inches='tight')
         pp.close()
+        print("ABANDON ALL HOPE, YE WHO ENTER HERE (1)")
         
     elif save_as_ext == '.tsv':
         filename = filename + save_as_ext
         df.to_csv(str(path + "/" + filename), sep="\t")
+        print("ABANDON ALL HOPE, YE WHO ENTER HERE (2)")
     
     elif save_as_ext == '.html':
         filename = filename + save_as_ext
@@ -684,20 +692,24 @@ def save_df(df, path, save_as_ext = '.csv'):
         text_file = open(str(path + "/" + filename), "w")
         text_file.write(html)
         text_file.close()
-        
+        print("ABANDON ALL HOPE, YE WHO ENTER HERE (3)")
 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
         with pd.ExcelWriter(str(path + "/" + filename)) as writer:          # module odf needed
             df.to_excel(writer) 
+        print("ABANDON ALL HOPE, YE WHO ENTER HERE (4)")
 
     elif save_as_ext == '.xlsx':
         filename = filename + save_as_ext
         df.to_excel(str(path + "/" + filename))
+        print("ABANDON ALL HOPE, YE WHO ENTER HERE (5)")
     else:
         filename = filename + '.csv'
         df.to_csv(str(path + "/" + filename))
+        print("ABANDON ALL HOPE, YE WHO ENTER HERE (6)")
 
+    print(f"Saved dataframe to: {filename}")
 
 def read_settings(settings_path):
     """
@@ -773,7 +785,7 @@ def start_session_threads():
     if settings_dict["EEG"] == True:
         #start thread/-s needed for EEG
         print("EEG thread starts")
-        eeg_thread = threading.Thread(target=start_eeg, daemon=True)
+        eeg_thread = threading.Thread(target=start_eeg, daemon=True, name="Eeg thread")
         eeg_thread.start()
         threads.append(eeg_thread)
         #thread_names.append("eeg_thread")
@@ -783,13 +795,13 @@ def start_session_threads():
     if settings_dict["Eyetracker"] == True:
         #start thread/-s needed for Eye tracker
         print("Eye thread starts")
-        eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True) # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
+        eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True, name="Eye thread") # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
         #thread_names.append("eye_thread")
 
         print("Heatmap thread starts")
-        heatmap_thread = threading.Thread(target=start_heatmap, daemon=True)
+        heatmap_thread = threading.Thread(target=start_heatmap, daemon=True, name="Heatmap thread")
         heatmap_thread.start()
         threads.append(heatmap_thread)
         #thread_names.append("heatmap_thread")
@@ -799,7 +811,7 @@ def start_session_threads():
     if settings_dict["E4"] == True:
         #start thread/-s needed for Empatica E4
         print("E4 thread starts")
-        e4_thread = threading.Thread(target=get_e4_data, daemon=True)
+        e4_thread = threading.Thread(target=get_e4_data, daemon=True, name="E4 Thread")
         e4_thread.start()
         threads.append(e4_thread)
         #thread_names.append("e4_thread")
@@ -808,7 +820,7 @@ def start_session_threads():
 
     # dataframe thread - Update the dataframe
     print("Dataframe thread starts")
-    df_thread = threading.Thread(target=update_dataframe, daemon=True)    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
+    df_thread = threading.Thread(target=update_dataframe, daemon=True, name="Dataframe thread")    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
     threads.append(df_thread)
     # thread_names.append("df_thread")
@@ -826,20 +838,52 @@ def join_threads(threads):
 
     Args:
         threads (list): Inputed list of threads
-    
+
     Raises:
         Exception: If any exception occurs. Will print "failed to join {thread_name}"
     """
+    print(f"all threads that's about to be joined {threads}")
+
+    while threads:
+        thread = threads.pop(0)
+        if not thread.is_alive():
+            print(f"{str(thread.name)} is already closed!")
+        else:
+            try:
+                thread.join()
+                print(f"{str(thread.name)} is now closed")
+                print(f"Still running: {threads}\n")
+            except:
+                print(f"failed to join {thread.name}")
+    
+    # print(f"Running threads left: {threads}")
+
+
+
+    # for thread in threads:
+    #     if not thread.is_alive():
+    #         print(f"{str(thread.name)} is now closed")
+    #         threads.remove(thread)
+    #     try:
+    #         thread.join()
+    #         print(f"{str(thread.name)} is now closed")
+    #         threads.remove(thread)
+    #         #i += 1
+    #         print(f"Still running: {[element.name for element in threads if element != thread]}\n")
+    #     except:
+    #         print(f"failed to join {thread.name}")
+    
     # print(threads)
-    i = 0
-    for t in threads:
-        try:
-            print(f"{str(t)} is now closed")
-            t.join()
-            #i += 1
-            #print(f"Still running: {thread_names[i:]}\n")
-        except:
-            print(f"failed to join {t}")
+
+    # for i, thread in enumerate(threads):
+    #     try:
+    #         thread.join()
+    #         print(f"{str(thread.name)} is now closed")
+    #         threads.remove(thread) 
+    #         #i += 1
+    #         print(f"Still running: {[element for element in threads if element != thread]}\n")
+    #     except:
+    #         print(f"failed to join {thread.name}")
 
 # ------------------------------------------ Dashboard ------------------------------------------ # 
 def start_heatmap():
@@ -856,6 +900,8 @@ def start_heatmap():
             from that instace.
     """
     global full_df
+    global session_on
+
 
     all_done = False                                                                     ######################
     while not all_done:
@@ -896,6 +942,7 @@ def start_heatmap():
     # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
     # dashboard.create_heatmap_dashboard()
     dashboard.create_combined_dashboard(full_df)
+    return 0
 
 
 def make_dashboard():
@@ -949,13 +996,14 @@ if __name__ == "__main__":
 
     # start localy hosted server
     tcp_thread = setup_server()
+    
     threads = [tcp_thread]
     join_threads(threads)
 
     # Save dataframe to a path and with specified format
-    save_format = settings_dict["FileFormat"]
-    save_path = settings_dict["SaveLocation"]
-    save_df(full_df, save_path, save_format)
+    # save_format = settings_dict["FileFormat"]
+    # save_path = settings_dict["SaveLocation"]
+    # save_df(full_df, save_path, save_format)
 
     #print(full_df.columns)
 

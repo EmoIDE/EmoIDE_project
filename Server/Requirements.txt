@@ -8,3 +8,4 @@ scikit-learn==1.2.2
 lxml
 neurokit2
 easygui
+sphinx

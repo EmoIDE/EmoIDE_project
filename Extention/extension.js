@@ -163,11 +163,14 @@ class DevicesDataProvider {
 			</html>`;
 		}
 }
-function RequestclientData(functionName)
+function RequestclientData(sentMessage)
 {
-	client.write(JSON.stringify({"function": functionName}));
+	client.write(sentMessage+"|");
 }
-
+function StartDataInterval()
+{
+	client.write("get_data");
+}
 function activate(context) {
 	var SAMProv = new SAMViewProvider(context.extensionUri);
 	const devices = new DevicesDataProvider();
@@ -206,7 +209,7 @@ function activate(context) {
 		const fileUri = vscode.Uri.file(onDiskPath.path);
 		fs.writeFileSync(fileUri.fsPath, JSON.stringify(merge_json, null, 4));
 		
-		RequestclientData("settings_update");
+		client.write("settings_update");
 		vscode.window.showInformationMessage("settings updated");
 
 	})
@@ -238,15 +241,14 @@ function activate(context) {
 	
 		vscode.commands.registerCommand('EmoIDE.connectToServer', () => {
 			connectingToServer = !connectingToServer
-			const pulseInterval = setInterval(getCurrentPulse, 1000);
-			const SAMInterval = setInterval(GetSAM, 1000);
+			const pulseInterval = setInterval(StartDataInterval, 1000);
 			if (connectingToServer)
 			{
 				connectToServer();
 			}
 			else
 			{
-				RequestclientData("disconnect")
+				client.write("disconnect")
 			}
 			
 		}),
@@ -277,7 +279,7 @@ function activate(context) {
 			}
 		}),
 		vscode.commands.registerCommand('EmoIDE.toggleRecording', () =>{
-			client.write(JSON.stringify({"function":"toggle_session"}));
+			client.write("toggle_session");
 			vscode.window.showInformationMessage('session toggled');
 
 		}),
@@ -288,39 +290,30 @@ function activate(context) {
 function connectToServer(){
 	client.connect(6969, '127.0.0.1', function() {
 		console.log('Connected');
-		RequestclientData("ping");
+		client.write("Ping");
 	});
 };
 
-function getCurrentPulse(){
-	RequestclientData("getPulse");
-}
-function GetSAM()
-{
-	RequestclientData("get_emotion")
-}
-
 // TCP communication
 client.on('data', function(data){
-	var json_data = JSON.parse(data.toString());
-	var type_of_data = json_data["function"]
-	switch (type_of_data) {
-	case "ping": 
-		console.log("ping funka");
-		break;
-		//gör något med infon som servern skickar
-		//sparar/visar data på något snyggt sätt
-		//vscode.window.showInformation Message('received ping');
-	case "getCurrentPulse": 
-		var pulse = json_data["data"]
-		statusbarPulse.text = "$(pulse)" + pulse.toString();
-		break;
-		//gör något med infon som servern skickar
-		//sparar/visar data på något snyggt sätt
-		//console.log("ss");
-	case "get_emotion": 
-		SAMProv.UpdateSAMIndex(json_data["Valence"]-1,json_data["Arousal"]-1);
+	var dataResponse = JSON.parse(data.toString());
+	switch(dataResponse["TypeOfData"])
+	{
+		case "Hardware":
+		{
+			//Pulse
+			var pulse = dataResponse["Pulse"]
+			statusbarPulse.text = "$(pulse)" + pulse.toString();
+			//SAM
+			SAMProv.UpdateSAMIndex(dataResponse["Emotion"][1]-1,dataResponse["Emotion"][0]-1);
+			break;
+		}
+		case "Ping":
+		{
+			vscode.window.showInformationMessage(dataResponse["Ping"]);
+		}
 	}
+
 });
 client.on('close', function() {
 	vscode.window.showInformationMessage('Connection to server closed');
