@@ -27,4 +27,16 @@ Question 3
 
 A: Yes, you can customize the settings by...
 
+Question 4
+-----------
+
+**Q: How do I use the code?**
+
+A: To use the code, follow these steps:
+
+.. code-block:: python
+
+   def my_function():
+       print("Hello, world!")
+
 ... more questions and answers ...
