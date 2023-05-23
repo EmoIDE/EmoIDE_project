@@ -49,7 +49,7 @@ class EyeTracker:
         try:
             self.eye_tracker = gazepoint.GazePoint(calibration_enabled)
         except:
-            print("ERROR Gazepoint setup")
+            print("[ERROR] Gazepoint setup")
         return
 
     def check(self, value, value_range):
@@ -74,7 +74,7 @@ class EyeTracker:
             if value_range[0] <= value <= value_range[1]:
                 return True
         except:
-            print("ERROR gazepoint check")
+            print("[ERROR] gazepoint check")
         return False
     
     def get_zone_destribution(self):
