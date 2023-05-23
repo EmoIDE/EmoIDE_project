@@ -69,7 +69,7 @@ class EyeTracker:
             if value_range[0] <= value <= value_range[1]:
                 return True
         except:
-            print("ERROR gazepoint check")
+            print("[ERROR] gazepoint check")
         return False
     
     def get_zone_destribution(self):
