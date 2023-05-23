@@ -13,7 +13,7 @@ class TestEyetracker(unittest.TestCase):
         super().__init__(methodName=methodName)
         # Additional initialization
 
-        self.format = "%d-%m-%YT%H-%M-%S"
+        self.format = Dashboard.dashboard.format
     
     def test_data_filtering_by_time_range(self):
         # Arrange
