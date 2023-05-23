@@ -170,9 +170,9 @@ def tcp_communication():
                 save_path = settings_dict["SaveLocation"]
                 print(f"format: {save_format}")
                 save_df(full_df, save_path, save_format)
-                
-                print("saved the df. Now joining the threads")
                 join_threads(session_threads)
+                make_dashboard()
+
 
         if "disconnect" in recived_msg:
             extension_connected = False
@@ -284,10 +284,16 @@ def get_eye_tracker_data():
     global full_df
     global session_on
 
+
     eye_tracker = EyeTracker(1, max_time)
     calibration_enabled = settings_dict['EyeTrackerCalibration']
+    setup_failed = False
     print(calibration_enabled)
-    eye_tracker.setup(calibration_enabled=calibration_enabled)
+    try:
+        eye_tracker.setup(calibration_enabled=calibration_enabled)
+    except:
+        print("[ERROR] - Eye tracker setup failed")
+        setup_failed = True
     print("setup done")
     calibration_done["Eye tracker"] = True
 
@@ -296,9 +302,10 @@ def get_eye_tracker_data():
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
 
+    if not setup_failed:
+        eye_tracker.start_recording(eye_data_dict, session_on)
+        eye_tracker.stop()
 
-    eye_tracker.start_recording(eye_data_dict, session_on)
-    eye_tracker.stop()
 
 
 # ------------------------------------------ E4 DATA TRACKER ------------------------------------------ #

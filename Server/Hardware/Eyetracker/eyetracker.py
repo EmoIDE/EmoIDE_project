@@ -45,12 +45,7 @@ class EyeTracker:
         Notes:
             -   The setup of the eyetracker object may take up to 100 seconds.
         """
-
-        try:
-            self.eye_tracker = gazepoint.GazePoint(calibration_enabled)
-        except:
-            print("ERROR Gazepoint setup")
-        return
+        self.eye_tracker = gazepoint.GazePoint(calibration_enabled)
 
     def check(self, value, value_range):
         """
@@ -180,7 +175,7 @@ class EyeTracker:
                 # print(zone['zone'], " : ", zone['count'], " / ", sum([z['count'] for z in self.zones]), " = ", round((zone['count']/sum([z['count'] for z in self.zones]))*100,2))
                 dict[zone['zone']] = round((zone['count']/sum([z['count'] for z in self.zones]))*100,2)
             except:
-                print("[ERROR] zone = 0")
+                continue
 
     def stop(self):
         """
