@@ -511,10 +511,10 @@ def update_dataframe():
     mock = True
 
     calibration_done["Dataframe"] = True
-    # all_done = True                                                                     ######################
-    # while not all_done:
-    #     if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
-    #         all_done = True
+    all_done = False                                                                     ######################
+    while not all_done:
+        if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
+            all_done = True
 
     data_collection_timer = time.time()
 
