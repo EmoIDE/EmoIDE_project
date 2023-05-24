@@ -1,20 +1,21 @@
-##EMO IDE
-#An emotional programming tool
+<h1>EMO IDE</h1>
+<h3>An emotional programming tool</h2>
 
-#This the final product of a custom extension. It takes hardware data that runs through a machine learning model. The extension is able to display pulse, emotional state(SAM) and actively record a heatmap based upon eye tracker activity among other things.
+This the final product of a custom extension. It takes hardware data that runs through a machine learning model. The extension is able to display pulse, 
+  emotional state(SAM) and actively record a heatmap based upon eye tracker activity.
 
-#Hardware requirements
-1.Empatica E4
-2.Emotiv brain scanner
-3.Eyetracker
+<h2>Hardware requirements</h2>
+<p>1.Empatica E4</p>
+<p>2.Emotiv brain scanner</p>
+<p>3.Eyetracker</p>
 
 
-#Installation
-To get started, please follow the following steps:
-1.Make sure you have node.js installed at https://nodejs.org/en
-2.Use pip install -r requirements.txt to install all required packages and dependencies for python
-3.Start main.py in the "Server" directory of the project folder
-4.Open visual studio code and go to Edit>Open folder>EmoIDE_project>Extension 
-5.run(f5) extension.js with the vscode developer enviroment selected
+<h2>Installation</h2>
+<h3>To get started, please follow the following steps:</h3>
+<p>1.Make sure you have <a href=https://nodejs.org/ennode.js>node.js</a> installed</p>
+<p>2.Use pip install -r requirements.txt to install all required packages and dependencies for python</p>
+<p>3.Start main.py in the "Server" directory of the project folder</p>
+<p>4.Open visual studio code and go to Edit>Open folder>EmoIDE_project>Extension</p> 
+<p>5.run(f5) extension.js with the vscode developer enviroment selected</p>
 
-For additional documentation, please see the html file
+<h2>For additional documentation, please see the html file</h2>
