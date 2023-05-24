@@ -396,10 +396,12 @@ def create_heatmap_gif(img_cache, df, session_id):
     os.makedirs(dirpath, exist_ok=True)
 
     for i, screenshot in enumerate(img_cache):
-        before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(minutes=2)
+        before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=30)
 
         x = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['x'].to_numpy()
+        print("X:", x, "\n")
         y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
+        print("Y:", y, "\n")
 
         if len(x) <= 5 or len(y) <= 5:
             print(f'{bcolors.WARNING}Image{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath + "/" + screenshot["date"] + ".png"}{bcolors.ENDC} not enough data to create heatmap')
@@ -427,6 +429,7 @@ def create_heatmap_gif(img_cache, df, session_id):
             plt.axis('off')
 
             plt.savefig(dirpath + "/" + screenshot["date"] + ".png", dpi=300, format='png', bbox_inches='tight')
+            plt.clf()
 
         print(f'Finished processing {bcolors.OKGREEN}{int(((i + 1) / len(img_cache)) * 100)}{bcolors.ENDC} % of all images')
 
