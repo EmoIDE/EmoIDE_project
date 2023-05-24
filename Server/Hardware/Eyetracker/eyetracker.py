@@ -6,7 +6,7 @@ class EyeTracker:
     EyeTracker class representing an EyeTracker object that connects to the GazePoint Eyetracker and retrieves data.
     """
 
-    def __init__(self, frequency, recording_length):
+    def __init__(self, frequency):
         """
         Initializes an EyeTracker instance.
 
@@ -14,9 +14,7 @@ class EyeTracker:
 
         Args:
             frequency (int): The frequency at which gaze data is recorded.
-            recording_length (int): The length of the recording in seconds.
         """
-        self.recording_length = recording_length
         self.eye_tracker = None
         self.recording = False
         self.cache = {

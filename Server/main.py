@@ -13,7 +13,7 @@ import datetime
 import threading
 import time
 import socket
-
+import websockets
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 #  Local imports
@@ -27,7 +27,9 @@ import Dashboard.dashboard as dashboard
 import jinja2
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg') 
+from matplotlib import pyplot as plt
 import asyncio
 import json
 import joblib
@@ -51,7 +53,6 @@ e4_data_dict = {}
 full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
 session_on = False
-max_time = 100
 server_on = False
 bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
@@ -148,6 +149,9 @@ def tcp_communication():
             #recived_msg = json_data["function"]
         except:
             print("no message from extension")
+        # message empty
+        # if not data_received.strip():
+        #     break
         
         if "toggle_session" in recived_msg:
             session_on = not session_on
@@ -156,15 +160,15 @@ def tcp_communication():
             if session_on:
                 init_df()
                 session_threads = start_session_threads()
+                make_dashboard(True)
             if not session_on:
                 # Save dataframe to a path and with specified format
-                save_format = settings_dict["FileFormat"]           ############## !!!!!!!!!!!  ".ODF" FINNS EJ. DET SKA VARA ".ODS"....... .XLXS funkar inte heller
+                save_format = settings_dict["FileFormat"]
                 save_path = settings_dict["SaveLocation"]
                 print(f"format: {save_format}")
                 save_df(full_df, save_path, save_format)
                 join_threads(session_threads)
-                make_dashboard()
-
+                make_dashboard(False)
 
         if "disconnect" in recived_msg:
             extension_connected = False
@@ -183,8 +187,8 @@ def tcp_communication():
 
         if "settings_update" in recived_msg:
             read_settings(SETTINGS_PATH)
-            settings_dict["Training"] = True
             print("settings updated")
+
 
         if  "Ping" in recived_msg:
             print("IN PING")
@@ -197,6 +201,7 @@ def tcp_communication():
             print("Received a ping from the client & responded with pong.")
 
     print("HERE - exited the extension connected while loop")
+
 
 
 # ------------------------------------------ EEG ------------------------------------------ #
@@ -220,7 +225,6 @@ async def import_EEG_data():
     """
     global eeg_data_dict
     global calibration_done
-    global max_time
 
     #try to connect
     cortex_api = EEG.EEG()
@@ -277,7 +281,7 @@ def get_eye_tracker_data():
     global session_on
 
 
-    eye_tracker = EyeTracker(1, max_time)
+    eye_tracker = EyeTracker(1)
     calibration_enabled = settings_dict['EyeTrackerCalibration']
     setup_failed = False
     print(calibration_enabled)
@@ -456,8 +460,8 @@ def update_dataframe():
     global full_df
     global session_on
 
-    print_it = True
-    mock = False
+    print_it = False
+    mock = True
 
     calibration_done["Dataframe"] = True
     # all_done = True                                                                     ######################
@@ -497,7 +501,7 @@ def update_dataframe():
         full_data_dict.update(prediction_dict)
         
         # Training
-        training_time = 10
+        training_time = 3
 
         if settings_dict["Training"] == True:
             if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
@@ -512,6 +516,8 @@ def update_dataframe():
             training_dict["Valence"] = None
             training_dict["Arousal"] = None
             training_dict["Stress"] = 0
+
+        
 
         try:
             predict_series(full_data_dict)
@@ -650,8 +656,6 @@ def save_df(df, path, save_as_ext = '.csv'):
     """
     filename = 'output_data' + str(full_data_dict["time"])    # get last part of path
 
-    print("WHOHO COOL STUFF SAVE DF")
-
     if settings_dict["Training"] == True:
         filename += "_"
         filename += training_dict["Name"]
@@ -675,12 +679,10 @@ def save_df(df, path, save_as_ext = '.csv'):
         pp = PdfPages(filename = str(path + "/" + filename))
         pp.savefig(fig, bbox_inches='tight')
         pp.close()
-        print("ABANDON ALL HOPE, YE WHO ENTER HERE (1)")
         
     elif save_as_ext == '.tsv':
         filename = filename + save_as_ext
         df.to_csv(str(path + "/" + filename), sep="\t")
-        print("ABANDON ALL HOPE, YE WHO ENTER HERE (2)")
     
     elif save_as_ext == '.html':
         filename = filename + save_as_ext
@@ -690,22 +692,18 @@ def save_df(df, path, save_as_ext = '.csv'):
         text_file = open(str(path + "/" + filename), "w")
         text_file.write(html)
         text_file.close()
-        print("ABANDON ALL HOPE, YE WHO ENTER HERE (3)")
 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
         with pd.ExcelWriter(str(path + "/" + filename)) as writer:          # module odf needed
             df.to_excel(writer) 
-        print("ABANDON ALL HOPE, YE WHO ENTER HERE (4)")
 
     elif save_as_ext == '.xlsx':
         filename = filename + save_as_ext
         df.to_excel(str(path + "/" + filename))
-        print("ABANDON ALL HOPE, YE WHO ENTER HERE (5)")
     else:
         filename = filename + '.csv'
         df.to_csv(str(path + "/" + filename))
-        print("ABANDON ALL HOPE, YE WHO ENTER HERE (6)")
 
     print(f"Saved dataframe to: {filename}")
 
@@ -786,7 +784,7 @@ def start_session_threads():
         eeg_thread = threading.Thread(target=start_eeg, daemon=True, name="Eeg thread")
         eeg_thread.start()
         threads.append(eeg_thread)
-        #thread_names.append("eeg_thread")
+        # thread_names.append("eeg_thread")
     else:
         calibration_done["EEG"] = True
 
@@ -796,13 +794,13 @@ def start_session_threads():
         eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True, name="Eye thread") # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
-        #thread_names.append("eye_thread")
+        # thread_names.append("eye_thread")
 
         print("Heatmap thread starts")
         heatmap_thread = threading.Thread(target=start_heatmap, daemon=True, name="Heatmap thread")
         heatmap_thread.start()
         threads.append(heatmap_thread)
-        #thread_names.append("heatmap_thread")
+        # thread_names.append("heatmap_thread")
     else:
         calibration_done["Eye tracker"] = True
     
@@ -900,7 +898,6 @@ def start_heatmap():
     global full_df
     global session_on
 
-
     all_done = False                                                                     ######################
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
@@ -912,7 +909,6 @@ def start_heatmap():
     print("\n\n", full_df["time"].iloc[-1])
     last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
 
-    # Run whole session (maybe future instead of max_time just have bool that check if user extension is connected)
     while session_on:
         # Save constantly the newest row (date) in the dataframe
         current_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
@@ -943,7 +939,7 @@ def start_heatmap():
     return 0
 
 
-def make_dashboard():
+def make_dashboard(refresh=True):
     """
     This function is responsible to create the dashboard
 
@@ -962,9 +958,9 @@ def make_dashboard():
     global full_df
 
     try:
-        dashboard.create_combined_dashboard(full_df)
-    except:
-        print("[ERROR] - dashboard failed")
+        dashboard.create_combined_dashboard(full_df, refresh)
+    except Exception as x:
+        print("[ERROR] - dashboard failed", x)
 
 
 # ------------------------------------------ Main ------------------------------------------ #
@@ -979,15 +975,12 @@ if __name__ == "__main__":
     # load settings from settings file
     try:
         read_settings(SETTINGS_PATH)
-        settings_dict["Training"] = True
+        settings_dict["Training"] = False
     except:
         print("settings filepath not found")
 
     # initiate global empty dataframe
     init_df()
-
-    # load AI models
-    #load_models()
     try:
         load_models()
     except:
@@ -995,9 +988,9 @@ if __name__ == "__main__":
 
     # start localy hosted server
     tcp_thread = setup_server()
-    
     threads = [tcp_thread]
     join_threads(threads)
+    
 
     # Save dataframe to a path and with specified format
     # save_format = settings_dict["FileFormat"]
@@ -1006,7 +999,7 @@ if __name__ == "__main__":
 
     #print(full_df.columns)
 
-    make_dashboard()
+    # make_dashboard(False)
     
     exit()
 

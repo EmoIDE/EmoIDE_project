@@ -1,6 +1,7 @@
 //Custom Icons
 let StatusGreen = "StatusActive.png"
 let StatusRed =	"StatusInactive.png"
+
 let statusbarPulse;
 let connectingToServer = false
 
@@ -11,14 +12,14 @@ var net = require('net');
 const { json } = require('stream/consumers');
 var client = new net.Socket();
 
-const SAMValence = [
+const SAMValence = [ //valence images for SAM view
 	"https://i.imgur.com/hgjLFYE.png",
 	"https://i.imgur.com/A8Ou2sB.png",
 	"https://i.imgur.com/5R4oEDS.png",
 	"https://i.imgur.com/4vKzBoP.png",
 	"https://i.imgur.com/3RBGUOs.png"
 ]
-const SAMArousal = [ //TODO: Add Arousal Icons
+const SAMArousal = [ //arousal images for SAM view
 	"https://i.imgur.com/OBQHlEK.png",
 	"https://i.imgur.com/d2OXaVz.png",
 	"https://i.imgur.com/c2QTq2w.png",
@@ -70,7 +71,6 @@ class DevicesDataProvider {
 			iconPath: "$(gear)"
 		}
 	  ];
-	  iconPath: "$(gear)"
 	}
   
 	getChildren(element) {
@@ -109,8 +109,7 @@ class DevicesDataProvider {
   
 	resolveWebviewView(webviewView, context, _token) {
 	  webviewView.webview.options = {
-		// Allow scripts in the webview
-		enableScripts: true,
+		enableScripts: true,// Allow scripts for the webview
   
 		localResourceRoots: [
 		  this._extensionUri
@@ -123,6 +122,7 @@ class DevicesDataProvider {
   
 	UpdateSAMIndex(valence,arousal) {
 	  if (this._view) {
+		//In case index recieved is negative, Math.max()
 		this._view.webview.html = this.GetSAMView(Math.max(0,valence),Math.max(0,arousal));
 	  	}
 	}
@@ -143,29 +143,9 @@ class DevicesDataProvider {
 				<p>Valence</p>
 				  <img id="SAMValence" src="${SAMValence[indexVal]}"/>
 			</div>
-			<script>
-				const imgAro = document.getElementById('SAMArousal');
-				const vscode = acquireVsCodeApi();
-				window.addEventListener('message', event => {
-					const imgVal = document.getElementById('SAMValence');
-					
-					switch (message.command) {
-						case 'Valence':
-							imgVal.src = message.data.SAMVal;
-							break;
-						case 'Arousal':
-							imgAro.src = message.data.SamAro;
-							break;
-					}
-				});
-			</script>
 			</body>
 			</html>`;
 		}
-}
-function RequestclientData(sentMessage)
-{
-	client.write(sentMessage+"|");
 }
 function StartDataInterval()
 {
@@ -305,24 +285,18 @@ client.on('data', function(data){
 			var pulse = dataResponse["Pulse"]
 			statusbarPulse.text = "$(pulse)" + pulse.toString();
 			//SAM
+			//["Emotion"][0] = Arousal, ["Emotion"][1] = Valence
 			SAMProv.UpdateSAMIndex(dataResponse["Emotion"][1]-1,dataResponse["Emotion"][0]-1);
 			
 			const popup_setting = vscode.workspace.getConfiguration().get("Extension.Pop-ups");
 
-			console.log(popup_setting)
-
 			if (Boolean(popup_setting)){
 				//send notif
-				//check if valence and arousal first
-				//[0] = Arousal, [1] = Valence
-				if (dataResponse["Emotion"][0]-1 * dataResponse["Emotion"][0]-1 >= 15) {
+				//if product of valence and arousal is above threshold => User is "stressed"
+				if ((6-dataResponse["Emotion"][1]) * dataResponse["Emotion"][0] >= 15) {
 					vscode.window.showInformationMessage('We recommend taking a break ☕')
 				}
 			}
-			
-
-
-			
 			break;
 		}
 		case "Ping":
@@ -336,9 +310,6 @@ client.on('close', function() {
 	vscode.window.showInformationMessage('Connection to server closed');
 });
 }
-
-
-// This method is called when your extension is deactivated
 function deactivate() 
 {}
 

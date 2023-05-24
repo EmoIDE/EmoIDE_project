@@ -4,6 +4,7 @@ import os
 import io
 import jinja2
 import pandas as pd
+import base64
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -75,7 +76,7 @@ def create_dashboard(df):
 
 
 
-def create_combined_dashboard(df):
+def create_combined_dashboard(df, do_refresh):
     """
     Generates a combined dashboard HTML file using a Jinja2 template.
 
@@ -91,6 +92,7 @@ def create_combined_dashboard(df):
         -   The data is then passed to a Jinja2 template to render the HTML dashboard.
         -   The rendered HTML is saved to a file named 'combined_dashboard.html'.
     """
+    print(f"making dashboard with refresh set to: {do_refresh}")
 
     excitement_list = df['Excitement'].tolist()
     engagement_list = df['Engagement'].tolist()
@@ -104,15 +106,25 @@ def create_combined_dashboard(df):
     bvp_list = df["Bvp"].tolist()
     index_list = df.index.tolist()
 
-    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'
+    bad_path = os.path.dirname(os.path.realpath(__file__)) + "/Heatmaps/"              #f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'     # bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json" 
+    dirpath = bad_path.replace("\\", "/")
     staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
     text_list = []
     staple_images = []
     stress_list = [random.randint(50, 200) for f in range(0, len(staples))]
     for folder in staples:
         text_list.append(folder)
-        folder_path = os.path.join(dirpath, folder)
-        staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
+        folder_path = os.path.join(dirpath,folder)
+        timestamp=[]
+        for image in os.listdir(folder_path):
+            image_path = os.path.join(folder_path, image)
+            print(image_path)
+            with open(image_path, "rb") as image2string:
+                converted_string = base64.b64encode(image2string.read())
+                timestamp.append(converted_string)
+        staple_images.append(timestamp)
+    print(staple_images)
+        #staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
 
     data = {
         'title': 'test',
@@ -130,7 +142,8 @@ def create_combined_dashboard(df):
         'folder_staples': staples,
         'image_list': staple_images,
         'stress_list': stress_list,
-        'text_list': text_list
+        'text_list': text_list,
+        'refresh': do_refresh
     }
     try:
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))

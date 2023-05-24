@@ -13,5 +13,13 @@
     {% include "heatmap_template.html" %}
     {% include "template.html" %}
   </div>
+  
+  <script>
+    {% if do_refresh %}
+      setTimeout(function(){
+        window.location.reload(1);
+      }, 5000);
+    {% endif %}
+  </script>
 </body>
 </html>

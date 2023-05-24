@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Dashboard</title>
+</head>
+<body>
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div id="main-body">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .logo {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .category {
+      text-align: center;
+      color: black;
+      padding: 10px;
+    }
+    #main-body {
+      margin-top:10%;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+    
+.chart-container {
+  height: 400px;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+  </style>
+
+  <div class="logo">
+    <h1>EmoIDE Live Dashboard</h1>
+  </div>
+  <div class="category">
+    <h2>EEG Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart1"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart2"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart3"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart4"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart5"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart6"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart7"></canvas>
+    </div>
+  </div>
+  <div class="category">
+    <h2>E4 Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart8"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart9"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart10"></canvas>
+    </div>
+  </div>
+  
+<script>
+  var ctx1 = document.getElementById('chart1');
+      var chart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Excitement (%)',
+            data: [],
+            borderColor: "#B22222"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: 'Dina k�nslor som vi kommer s�lja till Kina f�r en f�rm�genhet.'
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx2 = document.getElementById('chart2');
+      var chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Engagement (%)',
+            data: [],
+            borderColor: "#4D81F0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx3 = document.getElementById('chart3');
+      var chart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Long Term Excitement (%)',
+            data: [],
+            borderColor: "#FF69B4"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx4 = document.getElementById('chart4');
+      var chart4 = new Chart(ctx4, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Stress (%)',
+            data: [],
+            borderColor: "#FFFACD"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx5 = document.getElementById('chart5');
+      var chart5 = new Chart(ctx5, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Relaxation (%)',
+            data: [],
+            borderColor: "#FF7F50"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx6 = document.getElementById('chart6');
+      var chart6 = new Chart(ctx6, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Interest (%)',
+            data: [],
+            borderColor: "#D2F04D"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx7 = document.getElementById('chart7');
+      var chart7 = new Chart(ctx7, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Focus (%)',
+            data: [],
+            borderColor: "#4DF0B0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx8 = document.getElementById('chart8');
+      var chart8 = new Chart(ctx8, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Pulse',
+            data: [],
+            borderColor: "#F95858"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:40,
+          max:220,
+        }
+      }
+    }
+      });
+
+
+      var ctx9 = document.getElementById('chart9');
+      var chart9 = new Chart(ctx9, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Galvanic Skin Response (%)',
+            data: [],
+            borderColor: "#F958C3"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx10 = document.getElementById('chart10');
+      var chart10 = new Chart(ctx10, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Blood Volume Pulse',
+            data: [],
+            borderColor: "#F9C158"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:-100,
+          max:100,
+        }
+      }
+    }
+      });
+      console.log("hey")
+      var socket = new WebSocket('ws://127.0.0.1:6970');
+
+      // Event listener for successful connection
+      socket.onopen = function() {
+        console.log('Connected to the socket server.');
+
+        // gets data every 2 seconds & updates the charts
+        setInterval(function() {
+          get_data(socket);
+        }, 2000);
+      };
+
+      // Event listener for incoming messages
+      socket.onmessage = function(event) {
+        var jsonText = event.data;
+        var jsonObject = JSON.parse(jsonText);
+
+        chart1.data.datasets[0].data = jsonObject.excitement;
+        chart1.update();
+
+        chart2.data.datasets[0].data = jsonObject.engagement;
+        chart2.update();
+
+        chart3.data.datasets[0].data = jsonObject.long_excitement;
+        chart3.update();
+
+        chart4.data.datasets[0].data = jsonObject.stress;
+        chart4.update();
+
+        chart5.data.datasets[0].data = jsonObject.relaxation;
+        chart5.update();
+
+        chart6.data.datasets[0].data = jsonObject.interest;
+        chart6.update();
+
+        chart7.data.datasets[0].data = jsonObject.focus;
+        chart7.update();
+
+        chart8.data.datasets[0].data = jsonObject.pulse;
+        chart8.update();
+
+        chart9.data.datasets[0].data = jsonObject.gsr;
+        chart9.update();
+
+        chart10.data.datasets[0].data = jsonObject.bvp;
+        chart10.update();
+
+        console.log('updated charts');
+      };
+
+      // Event listener for closed connection
+      socket.onclose = function(event) {
+        console.log('Socket connection closed:', event);
+      };
+
+
+      function get_data(socket){
+        socket.send("get_df")
+      }
+</script>
+  </div>
+</body>
+</html>
