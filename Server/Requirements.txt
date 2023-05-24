@@ -9,3 +9,6 @@ lxml
 neurokit2
 easygui
 sphinx
+websockets
+warnings
+asyncio

@@ -428,9 +428,9 @@
       }
     }
       });
-      console.log("hey")
-      var socket = new WebSocket('ws://127.0.0.1:6970');
 
+      var socket = new WebSocket('ws://localhost:6960/');
+      console.log("connecting")
       // Event listener for successful connection
       socket.onopen = function() {
         console.log('Connected to the socket server.');
@@ -438,42 +438,53 @@
         // gets data every 2 seconds & updates the charts
         setInterval(function() {
           get_data(socket);
-        }, 2000);
+        }, 1000);
       };
 
       // Event listener for incoming messages
       socket.onmessage = function(event) {
         var jsonText = event.data;
         var jsonObject = JSON.parse(jsonText);
+        console.log(jsonObject.excitement);
 
-        chart1.data.datasets[0].data = jsonObject.excitement;
+        chart1.data.datasets[0].data = jsonObject.excitement.map((number) => number * 100);
+        chart1.data.labels = Object.keys(jsonObject.excitement)
         chart1.update();
 
-        chart2.data.datasets[0].data = jsonObject.engagement;
+        chart2.data.datasets[0].data = jsonObject.engagement.map((number) => number * 100);
+        chart2.data.labels = Object.keys(jsonObject.engagement)
         chart2.update();
 
-        chart3.data.datasets[0].data = jsonObject.long_excitement;
+        chart3.data.datasets[0].data = jsonObject.long_excitement.map((number) => number * 100);
+        chart3.data.labels = Object.keys(jsonObject.long_excitement)
         chart3.update();
 
-        chart4.data.datasets[0].data = jsonObject.stress;
+        chart4.data.datasets[0].data = jsonObject.stress.map((number) => number * 100);
+        chart4.data.labels = Object.keys(jsonObject.stress)
         chart4.update();
 
-        chart5.data.datasets[0].data = jsonObject.relaxation;
+        chart5.data.datasets[0].data = jsonObject.relaxation.map((number) => number * 100);
+        chart5.data.labels = Object.keys(jsonObject.relaxation)
         chart5.update();
 
-        chart6.data.datasets[0].data = jsonObject.interest;
+        chart6.data.datasets[0].data = jsonObject.interest.map((number) => number * 100);
+        chart6.data.labels = Object.keys(jsonObject.interest)
         chart6.update();
 
-        chart7.data.datasets[0].data = jsonObject.focus;
+        chart7.data.datasets[0].data = jsonObject.focus.map((number) => number * 100);
+        chart7.data.labels = Object.keys(jsonObject.focus)
         chart7.update();
 
         chart8.data.datasets[0].data = jsonObject.pulse;
+        chart8.data.labels = Object.keys(jsonObject.pulse)
         chart8.update();
 
-        chart9.data.datasets[0].data = jsonObject.gsr;
+        chart9.data.datasets[0].data = jsonObject.gsr.map((number) => number * 100);
+        chart9.data.labels = Object.keys(jsonObject.gsr)
         chart9.update();
 
         chart10.data.datasets[0].data = jsonObject.bvp;
+        chart10.data.labels = Object.keys(jsonObject.bvp)
         chart10.update();
 
         console.log('updated charts');

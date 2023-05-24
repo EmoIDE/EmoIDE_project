@@ -208,7 +208,7 @@ function activate(context) {
 				  enableScripts: true
 			  } // Webview options. More on these later.
 			);
-			const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/combined_dashboard.html");
+			const onDiskPath = vscode.Uri.joinPath(context.extensionUri,"..","/Server/Dashboard/Saved_dashboards/live_dashboard.html");
 			const fileUri = vscode.Uri.file(onDiskPath.path);
   
 			panel.webview.html = fs.readFileSync(fileUri.fsPath, 'utf8');

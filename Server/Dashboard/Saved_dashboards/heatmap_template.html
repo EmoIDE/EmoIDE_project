@@ -168,7 +168,7 @@
    <button id="left-arrow" class="arrow left-arrow">&lt;</button>
    <div class="images">
      {% for image in image_list[0] %}
-     <img src="{{image}}" class="image {% if loop.first %}active{% endif %}" id="image{{loop.index|string}}">
+     <img src="data:image/png;base64,{{ image }}" class="image {% if loop.first %}active{% endif %}" id="image{{loop.index|string}}"/>
      {% endfor %}
    </div>
    <button id="right-arrow" class="arrow right-arrow">&gt;</button>

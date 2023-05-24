@@ -53,16 +53,3 @@ def get_stress():
     return eg.enterbox(msg, title)
 
 
-def show_input_dialog():
-    root = tk.Tk()
-    root.withdraw()  # Hide the main window
-
-    # Create a simple dialog box with an input field
-    user_input = simpledialog.askstring("Input Dialog", "Enter your name:")
-
-    if user_input is not None:
-        print("User input:", user_input)
-    else:
-        print("No input provided")
-
-show_input_dialog()

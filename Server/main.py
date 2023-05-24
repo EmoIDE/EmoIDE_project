@@ -14,6 +14,8 @@ import threading
 import time
 import socket
 import websockets
+import warnings
+import asyncio
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 #  Local imports
@@ -56,6 +58,7 @@ session_on = False
 server_on = False
 bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
+session_id = 0
 
 #extension settings
 settings_dict = {
@@ -102,6 +105,43 @@ def setup_server():
     tcp_thread = start_tcp_thread()
     return tcp_thread
 
+async def websocket_handler(websocket, path):
+    global full_df
+    try:
+        while session_on:
+            message = await websocket.recv()
+            if "get_df" in message:
+                data = {
+                    'title': 'test',
+                    'excitement': full_df['Excitement'].tolist(),
+                    'engagement': full_df['Engagement'].tolist(),
+                    'long_excitement': full_df['Long term excitement'].tolist(),
+                    'stress': full_df['Stress/Frustration'].tolist(),
+                    'relaxation': full_df['Relaxation'].tolist(),
+                    'interest': full_df['Interest/Affinity'].tolist(),
+                    'focus': full_df['Focus'].tolist(),
+                    'pulse': full_df['Pulse'].tolist(),
+                    "gsr": full_df["Gsr"].tolist(),
+                    "bvp": full_df["Bvp"].tolist()
+                }
+                data_json = json.dumps(data)
+                await websocket.send(data_json)
+        asyncio.get_event_loop().stop()
+    except websockets.exceptions.ConnectionClosed:
+        print("Client disconnected")
+
+async def websocket_server():
+    # Start the WebSocket server
+    server = await websockets.serve(websocket_handler, "", 6960)
+    print("server started")
+    await server.wait_closed()
+
+def start_websocket_server():
+   # Create and run the event loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(websocket_server())
+
 #handles the connection to the extension
 def tcp_communication():
     """
@@ -122,6 +162,7 @@ def tcp_communication():
     """
     global session_on
     global tcp_socket
+    global session_id
     tcp_socket.settimeout(15)
     
     extension_connected = False
@@ -144,14 +185,8 @@ def tcp_communication():
 
         try:
             recived_msg = conn.recv(1024).decode('utf-8')
-            # print(f"decoded msg: {recived_msg}")
-            #json_data = json.loads(data_received)
-            #recived_msg = json_data["function"]
         except:
             print("no message from extension")
-        # message empty
-        # if not data_received.strip():
-        #     break
         
         if "toggle_session" in recived_msg:
             session_on = not session_on
@@ -160,15 +195,16 @@ def tcp_communication():
             if session_on:
                 init_df()
                 session_threads = start_session_threads()
-                make_dashboard(True)
+                session_id = datetime.datetime.strftime(datetime.datetime.now(), format)
+                
             if not session_on:
                 # Save dataframe to a path and with specified format
                 save_format = settings_dict["FileFormat"]
                 save_path = settings_dict["SaveLocation"]
-                print(f"format: {save_format}")
+
                 save_df(full_df, save_path, save_format)
                 join_threads(session_threads)
-                make_dashboard(False)
+                save_session_to_dashboard()
 
         if "disconnect" in recived_msg:
             extension_connected = False
@@ -187,6 +223,7 @@ def tcp_communication():
 
         if "settings_update" in recived_msg:
             read_settings(SETTINGS_PATH)
+            settings_dict["Training"] = False
             print("settings updated")
 
 
@@ -198,10 +235,7 @@ def tcp_communication():
                 }
             data_json = json.dumps(data)
             conn.sendall(data_json.encode('utf-8'))
-            print("Received a ping from the client & responded with pong.")
-
-    print("HERE - exited the extension connected while loop")
-
+            print("Received a ping from the client & responded wth pong.")
 
 
 # ------------------------------------------ EEG ------------------------------------------ #
@@ -460,7 +494,7 @@ def update_dataframe():
     global full_df
     global session_on
 
-    print_it = False
+    print_it = True
     mock = True
 
     calibration_done["Dataframe"] = True
@@ -529,7 +563,6 @@ def update_dataframe():
         if print_it == True:
             print(f"{full_df}\n--------------------------------")                                     ###########################
 
-
 def mock_all_dicts():
     """
     Modifies and updates global dictionaries with mock data.
@@ -586,28 +619,43 @@ def predict_series(full_data_dict):
     full_data_dict["Age"] = settings_dict["Age"]
     eeg_predict_values = pd.Series(full_data_dict)
 
+    print("Abandon all hope, ye who enter here [0]")
+
     drop_list = ["time", "x", "y", "Explorer", "Terminal", "Code", "Pulse", "Bvp", "Gsr", "Valence", "Arousal"]
     eeg_predict_values.drop(drop_list, inplace=True)
     
+    print("Abandon all hope, ye who enter here [0]")
+
     predict_frame = pd.DataFrame(eeg_predict_values)
     predict_frame= predict_frame.transpose()
 
+    print("Abandon all hope, ye who enter here [1]")
+
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
     # print(predict_frame)
+    
+    print("Abandon all hope, ye who enter here [2]")
 
     svm_dataset = svm_dataset.append(predict_frame)
     # print(svm_dataset)
     scaled = scale(svm_dataset)
 
-
+    print("Abandon all hope, ye who enter here [3]")
     # svm_valence.predict(scaled)[0]
     # print(svm_dataset)
     # print(scaled)
+    print(scaled)
+    
     prediction_dict["Valence"] = svm_valence.predict([scaled[-1]])[0]
+
+    print("Abandon all hope, ye who enter here [4]")
+
     if random.randrange(0, 100) > 50:
         prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
     else:
         prediction_dict["Arousal"] = svm_arousal.predict([[ 0.,  1., -1.,  0., -1., -1., -1., -1.,  0.]])[0]
+    
+    print("Abandon all hope, ye who enter here [5]")
 
 
 
@@ -664,7 +712,6 @@ def save_df(df, path, save_as_ext = '.csv'):
     if not (os.path.exists(path)):
         print("Filepath does not exist")
         return 0
-    print("ABANDON ALL HOPE, YE WHO ENTER HERE (0)")
     if save_as_ext == '.pdf':
         filename = filename + save_as_ext
 
@@ -731,6 +778,7 @@ def read_settings(settings_path):
     with open(settings_path, "r") as wow:
         settings_dict = json.load(wow)
 
+    settings_dict["Training"] = False
 
 # ------------------------------------------ Threads ------------------------------------------ #
 def start_tcp_thread():
@@ -822,6 +870,10 @@ def start_session_threads():
     # thread_names.append("df_thread")
     calibration_done["Dataframe"] = True
 
+    live_dashboard_thread = threading.Thread(target=start_websocket_server, daemon=True, name="live dashboard thread")
+    live_dashboard_thread.start()
+    threads.append(live_dashboard_thread)
+
     return threads
 
 
@@ -851,10 +903,6 @@ def join_threads(threads):
                 print(f"Still running: {threads}\n")
             except:
                 print(f"failed to join {thread.name}")
-    
-    # print(f"Running threads left: {threads}")
-
-
 
     # for thread in threads:
     #     if not thread.is_alive():
@@ -921,7 +969,7 @@ def start_heatmap():
                 # Append last image
                 image_cache.append(dashboard.screenshot_img(full_df["time"].iloc[-1]))
                 # Create gif from the 120 seconds gone by made up by 4 images 30 seconds apart
-                dashboard.create_heatmap_gif(image_cache, full_df)
+                dashboard.create_heatmap_gif(image_cache, full_df, session_id)
                 # Clear cache to continue the next 2 minutes and forward the whole session...
                 image_cache.clear()
                 # # Update last time
@@ -935,11 +983,11 @@ def start_heatmap():
 
     # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
     # dashboard.create_heatmap_dashboard()
-    dashboard.create_combined_dashboard(full_df)
     return 0
 
 
-def make_dashboard(refresh=True):
+def save_session_to_dashboard():
+    global session_id
     """
     This function is responsible to create the dashboard
 
@@ -958,7 +1006,7 @@ def make_dashboard(refresh=True):
     global full_df
 
     try:
-        dashboard.create_combined_dashboard(full_df, refresh)
+        dashboard.create_combined_dashboard(full_df, session_id)
     except Exception as x:
         print("[ERROR] - dashboard failed", x)
 

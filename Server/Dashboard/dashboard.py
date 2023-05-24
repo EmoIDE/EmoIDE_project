@@ -75,8 +75,7 @@ def create_dashboard(df):
     pass
 
 
-
-def create_combined_dashboard(df, do_refresh):
+def create_combined_dashboard(df, session_id):
     """
     Generates a combined dashboard HTML file using a Jinja2 template.
 
@@ -92,7 +91,6 @@ def create_combined_dashboard(df, do_refresh):
         -   The data is then passed to a Jinja2 template to render the HTML dashboard.
         -   The rendered HTML is saved to a file named 'combined_dashboard.html'.
     """
-    print(f"making dashboard with refresh set to: {do_refresh}")
 
     excitement_list = df['Excitement'].tolist()
     engagement_list = df['Engagement'].tolist()
@@ -115,16 +113,14 @@ def create_combined_dashboard(df, do_refresh):
     for folder in staples:
         text_list.append(folder)
         folder_path = os.path.join(dirpath,folder)
-        timestamp=[]
-        for image in os.listdir(folder_path):
-            image_path = os.path.join(folder_path, image)
-            print(image_path)
-            with open(image_path, "rb") as image2string:
-                converted_string = base64.b64encode(image2string.read())
-                timestamp.append(converted_string)
-        staple_images.append(timestamp)
-    print(staple_images)
-        #staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
+        # timestamps=[]
+        # for image in os.listdir(folder_path):
+        #     image_path = os.path.join(folder_path, image)
+        #     with open(image_path, "rb") as image2string:
+        #         timestamps.append(base64.b64encode(image2string.read()).decode('utf-8'))
+        # staple_images.append(timestamps)
+
+        staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
 
     data = {
         'title': 'test',
@@ -143,7 +139,6 @@ def create_combined_dashboard(df, do_refresh):
         'image_list': staple_images,
         'stress_list': stress_list,
         'text_list': text_list,
-        'refresh': do_refresh
     }
     try:
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
@@ -151,9 +146,11 @@ def create_combined_dashboard(df, do_refresh):
         html = template.render(data)
 
         # Save the rendered HTML to a file
-        filename = "/combined_dashboard.html"
-        with open(str(output_path + filename), "w") as f:
+        filename = "/session/" + session_id + "/dashboard.html"
+        filepath = str(output_path + filename)
+        with open(filepath, "w") as f:
             f.write(html)
+            print(f"Dashboard saved to: {filepath}")
     except Exception as e:
         print(e)
 
@@ -352,7 +349,7 @@ def create_heatmap_dashboard():
     # # Or any other template html service, the image carousel is done, just need a way to display it
     # return render(request, 'Saved_dashboards/heatmap_dashboard.html', {'folder_carousels': folder_carousel})
 
-def create_heatmap_gif(img_cache, df):
+def create_heatmap_gif(img_cache, df, session_id):
     """
     Creates heatmaps for a series of images based on the provided data.
 
@@ -373,7 +370,7 @@ def create_heatmap_gif(img_cache, df):
         - The progress of processing each image is printed as a percentage.
     """
 
-    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{img_cache[0]["date"]}'
+    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Saved_dashboards/{session_id}/images/{img_cache[0]["date"]}'
 
     try:
         os.mkdir(dirpath)
