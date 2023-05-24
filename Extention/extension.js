@@ -48,6 +48,7 @@ class StatisticsDataProvider
 	}
 }
 
+
 class DevicesDataProvider {
 	constructor() {
 	  // Define the items to display in the tree view

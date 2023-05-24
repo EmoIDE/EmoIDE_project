@@ -74,6 +74,17 @@ def create_dashboard(df):
         f.write(html)
     pass
 
+def exaggerate_stress(stress, stress_min, stress_max, target_min, target_max, exponent):
+    # Normalize the stress value between 0 and 1
+    normalized_stress = (stress - stress_min) / (stress_max - stress_min)
+
+    # Apply a power function to exaggerate the differences
+    exaggerated_stress = normalized_stress ** exponent
+
+    # Map the exaggerated stress value to the target range
+    mapped_stress = (target_max - target_min) * exaggerated_stress + target_min
+
+    return mapped_stress
 
 def create_combined_dashboard(df, session_id):
     """
@@ -104,24 +115,28 @@ def create_combined_dashboard(df, session_id):
     bvp_list = df["Bvp"].tolist()
     index_list = df.index.tolist()
 
-    bad_path = os.path.dirname(os.path.realpath(__file__)) + "/Heatmaps/"              #f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'     # bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json" 
+    bad_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'Saved_dashboards')) + "/session/" + session_id + "/images"              #f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/'     # bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json" 
     dirpath = bad_path.replace("\\", "/")
     staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
     text_list = []
     staple_images = []
-    stress_list = [random.randint(50, 200) for f in range(0, len(staples))]
+    # stress_list = [random.randint(50, 200) for f in range(0, len(staples))]
+    stress_list_staples = []
     for folder in staples:
         text_list.append(folder)
         folder_path = os.path.join(dirpath,folder)
-        # timestamps=[]
-        # for image in os.listdir(folder_path):
-        #     image_path = os.path.join(folder_path, image)
-        #     with open(image_path, "rb") as image2string:
-        #         timestamps.append(base64.b64encode(image2string.read()).decode('utf-8'))
-        # staple_images.append(timestamps)
+
+        before_moment = datetime.datetime.strptime(folder, format) - datetime.timedelta(minutes=2)
+
+        valence = np.mean(get_df_in_time_range(before_moment, datetime.datetime.strptime(folder, format), df)['Valence'].to_numpy())
+        arousal = np.mean(get_df_in_time_range(before_moment, datetime.datetime.strptime(folder, format), df)['Arousal'].to_numpy())
+
+        stress = int((6 - valence) * arousal)
+        stress_clamped = exaggerate_stress(stress, 1, 25, 50, 200, 2)
+        stress_list_staples.append(stress_clamped)
 
         staple_images.append([os.path.join(folder_path, i).replace('\\', '/') for i in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, i)) and (i.endswith('.png'))])
-
+    print("STRESS STAPLES: ", stress_list_staples)
     data = {
         'title': 'test',
         'excitement_list': excitement_list,
@@ -137,18 +152,24 @@ def create_combined_dashboard(df, session_id):
         "bvp_list": bvp_list,
         'folder_staples': staples,
         'image_list': staple_images,
-        'stress_list': stress_list,
-        'text_list': text_list,
+        'stress_list_staples': stress_list_staples,
+        'text_list': text_list
     }
     try:
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(output_path))
         template = env.get_template("combined_template.html")
         html = template.render(data)
 
+        # Create directories if they don't exist
+
         # Save the rendered HTML to a file
-        filename = "/session/" + session_id + "/dashboard.html"
-        filepath = str(output_path + filename)
-        with open(filepath, "w") as f:
+        filepath = f"{output_path}/session/{session_id}/"
+
+        os.makedirs(filepath, exist_ok=True)
+
+        filename = "dashboard.html"
+
+        with open(filepath + filename, "w") as f:
             f.write(html)
             print(f"Dashboard saved to: {filepath}")
     except Exception as e:
@@ -370,49 +391,44 @@ def create_heatmap_gif(img_cache, df, session_id):
         - The progress of processing each image is printed as a percentage.
     """
 
-    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Saved_dashboards/{session_id}/images/{img_cache[0]["date"]}'
+    dirpath = f'{os.path.dirname(os.path.abspath(__file__))}/Saved_dashboards/session/{session_id}/images/{img_cache[0]["date"]}/'
 
-    try:
-        os.mkdir(dirpath)
-    except FileExistsError:
-        print(f'{bcolors.FAIL}Directory{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath}{bcolors.ENDC} already exists')
-    else:
-        print(f'{bcolors.OKGREEN}Directory{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath}{bcolors.ENDC} successfully created')
+    os.makedirs(dirpath, exist_ok=True)
 
-        for i, screenshot in enumerate(img_cache):
-            before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=20)
+    for i, screenshot in enumerate(img_cache):
+        before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(minutes=2)
 
-            x = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['x'].to_numpy()
-            y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
+        x = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['x'].to_numpy()
+        y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
 
-            if len(x) <= 5 or len(y) <= 5:
-                print(f'{bcolors.WARNING}Image{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath + "/" + screenshot["date"] + ".png"}{bcolors.ENDC} not enough data to create heatmap')
+        if len(x) <= 5 or len(y) <= 5:
+            print(f'{bcolors.WARNING}Image{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath + "/" + screenshot["date"] + ".png"}{bcolors.ENDC} not enough data to create heatmap')
 
-                screenshot["img"].save(dirpath + "/" + screenshot["date"] + ".png")
-            else:
-                img = screenshot["img"]
+            screenshot["img"].save(dirpath + "/" + screenshot["date"] + ".png")
+        else:
+            img = screenshot["img"]
 
-                img_arr = np.array(img)
+            img_arr = np.array(img)
 
-                # Convert x and y coordinates to pixel coordinates
-                x_pixel = x * img.width
-                y_pixel = y * img.height
+            # Convert x and y coordinates to pixel coordinates
+            x_pixel = x * img.width
+            y_pixel = y * img.height
 
-                xy = np.vstack([x,y])
-                density = gaussian_kde(xy)(xy)
+            xy = np.vstack([x,y])
+            density = gaussian_kde(xy)(xy)
 
-                # Create a heatmap over the image
-                plt.imshow(img_arr)
-                plt.scatter(x_pixel, y_pixel, s=100, c=density, cmap='coolwarm', alpha=0.25)
+            # Create a heatmap over the image
+            plt.imshow(img_arr)
+            plt.scatter(x_pixel, y_pixel, s=100, c=density, cmap='coolwarm', alpha=0.25)
 
-                # Set axis limits and show the plot
-                plt.xlim([0, img.width])
-                plt.ylim([img.height, 0])
-                plt.axis('off')
+            # Set axis limits and show the plot
+            plt.xlim([0, img.width])
+            plt.ylim([img.height, 0])
+            plt.axis('off')
 
-                plt.savefig(dirpath + "/" + screenshot["date"] + ".png", dpi=300, format='png', bbox_inches='tight')
+            plt.savefig(dirpath + "/" + screenshot["date"] + ".png", dpi=300, format='png', bbox_inches='tight')
 
-            print(f'Finished processing {bcolors.OKGREEN}{int(((i + 1) / len(img_cache)) * 100)}{bcolors.ENDC} % of all images')
+        print(f'Finished processing {bcolors.OKGREEN}{int(((i + 1) / len(img_cache)) * 100)}{bcolors.ENDC} % of all images')
 
 
 

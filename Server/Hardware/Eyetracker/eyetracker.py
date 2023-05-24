@@ -43,7 +43,10 @@ class EyeTracker:
         Notes:
             -   The setup of the eyetracker object may take up to 100 seconds.
         """
-        self.eye_tracker = gazepoint.GazePoint(calibration_enabled)
+        try:
+            self.eye_tracker = gazepoint.GazePoint(calibration_enabled)
+        except:
+            raise Exception
 
     def check(self, value, value_range):
         """

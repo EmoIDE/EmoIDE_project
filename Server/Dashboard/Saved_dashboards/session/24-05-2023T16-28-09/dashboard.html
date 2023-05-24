@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combined Dashboard</title>
+</head>
+<body>
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div id="main-body">
+    <style>
+  body {
+ flex-direction: column;
+ align-items: center;
+}
+
+.slider::-webkit-slider-thumb {
+ -webkit-appearance: none;
+ margin: 0;
+ margin-top: -9px;
+ width: 22px;
+ height: 23px;
+ background: #555;
+ cursor: pointer;
+ border-radius: 12px;
+}
+
+.slider::-webkit-slider-runnable-track {
+ -webkit-appearance: none;
+ height: 6px;
+ width: 22px;
+ background-color: #f0f0f0;
+ margin-left: 14px;
+ margin-right: 14px;
+}
+
+.line {
+ border-bottom: 2px solid #ebeef1 ;
+ margin-bottom: 20px;
+ margin-top: 20px;
+ width: 80%;
+ margin:auto;
+}
+
+.slider-container {
+ position: relative;
+ display: flex;
+ justify-content: flex-start;
+ align-items: center;
+ width: 45%;
+ margin: 0 auto;
+ border-radius: 6px;
+ z-index: 2;
+}
+
+.slider-bg {
+ position: absolute;
+ bottom: 0;
+ width: 100%;
+ height: 5px;
+ background-color: #f0f0f0;
+ border-radius: 6px;
+ z-index: 1;
+}
+
+.slider {
+ -webkit-appearance: none;
+ position: absolute;
+ bottom: 0;
+ height: 5px;
+ margin: 0;
+ background-color: #f0f0f0;
+ border-radius: 6px;
+ outline: none;
+ z-index: 2;
+}
+
+.staples {
+ display: flex;
+ width: 100%;
+ padding-bottom: 25px;
+ align-items: center;
+ margin-bottom: 25px;
+ position: relative;
+ z-index: 1;
+}
+
+.staple {
+ width: 30px;
+ margin-right: 10px;
+ margin-left: 10px;
+ border-radius: 6px;
+ background-color: #E2E4E7;
+}
+
+.staple:hover {
+ cursor: pointer;
+}
+
+.active-staple {
+ background-color: #ff6b6b;
+}
+
+.image-gallery {
+ display: flex;
+ justify-content: center;
+ margin-bottom: 20px;
+}
+
+.images {
+ position: relative;
+}
+.staple-wrapper {
+ position: relative;
+ margin-left: 10px;
+ margin-right: 10px;
+}
+
+.image {
+ display: none;
+ width: 640px;
+ height: 360px;
+ object-fit: contain;
+}
+.staple-text {
+ display: none;
+ position: absolute;
+ bottom: 20px;
+ text-align: center;
+ width: 100%;
+ white-space: nowrap; /* Prevent text from wrapping to a new line */
+}
+
+.active {
+ display: block;
+}
+
+.arrow {
+ background: none;
+ border: none;
+ font-size: 4rem;
+ cursor: pointer;
+}
+
+.left-arrow {
+ margin-right: 10px;
+}
+
+.right-arrow {
+ margin-left: 10px;
+}
+
+.dots {
+ display: flex;
+ justify-content: center;
+ margin-top: 10px;
+}
+
+.dot {
+ display: inline-block;
+ width: 15px;
+ height: 15px;
+ margin: 0 40px;
+ border-radius: 50%;
+ background-color: #bbb;
+}
+.dot:hover{
+ cursor: pointer;
+}
+.active {
+ background-color: black;
+}
+</style>
+ <div class="category">
+   <h2>Heatmap</h2>
+ </div>
+ <div class="image-gallery">
+   <button id="left-arrow" class="arrow left-arrow">&lt;</button>
+   <div class="images">
+     
+   </div>
+   <button id="right-arrow" class="arrow right-arrow">&gt;</button>
+ </div>
+ <div class="dots">
+     <span class="dot active"></span>
+     <span class="dot"></span>
+     <span class="dot"></span>
+     <span class="dot"></span>
+   </div>
+
+ <div class="line"></div>
+
+ <div class="slider-container">
+   <div class="staples">
+     
+     <div id="staple1" class="staple"></div>
+     
+     <div id="staple2" class="staple"></div>
+     
+   </div>
+   <span class="staple-text"></span>
+   <div class="slider-bg"></div>
+   <input type="range" min="1" max="4" value="1" id="slider" class="slider">
+ </div>
+
+
+ <script>
+   const slider = document.getElementById("slider");
+const stapleHeights = [ "200",  "191" ];
+const imageSets = [
+ 
+   [
+     
+   ],
+ 
+   [
+     
+   ]
+ 
+];
+const stapleTexts = [
+ 
+   "20-05-2023",
+ 
+   "26-04-2023"
+ 
+];
+const images = document.querySelectorAll(".image");
+const staples = document.querySelectorAll(".staple");
+const leftArrow = document.getElementById("left-arrow");
+const rightArrow = document.getElementById("right-arrow");
+let currentImageIndex = 0;
+const textContainer = document.querySelector('.staple-text');
+
+function showImage(index) {
+ images.forEach((image) => {
+   image.classList.remove("active");
+ });
+ images[index].classList.add("active");
+ dots.forEach((dot, dotIndex) => {
+   if (dotIndex === index) {
+     dot.classList.add("active");
+   } else {
+     dot.classList.remove("active");
+   }
+ });
+}
+const dots = document.querySelectorAll(".dot");
+const dotIndicators = document.querySelectorAll('.dot-indicator');
+dots.forEach((dot, index) => {
+ dot.addEventListener('click', () => {
+   currentImageIndex = index;
+   showImage(currentImageIndex);
+ });
+});
+slider.addEventListener("input", () => {
+ const value = slider.value;
+
+ staples.forEach((staple, index) => {
+   staple.style.height = `${stapleHeights[index]}px`;
+   staple.classList.remove("active-staple");
+ });
+
+ const selectedStaple = staples[value - 1];
+ selectedStaple.classList.add("active-staple");
+ updateStapleTextPosition(value);
+
+ dotIndicators.forEach((indicator, index) => {
+   if (index === currentImageIndex) {
+     indicator.classList.add("active-dot");
+   } else {
+     indicator.classList.remove("active-dot");
+   }
+ });
+
+ imageSets[value - 1].forEach((src, index) => {
+   images[index].src = src;
+ });
+
+ currentImageIndex = 0;
+ showImage(currentImageIndex);
+ if (value == 1) {
+   dotIndicators[0].classList.add("active-dot");
+ }
+});
+
+
+leftArrow.addEventListener("click", () => {
+ currentImageIndex--;
+ if (currentImageIndex < 0) {
+   currentImageIndex = images.length - 1;
+ }
+ showImage(currentImageIndex);
+});
+
+rightArrow.addEventListener("click", () => {
+ currentImageIndex++;
+ if (currentImageIndex >= images.length) {
+   currentImageIndex = 0;
+ }
+ showImage(currentImageIndex);
+});
+
+pause = false
+setInterval(() => {
+  if(!pause) {
+    currentImageIndex++;
+    if (currentImageIndex >= images.length) {
+      currentImageIndex = 0;
+    }
+    showImage(currentImageIndex)
+  }
+}, 2000)
+
+document.querySelector('.images').addEventListener('mouseenter', () => {pause = !pause})
+document.querySelector('.images').addEventListener('mouseleave', () => {pause = !pause})
+
+function updateStapleTextPosition(value) {
+ const selectedStaple = staples[value - 1];
+ const stapleOffsetLeft = selectedStaple.offsetLeft;
+ const stapleWidth = selectedStaple.clientWidth;
+ const textContainerWidth = textContainer.clientWidth;
+
+ textContainer.style.left = `${stapleOffsetLeft + (stapleWidth / 2) - (textContainerWidth / 2)}px`;
+ textContainer.style.display = 'block';
+ textContainer.textContent = stapleTexts[value - 1];
+}
+
+function setSliderWidth() {
+ const stapleContainer = document.querySelector(".staples");
+ const stapleWidth = staples[0].offsetWidth;
+ const gapBetweenStaples = parseInt(getComputedStyle(staples[0]).marginRight) + parseInt(getComputedStyle(staples[0]).marginLeft);
+ const totalStapleWidth = (stapleWidth + gapBetweenStaples) * staples.length
+ slider.style.width = `${totalStapleWidth - 1}px`;
+}
+
+function switchToStaple(index) {
+ slider.value = index + 1;
+ slider.dispatchEvent(new Event("input"));
+}
+
+staples.forEach((staple, index) => {
+ staple.addEventListener("click", () => {
+   switchToStaple(index);
+ });
+});
+
+
+
+setSliderWidth();
+slider.setAttribute("max", staples.length);
+slider.setAttribute("min", 1);
+slider.setAttribute("step", 1);
+updateStapleTextPosition(1);
+slider.dispatchEvent(new Event("input"));
+window.addEventListener("resize", () => {updateStapleTextPosition(slider.value)})
+ </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .logo {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .category {
+      text-align: center;
+      color: black;
+      padding: 10px;
+    }
+    #main-body {
+      margin-top:10%;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+    
+.chart-container {
+  height: 400px;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+  </style>
+
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div class="category">
+    <h2>EEG Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart1"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart2"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart3"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart4"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart5"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart6"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart7"></canvas>
+    </div>
+  </div>
+  <div class="category">
+    <h2>E4 Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart8"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart9"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart10"></canvas>
+    </div>
+  </div>
+  
+<script>
+  var ctx1 = document.getElementById('chart1');
+      var chart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Excitement (%)',
+            data: [0.0,67.90902190086278,14.513357248048852,94.81683319756165,93.68713910822844,90.77490352163716,38.02890459034723,22.00708731187675,15.655253805036907,87.67039650750179,95.31256343793919,90.28087893969202,85.26823017646798,79.55102145618145,72.80993905552138,4.257260303844157,68.01981693268291,5.117766107636424,80.00036581258753,32.22840937996839,21.256528954225985,29.50926429276849,61.47865758093579,80.0373769720153,53.71961907859749,9.4857202662756,23.789361966177747,64.72370133052587,5.147767777607726,78.0889017199001,82.79533196207197,97.61597415334758,91.3127456691372,84.61788475750119,50.19001108272272,68.13403459242116,95.1777209822112,94.2310107634942,56.188390177764255,85.48600763708406,73.51524316136341,64.96015842856983,1.9902922540951273,21.468623468178684,94.35697870138537,51.19579716066228,0.6697317390892632,6.547116427238087,61.168637580385564,54.6472050208874,24.434696435586524,44.88281532246988,18.944000012948838,50.47034067626258,66.00783175731118,3.101869730413609,73.44862772059018,38.516843331562534,83.43890689362269,67.61839555975733,42.084302087308046,19.717384203810173,96.20739591944383,29.747206626823054,31.14907085947286,15.39922170461252,93.26873216241887,87.57527581521374,2.9970965028923713,17.040483810361085,88.99037190161803,34.76362285805406,8.264751622429124,35.011426859418,41.92385793083155,58.123588790864936,95.2807684926708,23.873635520188596,],
+            borderColor: "#B22222"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: 'Dina känslor som vi kommer sälja till Kina för en förmögenhet.'
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx2 = document.getElementById('chart2');
+      var chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Engagement (%)',
+            data: [0.0,80.1929393408774,89.54277863126701,66.28495192830593,62.70856546351272,11.16294248434604,83.36307511200746,11.759338384094898,28.84477895682932,61.28586979748795,75.03816914038475,11.4748660471379,80.85777171073438,66.73945197970707,10.716883466653847,89.92359466206548,52.911499240292116,47.578127416842555,79.05212201664506,3.8588827038326,28.34277370056394,82.17626427803269,48.77234071248739,98.39820426050085,35.464167661166776,23.686107774687116,37.6999848515686,86.74796696501087,72.35420467480719,98.54015515703861,32.89807185693301,62.84714708515904,22.028448922786804,82.84272759010437,28.294481192178555,80.52729855189007,88.01052803815654,8.292256160048117,9.95784332248758,62.100124890862375,97.99344308938728,45.56335398848409,18.19375896703518,16.741500015309107,54.67836790431041,54.782384503791434,84.0687279169265,34.36834683792441,98.77187137199053,41.97180864583245,28.791171209493882,28.13873548282141,33.89843994475326,9.196571892948501,32.801296242063636,24.705597566480762,73.53416120804165,26.32475267639257,75.65295102704827,75.12439333897908,98.24479667404565,35.57592713161498,40.97400777258673,96.69597536827078,68.72755641933038,49.88895356430888,89.75747032268248,51.03083635679595,21.13220965897885,18.282052274080264,48.60746594889426,24.119028553838728,93.52014825613969,48.44716474228377,20.20212321300604,36.048367341817745,24.87274323899149,81.59861292115818,],
+            borderColor: "#4D81F0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx3 = document.getElementById('chart3');
+      var chart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Long Term Excitement (%)',
+            data: [0.0,95.85265369694702,84.71096000081933,88.31506578862927,57.31365939695073,79.53375141300928,16.718130119534756,79.48131208735914,17.31355546725466,42.110320152292836,88.83296622199649,2.867611438995721,22.98453695377276,71.97012645342255,5.983372953743082,74.96769082965011,17.850069166614844,2.3666131081840014,2.7743802801981188,18.099253129629822,51.142691498252354,32.53693839564441,29.926609417468818,43.775547547506456,1.500545382763263,30.94308100094152,9.572345878398792,24.20841228621029,26.270464323703614,61.47255991602633,61.69015143761267,92.63214838619776,66.59523127308762,24.62836012434141,42.189108527651356,15.294178223098298,16.76976348976058,88.6887255481209,77.74446469779464,22.843927795354357,21.63629103986402,36.75667291641977,33.2600432141149,92.66613918860729,34.09054652485691,83.79123022157457,85.29006867604754,38.4719826998448,67.75275786796853,5.871262875549821,68.42117209748898,17.504869726057535,11.025821286698644,20.655299454995024,3.1570646578375827,74.87553073441138,45.584487498357184,8.319033205333914,40.64756163835405,76.26873472419825,13.768265634597132,68.335038318046,5.348750504906008,79.4027394083342,69.15473273179845,2.5068934503174933,16.717102664420548,9.576958892144106,86.63229198668445,78.58584758485307,37.700257534894135,70.64592340564244,21.63387623608338,22.79871662376223,74.06238465847453,29.63424810355275,12.489103717504534,80.53396428567521,],
+            borderColor: "#FF69B4"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx4 = document.getElementById('chart4');
+      var chart4 = new Chart(ctx4, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Stress (%)',
+            data: [20000,19100,],
+            borderColor: "#FFFACD"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx5 = document.getElementById('chart5');
+      var chart5 = new Chart(ctx5, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Relaxation (%)',
+            data: [0.0,33.47208328908631,32.77278541034717,6.578599566886534,92.2732709284669,1.609055636903034,40.96073699587449,37.824865850964784,62.74597597801738,28.379399078490042,21.69081747216487,95.88159001153717,68.12259322257148,85.4508026469861,88.67533134418719,19.761212444217403,38.15010932025342,70.94824823368678,14.238784834858532,17.178408550883972,77.36004924127887,96.26943135386585,61.65819393095572,20.914029748989627,14.78338127523906,43.26684302734417,14.463078177638788,14.049256498707907,39.16927855873138,16.690599946217375,6.059244354804038,14.087851092761793,22.217924422906222,56.8394141193571,73.69944949047932,74.87947880760227,17.535047573756156,6.986882300243124,54.171424791905956,46.3937563156352,56.73580292159811,38.55463248090514,20.64397536708067,95.60419328375303,43.730271443268066,7.391055171182714,33.34194366235661,48.166400972719046,21.63613043857322,61.69429034607651,52.022665811341476,43.27512924286271,27.131455821179852,85.90571689786024,68.92357693304257,65.42466123236134,39.44581468329952,3.0848476651807455,82.27478901411772,57.80568707949369,65.49628795849006,12.289852244768928,56.74235159874399,69.18244280608045,43.47459877211838,85.80684668219199,21.83794336339756,75.00175921099377,82.78344509709855,20.447826541599667,97.66485011393924,15.675865412781464,32.83685214355724,31.640481328486125,22.026604885769817,55.60934184233942,56.11241216375243,14.511047075849259,],
+            borderColor: "#FF7F50"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx6 = document.getElementById('chart6');
+      var chart6 = new Chart(ctx6, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Interest (%)',
+            data: [0.0,79.73193580127756,73.494845665119,77.97076742101126,70.14871839567093,6.750575183884533,68.49050878348946,58.32178030817968,98.7366787158561,83.79634313579416,42.20196848744309,42.56980923704789,42.838303510408615,39.89451152993565,79.1336980894218,62.56869046715866,90.44931480295868,50.309564467677134,96.14764960256088,7.592843749670564,2.3351566718585626,49.58254028251593,76.45193418356871,84.33851802123155,27.615925944865594,5.882883347639201,42.62678769719028,37.29616624703104,2.8257964512480416,2.5116729213177535,91.58082835996284,78.70088772560393,66.76214827543686,39.963380440197795,75.13825875150954,64.52668599626077,77.75642997381496,5.3682793922704475,45.67006516219014,98.22309308745724,40.39487458150752,63.84446301739665,95.54552979751284,63.05048223141188,87.38280866338542,96.32148930229465,90.2714416472789,66.56978568100335,73.50605170659536,27.207043276906774,91.99050285100402,40.80834791820468,85.32568126590601,93.49796911426289,2.338071393872987,80.4633003515314,98.91518569196722,54.176938053664095,55.76509220636223,27.144915018375283,7.52842543744735,36.80386435519104,95.54176023486241,9.889590331894539,70.23733118990512,68.38671263046278,37.87833360872903,0.10387038263639514,37.925093753342644,11.239118078132737,73.0200333894636,38.46963610460173,76.53428663378406,21.97653979677543,76.84335566041037,1.1159780874157588,1.5947956144079067,72.69439165970891,],
+            borderColor: "#D2F04D"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx7 = document.getElementById('chart7');
+      var chart7 = new Chart(ctx7, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Focus (%)',
+            data: [0.0,50.92140380259303,96.64833958189459,6.246819200202191,31.382285325299396,73.49265201091764,80.71888168895617,26.542553131281423,21.71554783559586,3.84248197268805,4.787922950322843,88.13687454789874,5.841987467291288,53.1052503305102,36.30066941081221,58.87499464537059,41.90275954253847,96.53116281885949,13.656608867496766,54.51847132012326,78.62413161959725,32.234674048113575,79.52819629956693,46.035677981967225,64.19168155574837,75.62059664573167,49.71405525422469,5.05872441750832,29.588153851344057,51.64307785234702,12.695977804075998,24.23995898070436,2.277254508883053,14.03543365365978,36.91786248117342,35.36923803015652,88.28042657280342,16.7401594916317,75.09142226447689,65.62413418622462,41.47550460471648,40.268941615089545,68.01410657897684,88.11026270502516,49.160039871030136,76.99045596988957,90.00149465731972,67.62833938874367,6.997560878434673,99.92036400729772,73.12149990042114,18.992636016586605,74.66962128193194,91.67918694107739,53.15412230398518,31.50124811595354,80.31576566372318,60.36329274268125,72.06244372003479,71.79434355758188,26.042923487271153,67.02246729224383,59.71931230964868,28.197964424266775,31.42656143600522,25.58612350514111,93.83648299179289,71.6978798161816,91.67912711959833,14.219836555116693,32.786477535176864,72.33723512869857,93.6119011521161,79.60964300817734,40.726402777273364,9.024746152458253,20.636275671355698,70.47684872653538,],
+            borderColor: "#4DF0B0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx8 = document.getElementById('chart8');
+      var chart8 = new Chart(ctx8, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Pulse',
+            data: [0.0,72.0,74.0,69.0,81.0,75.0,72.0,62.0,64.0,65.0,90.0,60.0,65.0,89.0,83.0,81.0,79.0,74.0,91.0,64.0,97.0,69.0,66.0,61.0,62.0,69.0,79.0,94.0,85.0,68.0,61.0,69.0,75.0,92.0,94.0,94.0,98.0,76.0,84.0,75.0,82.0,86.0,91.0,60.0,89.0,87.0,84.0,82.0,66.0,60.0,73.0,80.0,60.0,62.0,77.0,61.0,63.0,90.0,70.0,94.0,78.0,63.0,78.0,82.0,65.0,64.0,80.0,81.0,93.0,60.0,90.0,90.0,70.0,67.0,94.0,88.0,92.0,86.0,],
+            borderColor: "#F95858"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:40,
+          max:220,
+        }
+      }
+    }
+      });
+
+
+      var ctx9 = document.getElementById('chart9');
+      var chart9 = new Chart(ctx9, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Galvanic Skin Response (%)',
+            data: [0.0,20.0,10.0,20.0,10.0,10.0,20.0,20.0,20.0,20.0,10.0,10.0,10.0,10.0,20.0,10.0,20.0,20.0,20.0,20.0,10.0,20.0,10.0,20.0,20.0,10.0,20.0,20.0,10.0,20.0,10.0,20.0,20.0,10.0,20.0,10.0,10.0,20.0,20.0,10.0,10.0,10.0,10.0,20.0,10.0,10.0,10.0,20.0,20.0,10.0,20.0,20.0,20.0,20.0,20.0,20.0,20.0,10.0,10.0,20.0,20.0,10.0,20.0,10.0,20.0,20.0,20.0,20.0,20.0,10.0,10.0,20.0,10.0,20.0,10.0,20.0,20.0,10.0,],
+            borderColor: "#F958C3"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx10 = document.getElementById('chart10');
+      var chart10 = new Chart(ctx10, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,],
+          datasets: [{
+            label: 'Blood Volume Pulse',
+            data: [0.0,72.0,47.0,-63.0,-25.0,64.0,22.0,90.0,70.0,-43.0,82.0,50.0,-56.0,-52.0,-8.0,-2.0,53.0,-30.0,-72.0,-55.0,19.0,3.0,66.0,80.0,-49.0,45.0,68.0,68.0,94.0,-11.0,-83.0,-60.0,-80.0,2.0,31.0,68.0,-84.0,11.0,52.0,17.0,3.0,-77.0,97.0,-49.0,-62.0,95.0,29.0,13.0,37.0,-29.0,-3.0,-5.0,3.0,17.0,-96.0,-43.0,-11.0,-52.0,51.0,11.0,-5.0,-77.0,-47.0,82.0,45.0,88.0,-57.0,-46.0,-23.0,-82.0,-5.0,43.0,31.0,-63.0,72.0,32.0,-20.0,-22.0,],
+            borderColor: "#F9C158"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:-100,
+          max:100,
+        }
+      }
+    }
+      });
+</script>
+  </div>
+  
+  <script>
+    
+  </script>
+</body>
+</html>

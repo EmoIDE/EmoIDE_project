@@ -196,7 +196,7 @@
 
  <script>
    const slider = document.getElementById("slider");
-const stapleHeights = [{% for stress in stress_list %} "{{stress}}"{% if not loop.last %},{% endif %} {% endfor %}];
+const stapleHeights = [{% for stress in stress_list_staples %} "{{stress}}"{% if not loop.last %},{% endif %} {% endfor %}];
 const imageSets = [
  {% for image_set in image_list %}
    [

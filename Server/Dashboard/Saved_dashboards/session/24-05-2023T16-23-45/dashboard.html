@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combined Dashboard</title>
+</head>
+<body>
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div id="main-body">
+    <style>
+  body {
+ flex-direction: column;
+ align-items: center;
+}
+
+.slider::-webkit-slider-thumb {
+ -webkit-appearance: none;
+ margin: 0;
+ margin-top: -9px;
+ width: 22px;
+ height: 23px;
+ background: #555;
+ cursor: pointer;
+ border-radius: 12px;
+}
+
+.slider::-webkit-slider-runnable-track {
+ -webkit-appearance: none;
+ height: 6px;
+ width: 22px;
+ background-color: #f0f0f0;
+ margin-left: 14px;
+ margin-right: 14px;
+}
+
+.line {
+ border-bottom: 2px solid #ebeef1 ;
+ margin-bottom: 20px;
+ margin-top: 20px;
+ width: 80%;
+ margin:auto;
+}
+
+.slider-container {
+ position: relative;
+ display: flex;
+ justify-content: flex-start;
+ align-items: center;
+ width: 45%;
+ margin: 0 auto;
+ border-radius: 6px;
+ z-index: 2;
+}
+
+.slider-bg {
+ position: absolute;
+ bottom: 0;
+ width: 100%;
+ height: 5px;
+ background-color: #f0f0f0;
+ border-radius: 6px;
+ z-index: 1;
+}
+
+.slider {
+ -webkit-appearance: none;
+ position: absolute;
+ bottom: 0;
+ height: 5px;
+ margin: 0;
+ background-color: #f0f0f0;
+ border-radius: 6px;
+ outline: none;
+ z-index: 2;
+}
+
+.staples {
+ display: flex;
+ width: 100%;
+ padding-bottom: 25px;
+ align-items: center;
+ margin-bottom: 25px;
+ position: relative;
+ z-index: 1;
+}
+
+.staple {
+ width: 30px;
+ margin-right: 10px;
+ margin-left: 10px;
+ border-radius: 6px;
+ background-color: #E2E4E7;
+}
+
+.staple:hover {
+ cursor: pointer;
+}
+
+.active-staple {
+ background-color: #ff6b6b;
+}
+
+.image-gallery {
+ display: flex;
+ justify-content: center;
+ margin-bottom: 20px;
+}
+
+.images {
+ position: relative;
+}
+.staple-wrapper {
+ position: relative;
+ margin-left: 10px;
+ margin-right: 10px;
+}
+
+.image {
+ display: none;
+ width: 640px;
+ height: 360px;
+ object-fit: contain;
+}
+.staple-text {
+ display: none;
+ position: absolute;
+ bottom: 20px;
+ text-align: center;
+ width: 100%;
+ white-space: nowrap; /* Prevent text from wrapping to a new line */
+}
+
+.active {
+ display: block;
+}
+
+.arrow {
+ background: none;
+ border: none;
+ font-size: 4rem;
+ cursor: pointer;
+}
+
+.left-arrow {
+ margin-right: 10px;
+}
+
+.right-arrow {
+ margin-left: 10px;
+}
+
+.dots {
+ display: flex;
+ justify-content: center;
+ margin-top: 10px;
+}
+
+.dot {
+ display: inline-block;
+ width: 15px;
+ height: 15px;
+ margin: 0 40px;
+ border-radius: 50%;
+ background-color: #bbb;
+}
+.dot:hover{
+ cursor: pointer;
+}
+.active {
+ background-color: black;
+}
+</style>
+ <div class="category">
+   <h2>Heatmap</h2>
+ </div>
+ <div class="image-gallery">
+   <button id="left-arrow" class="arrow left-arrow">&lt;</button>
+   <div class="images">
+     
+   </div>
+   <button id="right-arrow" class="arrow right-arrow">&gt;</button>
+ </div>
+ <div class="dots">
+     <span class="dot active"></span>
+     <span class="dot"></span>
+     <span class="dot"></span>
+     <span class="dot"></span>
+   </div>
+
+ <div class="line"></div>
+
+ <div class="slider-container">
+   <div class="staples">
+     
+     <div id="staple1" class="staple"></div>
+     
+     <div id="staple2" class="staple"></div>
+     
+   </div>
+   <span class="staple-text"></span>
+   <div class="slider-bg"></div>
+   <input type="range" min="1" max="4" value="1" id="slider" class="slider">
+ </div>
+
+
+ <script>
+   const slider = document.getElementById("slider");
+const stapleHeights = [ "100",  "68" ];
+const imageSets = [
+ 
+   [
+     
+   ],
+ 
+   [
+     
+   ]
+ 
+];
+const stapleTexts = [
+ 
+   "20-05-2023",
+ 
+   "26-04-2023"
+ 
+];
+const images = document.querySelectorAll(".image");
+const staples = document.querySelectorAll(".staple");
+const leftArrow = document.getElementById("left-arrow");
+const rightArrow = document.getElementById("right-arrow");
+let currentImageIndex = 0;
+const textContainer = document.querySelector('.staple-text');
+
+function showImage(index) {
+ images.forEach((image) => {
+   image.classList.remove("active");
+ });
+ images[index].classList.add("active");
+ dots.forEach((dot, dotIndex) => {
+   if (dotIndex === index) {
+     dot.classList.add("active");
+   } else {
+     dot.classList.remove("active");
+   }
+ });
+}
+const dots = document.querySelectorAll(".dot");
+const dotIndicators = document.querySelectorAll('.dot-indicator');
+dots.forEach((dot, index) => {
+ dot.addEventListener('click', () => {
+   currentImageIndex = index;
+   showImage(currentImageIndex);
+ });
+});
+slider.addEventListener("input", () => {
+ const value = slider.value;
+
+ staples.forEach((staple, index) => {
+   staple.style.height = `${stapleHeights[index]}px`;
+   staple.classList.remove("active-staple");
+ });
+
+ const selectedStaple = staples[value - 1];
+ selectedStaple.classList.add("active-staple");
+ updateStapleTextPosition(value);
+
+ dotIndicators.forEach((indicator, index) => {
+   if (index === currentImageIndex) {
+     indicator.classList.add("active-dot");
+   } else {
+     indicator.classList.remove("active-dot");
+   }
+ });
+
+ imageSets[value - 1].forEach((src, index) => {
+   images[index].src = src;
+ });
+
+ currentImageIndex = 0;
+ showImage(currentImageIndex);
+ if (value == 1) {
+   dotIndicators[0].classList.add("active-dot");
+ }
+});
+
+
+leftArrow.addEventListener("click", () => {
+ currentImageIndex--;
+ if (currentImageIndex < 0) {
+   currentImageIndex = images.length - 1;
+ }
+ showImage(currentImageIndex);
+});
+
+rightArrow.addEventListener("click", () => {
+ currentImageIndex++;
+ if (currentImageIndex >= images.length) {
+   currentImageIndex = 0;
+ }
+ showImage(currentImageIndex);
+});
+
+pause = false
+setInterval(() => {
+  if(!pause) {
+    currentImageIndex++;
+    if (currentImageIndex >= images.length) {
+      currentImageIndex = 0;
+    }
+    showImage(currentImageIndex)
+  }
+}, 2000)
+
+document.querySelector('.images').addEventListener('mouseenter', () => {pause = !pause})
+document.querySelector('.images').addEventListener('mouseleave', () => {pause = !pause})
+
+function updateStapleTextPosition(value) {
+ const selectedStaple = staples[value - 1];
+ const stapleOffsetLeft = selectedStaple.offsetLeft;
+ const stapleWidth = selectedStaple.clientWidth;
+ const textContainerWidth = textContainer.clientWidth;
+
+ textContainer.style.left = `${stapleOffsetLeft + (stapleWidth / 2) - (textContainerWidth / 2)}px`;
+ textContainer.style.display = 'block';
+ textContainer.textContent = stapleTexts[value - 1];
+}
+
+function setSliderWidth() {
+ const stapleContainer = document.querySelector(".staples");
+ const stapleWidth = staples[0].offsetWidth;
+ const gapBetweenStaples = parseInt(getComputedStyle(staples[0]).marginRight) + parseInt(getComputedStyle(staples[0]).marginLeft);
+ const totalStapleWidth = (stapleWidth + gapBetweenStaples) * staples.length
+ slider.style.width = `${totalStapleWidth - 1}px`;
+}
+
+function switchToStaple(index) {
+ slider.value = index + 1;
+ slider.dispatchEvent(new Event("input"));
+}
+
+staples.forEach((staple, index) => {
+ staple.addEventListener("click", () => {
+   switchToStaple(index);
+ });
+});
+
+
+
+setSliderWidth();
+slider.setAttribute("max", staples.length);
+slider.setAttribute("min", 1);
+slider.setAttribute("step", 1);
+updateStapleTextPosition(1);
+slider.dispatchEvent(new Event("input"));
+window.addEventListener("resize", () => {updateStapleTextPosition(slider.value)})
+ </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .logo {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .category {
+      text-align: center;
+      color: black;
+      padding: 10px;
+    }
+    #main-body {
+      margin-top:10%;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+    
+.chart-container {
+  height: 400px;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+  </style>
+
+  <div class="logo">
+    <h1>EmoIDE Dashboard</h1>
+  </div>
+  <div class="category">
+    <h2>EEG Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart1"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart2"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart3"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart4"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart5"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart6"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart7"></canvas>
+    </div>
+  </div>
+  <div class="category">
+    <h2>E4 Data</h2>
+  </div>
+  <div class="container">
+    <div class="chart-container">
+      <canvas id="chart8"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart9"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart10"></canvas>
+    </div>
+  </div>
+  
+<script>
+  var ctx1 = document.getElementById('chart1');
+      var chart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Excitement (%)',
+            data: [0.0,40.74096650422605,3.8418279149402212,73.0206963338665,6.85661157130445,27.389775940121886,92.30053937221842,93.67292209424699,65.58230295734435,57.657125145844624,46.191039275758406,51.88356186861448,70.00959819006766,1.216119164286067,92.31011616559572,78.61271686260262,],
+            borderColor: "#B22222"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: 'Dina känslor som vi kommer sälja till Kina för en förmögenhet.'
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx2 = document.getElementById('chart2');
+      var chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Engagement (%)',
+            data: [0.0,27.51264709200678,52.37119895596054,7.980881678397312,2.3297013709458025,29.763038411933216,86.24000894836107,42.81720248162978,86.51839817882768,59.07599240310147,91.25454752357187,30.72333152389567,96.60137503916563,92.59711195836032,65.01674960098325,31.665987245607607,],
+            borderColor: "#4D81F0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx3 = document.getElementById('chart3');
+      var chart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Long Term Excitement (%)',
+            data: [0.0,27.82271123908402,32.042998017582946,91.01611085000916,2.8742667407533284,82.71440957989279,93.46806410432413,27.355183248545302,8.985418060746008,76.89489511777712,81.77274204146275,89.50665272507446,94.28666089995752,37.013057451701194,1.4543243033577236,30.156992085931766,],
+            borderColor: "#FF69B4"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx4 = document.getElementById('chart4');
+      var chart4 = new Chart(ctx4, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Stress (%)',
+            data: [10000,6800,],
+            borderColor: "#FFFACD"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx5 = document.getElementById('chart5');
+      var chart5 = new Chart(ctx5, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Relaxation (%)',
+            data: [0.0,77.54161985447512,6.54002825783685,33.28538716678911,77.67689425963992,19.96087052047152,17.685528756907832,81.31028892024841,87.49644205943555,13.848379450310178,37.02708952991107,61.92437378132898,91.00662624945797,52.94033562963452,34.43756418823254,62.09002973761469,],
+            borderColor: "#FF7F50"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx6 = document.getElementById('chart6');
+      var chart6 = new Chart(ctx6, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Interest (%)',
+            data: [0.0,12.960091787794681,67.32119950662936,87.09128842302741,90.50219897370084,18.267004461736224,97.0613457593568,73.5998761860151,22.869559603579948,96.49812804217872,25.51712693671796,2.4264825442372406,52.413045690324466,19.669277349747517,42.686229999127654,94.78076420841997,],
+            borderColor: "#D2F04D"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx7 = document.getElementById('chart7');
+      var chart7 = new Chart(ctx7, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Focus (%)',
+            data: [0.0,41.60341630741632,85.07019035874926,72.53599394178728,89.47329793299794,43.0587159236192,81.03828070107691,68.7907179876159,7.537434662655373,21.116352679618377,66.2766285915263,10.872058001230844,16.697184485729665,9.639644103641409,59.10647315755524,59.51986134446498,],
+            borderColor: "#4DF0B0"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx8 = document.getElementById('chart8');
+      var chart8 = new Chart(ctx8, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Pulse',
+            data: [0.0,90.0,99.0,92.0,90.0,77.0,78.0,62.0,64.0,77.0,87.0,61.0,79.0,99.0,77.0,98.0,],
+            borderColor: "#F95858"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:40,
+          max:220,
+        }
+      }
+    }
+      });
+
+
+      var ctx9 = document.getElementById('chart9');
+      var chart9 = new Chart(ctx9, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Galvanic Skin Response (%)',
+            data: [0.0,20.0,10.0,20.0,10.0,10.0,10.0,20.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,],
+            borderColor: "#F958C3"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:0,
+          max:100,
+        }
+      }
+    }
+      });
+
+
+      var ctx10 = document.getElementById('chart10');
+      var chart10 = new Chart(ctx10, {
+        type: 'line',
+        data: {
+          labels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,],
+          datasets: [{
+            label: 'Blood Volume Pulse',
+            data: [0.0,42.0,-45.0,56.0,-73.0,-89.0,21.0,-1.0,11.0,99.0,90.0,68.0,-3.0,33.0,-45.0,-50.0,],
+            borderColor: "#F9C158"
+          }]
+        },
+      options: {
+      title: {
+        display: true,
+        text: ''
+      },
+      scales: {
+        x: {
+          title:{
+            display:true,
+            text: "Time in Seconds"
+          }
+        },
+          y: {
+          min:-100,
+          max:100,
+        }
+      }
+    }
+      });
+</script>
+  </div>
+  
+  <script>
+    
+  </script>
+</body>
+</html>

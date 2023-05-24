@@ -105,8 +105,10 @@ def setup_server():
     tcp_thread = start_tcp_thread()
     return tcp_thread
 
+# ------------------------------------------ WEBSOCKETS ------------------------------------------ #
+
 async def websocket_handler(websocket, path):
-    global full_df
+    global full_df, session_on
     try:
         while session_on:
             message = await websocket.recv()
@@ -126,21 +128,32 @@ async def websocket_handler(websocket, path):
                 }
                 data_json = json.dumps(data)
                 await websocket.send(data_json)
-        asyncio.get_event_loop().stop()
     except websockets.exceptions.ConnectionClosed:
         print("Client disconnected")
 
+    await websocket.close()
+
 async def websocket_server():
+    global session_on
     # Start the WebSocket server
     server = await websockets.serve(websocket_handler, "", 6960)
-    print("server started")
+    print("Server started")
+
+    # Wait until the session is over or a termination signal is received
+    while session_on:
+        await asyncio.sleep(1)  # Adjust the sleep duration as needed
+
+    server.close()
     await server.wait_closed()
 
 def start_websocket_server():
-   # Create and run the event loop
+    # Create and run the event loop
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(websocket_server())
+    try:
+        loop.run_until_complete(websocket_server())
+    finally:
+        loop.close()
 
 #handles the connection to the extension
 def tcp_communication():
@@ -203,8 +216,8 @@ def tcp_communication():
                 save_path = settings_dict["SaveLocation"]
 
                 save_df(full_df, save_path, save_format)
+                make_dashboard()
                 join_threads(session_threads)
-                save_session_to_dashboard()
 
         if "disconnect" in recived_msg:
             extension_connected = False
@@ -619,43 +632,28 @@ def predict_series(full_data_dict):
     full_data_dict["Age"] = settings_dict["Age"]
     eeg_predict_values = pd.Series(full_data_dict)
 
-    print("Abandon all hope, ye who enter here [0]")
-
     drop_list = ["time", "x", "y", "Explorer", "Terminal", "Code", "Pulse", "Bvp", "Gsr", "Valence", "Arousal"]
     eeg_predict_values.drop(drop_list, inplace=True)
     
-    print("Abandon all hope, ye who enter here [0]")
-
     predict_frame = pd.DataFrame(eeg_predict_values)
     predict_frame= predict_frame.transpose()
 
-    print("Abandon all hope, ye who enter here [1]")
-
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
     # print(predict_frame)
-    
-    print("Abandon all hope, ye who enter here [2]")
 
     svm_dataset = svm_dataset.append(predict_frame)
     # print(svm_dataset)
     scaled = scale(svm_dataset)
 
-    print("Abandon all hope, ye who enter here [3]")
+
     # svm_valence.predict(scaled)[0]
     # print(svm_dataset)
     # print(scaled)
-    print(scaled)
-    
     prediction_dict["Valence"] = svm_valence.predict([scaled[-1]])[0]
-
-    print("Abandon all hope, ye who enter here [4]")
-
     if random.randrange(0, 100) > 50:
         prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
     else:
         prediction_dict["Arousal"] = svm_arousal.predict([[ 0.,  1., -1.,  0., -1., -1., -1., -1.,  0.]])[0]
-    
-    print("Abandon all hope, ye who enter here [5]")
 
 
 
@@ -823,7 +821,6 @@ def start_session_threads():
         -   This function uses the "threading" module to create threads
     """
     global full_df
-    #thread_names = []
     threads = []
 
     if settings_dict["EEG"] == True:
@@ -832,7 +829,6 @@ def start_session_threads():
         eeg_thread = threading.Thread(target=start_eeg, daemon=True, name="Eeg thread")
         eeg_thread.start()
         threads.append(eeg_thread)
-        # thread_names.append("eeg_thread")
     else:
         calibration_done["EEG"] = True
 
@@ -842,13 +838,11 @@ def start_session_threads():
         eye_thread = threading.Thread(target=get_eye_tracker_data, daemon=True, name="Eye thread") # ALT. threading.Thread(target=get_eye_tracker_data, daemon=True)
         eye_thread.start()
         threads.append(eye_thread)
-        # thread_names.append("eye_thread")
 
         print("Heatmap thread starts")
         heatmap_thread = threading.Thread(target=start_heatmap, daemon=True, name="Heatmap thread")
         heatmap_thread.start()
         threads.append(heatmap_thread)
-        # thread_names.append("heatmap_thread")
     else:
         calibration_done["Eye tracker"] = True
     
@@ -858,7 +852,6 @@ def start_session_threads():
         e4_thread = threading.Thread(target=get_e4_data, daemon=True, name="E4 Thread")
         e4_thread.start()
         threads.append(e4_thread)
-        #thread_names.append("e4_thread")
     else:
         calibration_done["E4"] = True
 
@@ -867,9 +860,9 @@ def start_session_threads():
     df_thread = threading.Thread(target=update_dataframe, daemon=True, name="Dataframe thread")    # df_thread = threading.Thread(target=update_dataframe(True), daemon=True)  # ÄNDRA PARAMETER TILL TRUE FÖR MOCK DF
     df_thread.start()
     threads.append(df_thread)
-    # thread_names.append("df_thread")
     calibration_done["Dataframe"] = True
-
+    
+    # 
     live_dashboard_thread = threading.Thread(target=start_websocket_server, daemon=True, name="live dashboard thread")
     live_dashboard_thread.start()
     threads.append(live_dashboard_thread)
@@ -904,31 +897,6 @@ def join_threads(threads):
             except:
                 print(f"failed to join {thread.name}")
 
-    # for thread in threads:
-    #     if not thread.is_alive():
-    #         print(f"{str(thread.name)} is now closed")
-    #         threads.remove(thread)
-    #     try:
-    #         thread.join()
-    #         print(f"{str(thread.name)} is now closed")
-    #         threads.remove(thread)
-    #         #i += 1
-    #         print(f"Still running: {[element.name for element in threads if element != thread]}\n")
-    #     except:
-    #         print(f"failed to join {thread.name}")
-    
-    # print(threads)
-
-    # for i, thread in enumerate(threads):
-    #     try:
-    #         thread.join()
-    #         print(f"{str(thread.name)} is now closed")
-    #         threads.remove(thread) 
-    #         #i += 1
-    #         print(f"Still running: {[element for element in threads if element != thread]}\n")
-    #     except:
-    #         print(f"failed to join {thread.name}")
-
 # ------------------------------------------ Dashboard ------------------------------------------ # 
 def start_heatmap():
     """
@@ -953,7 +921,6 @@ def start_heatmap():
 
     print("calibration done - starting the heatmap creation")
     image_cache = []
-    start = time.time()
     print("\n\n", full_df["time"].iloc[-1])
     last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
 
@@ -962,7 +929,7 @@ def start_heatmap():
         current_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
 
         # Check if the newest row (date) is older than 30 seconds then take screen shot
-        if current_time - last_time > datetime.timedelta(0,20):
+        if current_time - last_time > datetime.timedelta(0,30):
             print("TAKE PICTURE")
             # If cache is larger than 4 => (120 second with 4 images has gone by) we should save and clear
             if len(image_cache) >= 3:
@@ -986,7 +953,7 @@ def start_heatmap():
     return 0
 
 
-def save_session_to_dashboard():
+def make_dashboard():
     global session_id
     """
     This function is responsible to create the dashboard

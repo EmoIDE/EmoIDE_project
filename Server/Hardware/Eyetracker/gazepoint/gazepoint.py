@@ -10,10 +10,13 @@ class GazePoint(threading.Thread):
         self.interrupted = threading.Lock()
 
         self.gaze_position = (None, None)
-
-        self.open(ip, port, calibration_enabled)
-        self.start()
-        self.wait_until_running()
+        try:
+            self.open(ip, port, calibration_enabled)
+            self.start()
+            self.wait_until_running()
+            print(self.start)
+        except:
+            raise Exception
 
     def get_gaze_position(self):
         return self.gaze_position
@@ -41,6 +44,7 @@ class GazePoint(threading.Thread):
             self.tracker.enable_send_data(True)
         except:
             print("Gazepoint failed")
+            raise Exception
 
     def close(self):
         try:
