@@ -52,7 +52,7 @@ full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
 session_on = False
 max_time = 100
-server_on = True
+server_on = False
 bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
 
@@ -148,14 +148,6 @@ def tcp_communication():
             #recived_msg = json_data["function"]
         except:
             print("no message from extension")
-        # message empty
-        # if not data_received.strip():
-        #     break
-
-        # a = "toggle_session" in recived_msg
-        # print(f"Sessong command: {a}")
-        # b = "get_data" in recived_msg
-        # print(f"get data command {b}")
         
         if "toggle_session" in recived_msg:
             session_on = not session_on
@@ -191,8 +183,8 @@ def tcp_communication():
 
         if "settings_update" in recived_msg:
             read_settings(SETTINGS_PATH)
+            settings_dict["Training"] = True
             print("settings updated")
-
 
         if  "Ping" in recived_msg:
             print("IN PING")
@@ -307,7 +299,6 @@ def get_eye_tracker_data():
         eye_tracker.stop()
 
 
-
 # ------------------------------------------ E4 DATA TRACKER ------------------------------------------ #
 def get_e4_data():
     """
@@ -416,24 +407,24 @@ def init_df():
         "Arousal":0
     }
 
-    # if settings_dict["Training"] == True:
-    #     training_dict = {
-    #         "Name":"Jane Doe",
-    #         "Age": None,
-    #         "Initial pulse": None,
-    #         "Arousal": None,
-    #         "Valence": None,
-    #         "Gender" : None,
-    #         "Stress": 0
-    #     }
+    if settings_dict["Training"] == True:
+        training_dict = {
+            "Name":"Jane Doe",
+            "Age": None,
+            "Initial pulse": None,
+            "Arousal": None,
+            "Valence": None,
+            "Gender" : None,
+            "Stress": 0
+        }
         
-    #     training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
-    #     training_dict["Age"] = Pop_up.get_age()
-    #     training_dict["Gender"] = Pop_up.get_gender()
-    #     training_dict["Arousal"] = Pop_up.test_arousal() + 1
-    #     training_dict["Valence"] = Pop_up.test_valence() + 1
-    #     training_dict["Stress"] = Pop_up.get_stress()
-    #     full_data_dict.update(training_dict)
+        training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
+        training_dict["Age"] = Pop_up.get_age()
+        training_dict["Gender"] = Pop_up.get_gender()
+        training_dict["Arousal"] = Pop_up.test_arousal() + 1
+        training_dict["Valence"] = Pop_up.test_valence() + 1
+        training_dict["Stress"] = Pop_up.get_stress()
+        full_data_dict.update(training_dict)
 
     full_data_dict.update(time_dict)
     full_data_dict.update(eye_data_dict)
@@ -506,21 +497,21 @@ def update_dataframe():
         full_data_dict.update(prediction_dict)
         
         # Training
-        training_time = 300
+        training_time = 10
 
-        # if settings_dict["Training"] == True:
-        #     if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
-        #         training_dict["Initial pulse"] = e4_data_dict["Pulse"]
-        #     if time.time() - data_collection_timer > training_time:
-        #         training_dict["Arousal"] = Pop_up.test_arousal() + 1
-        #         training_dict["Valence"] = Pop_up.test_valence() + 1
-        #         training_dict["Stress"] = Pop_up.get_stress()
+        if settings_dict["Training"] == True:
+            if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
+                training_dict["Initial pulse"] = e4_data_dict["Pulse"]
+            if time.time() - data_collection_timer > training_time:
+                training_dict["Arousal"] = Pop_up.test_arousal() + 1
+                training_dict["Valence"] = Pop_up.test_valence() + 1
+                training_dict["Stress"] = Pop_up.get_stress()
 
-        #         data_collection_timer = time.time()
-        #     full_data_dict.update(training_dict)
-        #     training_dict["Valence"] = None
-        #     training_dict["Arousal"] = None
-        #     training_dict["Stress"] = 0
+                data_collection_timer = time.time()
+            full_data_dict.update(training_dict)
+            training_dict["Valence"] = None
+            training_dict["Arousal"] = None
+            training_dict["Stress"] = 0
 
         try:
             predict_series(full_data_dict)
@@ -661,9 +652,9 @@ def save_df(df, path, save_as_ext = '.csv'):
 
     print("WHOHO COOL STUFF SAVE DF")
 
-    # if settings_dict["Training"] == True:
-    #     filename += "_"
-    #     filename += training_dict["Name"]
+    if settings_dict["Training"] == True:
+        filename += "_"
+        filename += training_dict["Name"]
 
     # checks if path exists on comupter
     if not (os.path.exists(path)):
@@ -988,6 +979,7 @@ if __name__ == "__main__":
     # load settings from settings file
     try:
         read_settings(SETTINGS_PATH)
+        settings_dict["Training"] = True
     except:
         print("settings filepath not found")
 

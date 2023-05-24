@@ -306,6 +306,23 @@ client.on('data', function(data){
 			statusbarPulse.text = "$(pulse)" + pulse.toString();
 			//SAM
 			SAMProv.UpdateSAMIndex(dataResponse["Emotion"][1]-1,dataResponse["Emotion"][0]-1);
+			
+			const popup_setting = vscode.workspace.getConfiguration().get("Extension.Pop-ups");
+
+			console.log(popup_setting)
+
+			if (Boolean(popup_setting)){
+				//send notif
+				//check if valence and arousal first
+				//[0] = Arousal, [1] = Valence
+				if (dataResponse["Emotion"][0]-1 * dataResponse["Emotion"][0]-1 >= 15) {
+					vscode.window.showInformationMessage('We recommend taking a break ☕')
+				}
+			}
+			
+
+
+			
 			break;
 		}
 		case "Ping":
