@@ -1,0 +1,20 @@
+Server.Hardware package
+=======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   Server.Hardware.E4
+   Server.Hardware.EEG
+   Server.Hardware.Eyetracker
+
+Module contents
+---------------
+
+.. automodule:: Server.Hardware
+   :members:
+   :undoc-members:
+   :show-inheritance:

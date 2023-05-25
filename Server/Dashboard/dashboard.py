@@ -120,7 +120,6 @@ def create_combined_dashboard(df, session_id):
     staples = [f for f in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath, f))]
     text_list = []
     staple_images = []
-    # stress_list = [random.randint(50, 200) for f in range(0, len(staples))]
     stress_list_staples = []
     for folder in staples:
         text_list.append(folder)
@@ -266,58 +265,6 @@ def capture_screen(capture_name):
     myScreenshot = pyautogui.screenshot()
     myScreenshot.save(f'{os.path.dirname(os.path.abspath(__file__))}/Screencaptures/{capture_name}.png')
 
-
-
-
-
-# GIF VERSION (NOT FULLY FUNCTIONAL)
-# def create_heatmap_gif(img_cache, df):
-#     print(img_cache)
-#     heatmap_cache = []
-
-#     for screenshot in img_cache:
-#         print(df)
-#         print("----------------- CURRENT DATE: ", screenshot["date"])
-#         before_moment = datetime.datetime.strptime(screenshot["date"], format) - datetime.timedelta(seconds=30)
-#         print("----------------- 30 SECONDS BEFORE DATE: ", before_moment)
-
-#         x = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['x'].to_numpy()
-#         y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
-
-#         print("----------------- COORDINATES: ",x, y)
-#         img = screenshot["img"]
-
-#         img_arr = np.array(img)
-
-#         # Convert x and y coordinates to pixel coordinates
-#         x_pixel = x * img.width
-#         y_pixel = y * img.height
-
-#         xy = np.vstack([x,y])
-#         density = gaussian_kde(xy)(xy)
-
-#         # Create a heatmap over the image
-#         plt.imshow(img_arr)
-#         plt.scatter(x_pixel, y_pixel, s=100, c=density, cmap='coolwarm', alpha=0.25)
-
-#         # Set axis limits and show the plot
-#         plt.xlim([0, img.width])
-#         plt.ylim([img.height, 0])
-#         plt.axis('off')
-
-#         fig = plt.gcf()
-#         canvas = FigureCanvas(fig)
-#         heatmap_cache.append(Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb()))
-#     # # Version 1.0
-#     # frame_one = heatmap_cache[0]
-#     # frame_one.save(f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{img_cache[-1]["date"]}.gif', format="GIF", append_images=heatmap_cache, save_all=True, duration=1000, loop=0)
-
-#     # Version 2.0
-#     with imageio.get_writer(f'{os.path.dirname(os.path.abspath(__file__))}/Heatmaps/{img_cache[-1]["date"]}.gif', mode='I') as writer:
-#         for heatmap in heatmap_cache:
-#             np_image = np.array(heatmap)
-#             writer.append_date(np_image, duration=1000)
-#     pass
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -366,9 +313,6 @@ def create_heatmap_dashboard():
     filename = "/heatmap.html"
     with open(str(output_path+  filename), "w") as f:
         f.write(html)
-
-    # # Or any other template html service, the image carousel is done, just need a way to display it
-    # return render(request, 'Saved_dashboards/heatmap_dashboard.html', {'folder_carousels': folder_carousel})
 
 def create_heatmap_gif(img_cache, df, session_id):
     """
@@ -461,27 +405,4 @@ def screenshot_img(capture_name):
 
 
 if __name__ == '__main__':
-    # # Works with fake data
-    # heatmap_thread()
-
-    # Create dashboard testing
     create_heatmap_dashboard()
-
-
-
-
-# # Version 1.0 that only create heatmaps when stressed (only record 2 minutes at a time)
-# def heatmap_thread(full_df, max_time):
-#     start = time.time()
-#     last_time = datetime.datetime.strftime(full_df["time"].iloc[-1], format)
-#     image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
-
-#     while time.time() - start < max_time:
-#         current_time = datetime.datetime.strftime(full_df["time"].iloc[-1], format)
-
-#         if current_time - last_time > datetime.timedelta(0,30):
-#             if len(image_cache) >= 4:
-#                 image_cache.append(screenshot_img(full_df["time"].iloc[-1]))
-#                 image_cache.pop(0)
-#             else:
-#                 image_cache.append(screenshot_img(full_df["time"].iloc[-1]))

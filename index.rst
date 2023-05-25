@@ -6,14 +6,16 @@
 Welcome to Emotional IDE's documentation!
 =========================================
 
+Frequently asked questions
+--------------------------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    faq.rst
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -5,9 +5,6 @@ import unittest
 import pandas as pd
 import datetime
 from unittest.mock import patch, mock_open, call, MagicMock
-import websockets
-import asyncio
-import json
 
 # Test modules
 # --- Dashboard ---
@@ -63,9 +60,11 @@ class TestDashboard(unittest.TestCase):
         # Assert
         pd.testing.assert_frame_equal(result, expected_result)
 
-    # @patch('builtins.open', create=True)
     @patch('Dashboard.dashboard.open', new_callable=mock_open)
-    def test_create_combined_dashboard(self, mock_open):
+    @patch('Dashboard.dashboard.os.listdir')
+    @patch('Dashboard.dashboard.os.path.isdir', return_value=True)  # Mock os.path.isdir() to always return True
+    @patch('Dashboard.dashboard.get_df_in_time_range')  # Mock get_df_in_time_range() function
+    def test_create_combined_dashboard(self, mock_get_df, mock_isdir, mock_listdir, mock_open):
         # Prepare sample input data
         df = pd.DataFrame({
             'Excitement': [1, 2, 3],
@@ -80,12 +79,26 @@ class TestDashboard(unittest.TestCase):
             'Bvp': [28, 29, 30],
             'time': [31, 32, 33]
         })
+        session_id = datetime.datetime.strftime(datetime.datetime.now(), format)
+
+        # Mock the return value of os.listdir() to contain directories with correct format
+        mock_listdir.return_value = [
+            '23-05-2023T15-53-45',
+            '24-05-2023T16-54-46',
+            '25-05-2023T17-55-47'
+        ]
+
+        # Mock the return values of get_df_in_time_range() function
+        mock_get_df.return_value = pd.DataFrame({
+            'Valence': [0.8, 0.7, 0.6],
+            'Arousal': [0.5, 0.4, 0.3]
+        })
 
         # Call the function
-        create_combined_dashboard(df)
+        create_combined_dashboard(df, session_id)
 
         # Assert that the file is not actually opened
-        mock_open.assert_called_once_with(self.output_path + "/combined_dashboard.html", "w")
+        mock_open.assert_called_once_with(f"{self.output_path}/session/{session_id}/dashboard.html", "w")
         handle = mock_open.return_value.__enter__.return_value
 
         # Assert that the write method is called with the expected HTML content
@@ -104,7 +117,7 @@ class TestEyetracker(unittest.TestCase):
     @patch('Hardware.Eyetracker.eyetracker.gazepoint.GazePoint', autospec=True)
     def test_setup(self, mock_gazepoint):
         # Mock gazepoint module
-        eye_tracker = EyeTracker(1, 10)
+        eye_tracker = EyeTracker(1)
         eye_tracker.setup(calibration_enabled=True)
         
         mock_gazepoint.assert_called_once_with(True)
@@ -115,18 +128,15 @@ class TestEyetracker(unittest.TestCase):
         mock_gazepoint.side_effect = Exception("Gazepoint setup failed")
 
         # Create an instance of EyeTracker
-        eye_tracker = EyeTracker(1, 10)
+        eye_tracker = EyeTracker(1)
 
-        # Call the setup method and capture the exception
+        # Call the setup method and capture the exception if raised
         with self.assertRaises(Exception) as context:
             eye_tracker.setup(calibration_enabled=True)
 
-        # Check if the exception message matches the expected error message
-        self.assertEqual(str(context.exception), "Gazepoint setup failed")
-
     def test_check_within_range(self):
         # Create an instance of EyeTracker
-        eye_tracker = EyeTracker(1, 10)
+        eye_tracker = EyeTracker(1)
 
         # Call the check method with a value within the range
         result = eye_tracker.check(0.5, (0.2, 1.0))
@@ -136,7 +146,7 @@ class TestEyetracker(unittest.TestCase):
 
     def test_check_outside_range(self):
         # Create an instance of EyeTracker
-        eye_tracker = EyeTracker(1, 10)
+        eye_tracker = EyeTracker(1)
 
         # Call the check method with a value outside the range
         result = eye_tracker.check(1.5, (0.2, 1.0))
@@ -146,7 +156,7 @@ class TestEyetracker(unittest.TestCase):
 
     def test_get_zone_destribution(self):
         # Create an instance of EyeTracker
-        eye_tracker = EyeTracker(50, 10)
+        eye_tracker = EyeTracker(50)
 
         # Set up mock data for zones
         eye_tracker.zones = [

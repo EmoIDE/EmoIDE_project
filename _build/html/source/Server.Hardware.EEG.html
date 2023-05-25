@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Server.Hardware.EEG package &#8212; Emotional IDE  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="server-hardware-eeg-package">
+<h1>Server.Hardware.EEG package<a class="headerlink" href="#server-hardware-eeg-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-Server.Hardware.EEG.EEG">
+<span id="server-hardware-eeg-eeg-module"></span><h2>Server.Hardware.EEG.EEG module<a class="headerlink" href="#module-Server.Hardware.EEG.EEG" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Server.Hardware.EEG.EEG.</span></span><span class="sig-name descname"><span class="pre">EEG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PdLqy2A8a5ukYTU6eaJki38hlZoVS5IzJaVi4G3p'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_secret</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CeFlg0Hqd5QltDtdbDr78whwNJqG2oyblzsPSbR4gFZ6mFXwHwdgW7UthZSF2Dfacp4JMah5BrRLpJXQLwZvWsAdF59SsdhkriO8g157e5ghz4IPo8vsnqlWV5TNQ7rR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class representing an EEG object that connects to the Emotiv Cortex API and retrieves EEG data.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.AUTHORIZE_ID">
+<span class="sig-name descname"><span class="pre">AUTHORIZE_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.AUTHORIZE_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.CONTROL_HEADST_ID">
+<span class="sig-name descname"><span class="pre">CONTROL_HEADST_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.CONTROL_HEADST_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.CREATE_SESSION_ID">
+<span class="sig-name descname"><span class="pre">CREATE_SESSION_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.CREATE_SESSION_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.GETDATA_ID">
+<span class="sig-name descname"><span class="pre">GETDATA_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.GETDATA_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.HASACCESSRIGHT_ID">
+<span class="sig-name descname"><span class="pre">HASACCESSRIGHT_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.HASACCESSRIGHT_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.INFO_ID">
+<span class="sig-name descname"><span class="pre">INFO_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.INFO_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.QUERY_HEADSET_ID">
+<span class="sig-name descname"><span class="pre">QUERY_HEADSET_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.QUERY_HEADSET_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.QUERY_SESSION_ID">
+<span class="sig-name descname"><span class="pre">QUERY_SESSION_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.QUERY_SESSION_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.REQUEST_ACCESS_ID">
+<span class="sig-name descname"><span class="pre">REQUEST_ACCESS_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.REQUEST_ACCESS_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.SUBSCRIBE_ID">
+<span class="sig-name descname"><span class="pre">SUBSCRIBE_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.SUBSCRIBE_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.USER_LOGGED_IN_ID">
+<span class="sig-name descname"><span class="pre">USER_LOGGED_IN_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.USER_LOGGED_IN_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.authorize">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">authorize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.authorize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the Cortex token needed for starting a session.</p>
+<p>This function sends an authorization request to the Cortex API using the client ID and client secret.
+It retrieves the Cortex token from the response and stores it in the object for future use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.connect">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to connect to the Cortex API.</p>
+<p>This function establishes a connection to the Cortex API using the specified socket URL.
+It relies on the Emotiv launcher being running on the computer to establish the connection.
+If the connection fails, an error message is displayed.</p>
+<dl class="simple">
+<dt>Raises:</dt><dd><p>Exception: If the connection to the Cortex API fails.</p>
+</dd>
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>Emotiv lanucher must be running on the computer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.create_session">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.create_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a new session.</p>
+<p>This function sends a request to the Cortex API to create a new session using the Cortex token and the headset ID.
+The session is set to “open” status, indicating that it is active and ready to receive data.
+The session ID is retrieved from the response and stored in the object for future use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.end_session">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.end_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ends the current session and disconnects from the Cortex API.</p>
+<p>This function sends an update session request to the Cortex API to change the status of the current session to “close”.
+It then closes the connection to the Cortex API.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.get_eeg_data">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_eeg_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.get_eeg_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves EEG data from the Cortex API.</p>
+<p>This function listens for EEG data from the Cortex API and returns a dictionary with the following metrics:
+[Engagement, Excitement, Long-term Excitement, Stress/Frustration, Relaxation, Interest/Affinity, Focus].
+The EEG data is updated every tenth of a second.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>dict: A dictionary containing the EEG metrics.</p>
+</dd>
+<dt>Raises:</dt><dd><p>Exception: If there is an error in receiving or parsing the EEG data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.get_headset_id">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_headset_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.get_headset_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects to the headset and retrieves the headset ID.</p>
+<p>This function sends a request to the Cortex API to query the available headsets.
+If at least one headset is found, it retrieves the ID of the first headset and sets it as the headset ID.
+If no headset is found, the function waits until a headset is connected and retrieves its ID.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.request_access">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">request_access</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.request_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requests access to the Cortex API.</p>
+<p>This function sends a request to the Cortex API to check if access rights are granted.
+If access is already granted, the function returns.
+Otherwise, it sends a request to the Cortex API to request access.
+The user is prompted to accept the access request in the Emotiv launcher.
+The function waits until access is granted before returning.</p>
+<dl class="simple">
+<dt>Raises:</dt><dd><p>Exception: If the access request fails or if access is not granted within a reasonable timeframe.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.setup">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up the EEG object before retrieving EEG data.</p>
+<p>This function performs the necessary setup steps in sequence:
+1. Checks access rights by calling the request_access() function.
+2. Retrieves the headset ID by calling the get_headset_id() function.
+3. Authorizes the EEG object by calling the authorize() function.
+4. Creates a new session by calling the create_session() function.
+5. Subscribes to the EEG data stream by calling the subscribe() function.</p>
+<dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>Need to run this before ‘get__eeg_data()’ function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Server.Hardware.EEG.EEG.EEG.subscribe">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">subscribe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Hardware.EEG.EEG.EEG.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to the EEG met data stream.</p>
+<p>This function sends a subscription request to the Cortex API.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-Server.Hardware.EEG">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Server.Hardware.EEG" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Emotional IDE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Group 3.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/source/Server.Hardware.EEG.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
