@@ -511,7 +511,7 @@ def update_dataframe():
     mock = False
 
     calibration_done["Dataframe"] = True
-    all_done = False                                                                ######################
+    all_done = False                                                                     ######################
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -587,24 +587,24 @@ def mock_all_dicts():
     global eeg_data_dict
     global e4_data_dict
 
-    eye_data_dict["x"] = random.random()
-    eye_data_dict["y"] = random.random()
-    eeg_data_dict = {
-            "Engagement":random.random(),
-            "Excitement":random.random(),
-            "Long term excitement":random.random(),
-            "Stress/Frustration":random.random(),
-            "Relaxation":random.random(),
-            "Interest/Affinity":random.random(),
-            "Focus":random.random()
-    }
+    # eye_data_dict["x"] = random.random()
+    # eye_data_dict["y"] = random.random()
+    # eeg_data_dict = {
+    #         "Engagement":random.random(),
+    #         "Excitement":random.random(),
+    #         "Long term excitement":random.random(),
+    #         "Stress/Frustration":random.random(),
+    #         "Relaxation":random.random(),
+    #         "Interest/Affinity":random.random(),
+    #         "Focus":random.random()
+    # }
 
     e4_data_dict["Bvp"] = random.randrange(-100, 100)
     e4_data_dict["Gsr"] = random.randrange(1, 3) / 10
     e4_data_dict["Pulse"] = random.randrange(60, 100)
     
-    prediction_dict["Arousal"] = random.randrange(1, 5)
-    prediction_dict["Valence"] = random.randrange(1, 5)
+    # prediction_dict["Arousal"] = random.randrange(1, 5)
+    # prediction_dict["Valence"] = random.randrange(1, 5)
 
 # ------------------------------------------ AI ------------------------------------------ #
 def predict_series(full_data_dict):
