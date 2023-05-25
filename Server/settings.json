@@ -1,17 +1,17 @@
 {
-    "Age": 50,
+    "Age": 25,
     "Gender": "Male",
     "RestingHeartRate": 70,
     "Glasses": "no",
     "E4StreamingPort": "28000",
     "EyeTrackerCalibration": false,
-    "EEG": false,
+    "EEG": true,
     "E4": false,
     "Eyetracker": true,
-    "ServerPort": "4700",
-    "FileFormat": ".tsv",
-    "SaveLocation": "C:\\Users\\David\\Documents\\GitHub\\EmoIDE_project\\Server\\Output",
+    "ServerPort": "6969",
+    "FileFormat": ".csv",
+    "SaveLocation": "C:\\Users\\sebastian.johanss11\\Desktop\\EmoIDE_project\\Server\\Output",
     "DonateData": "false",
-    "Pop-ups": false,
+    "Pop-ups": "true",
     "DashboardThreshold": null
 }

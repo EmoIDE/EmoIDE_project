@@ -403,7 +403,7 @@ def create_heatmap_gif(img_cache, df, session_id):
         y = get_df_in_time_range(before_moment, datetime.datetime.strptime(screenshot["date"], format), df)['y'].to_numpy()
         print("Y:", y, "\n")
 
-        if len(x) <= 5 or len(y) <= 5:
+        if len(x) <= 10 or len(y) <= 10 or np.mean(x) == 0 or np.mean(y) == 0:
             print(f'{bcolors.WARNING}Image{bcolors.ENDC} {bcolors.UNDERLINE}{dirpath + "/" + screenshot["date"] + ".png"}{bcolors.ENDC} not enough data to create heatmap')
 
             screenshot["img"].save(dirpath + "/" + screenshot["date"] + ".png")
