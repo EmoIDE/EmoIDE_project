@@ -2,7 +2,7 @@
 Welcome to the Emotionally-Aware IDE GitHub repository! This plugin is designed to increase productivity and quality in software development by leveraging developers' emotions to enhance their work. By integrating affective computing and biometric data analysis into the IDE, developers can receive valuable insights into their emotional states, enabling them to make informed decisions regarding code quality, productivity, and well-being.
 
 <h2>Documentation</h2>
-For a more comprehensive understanding of this tool, you can refer to the user and technical manual located in the source code. The manual is available on the project's website within the file [documentation.html](documentation.html). It provides detailed information and instructions to help you explore the tool's features and functionalities.
+For a more comprehensive understanding of this tool, you can refer to the user and technical manual located in the source code. The manual is available on the project's website within the file [Documentation](/documentation.html). It provides detailed information and instructions to help you explore the tool's features and functionalities.
 
 <h2>Purpose</h2>
 The purpose of this tool is to develop an emotionally-aware IDE plugin that empowers developers to improve their software development process. The key objectives of this tool include:
