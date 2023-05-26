@@ -4,6 +4,9 @@
 This the final product of a custom extension. It takes hardware data that runs through a machine learning model. The extension is able to display pulse, 
   emotional state(SAM) and actively record a heatmap based upon eye tracker activity.
 
+<h2>Extended documentation?</h2>
+<p>Located in the repo are a html file named 'documentation.html' which is an extended user- and technical manual</p>
+
 <h2>Hardware requirements</h2>
 <p>1.Empatica E4</p>
 <p>2.Emotiv brain scanner</p>
