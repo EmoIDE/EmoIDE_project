@@ -39,17 +39,16 @@ def first_clean(df):
     return df_copy
 
 
-#Läser in alla dataframes från ett folder och lägger in dem i en lista
-#Ändra "Training/" till rätt folder där alla csv filer är sparade MEN TA INTE BORT STJÄRNAN
-csv_files = glob.glob('Training/*.csv')
+#Reads all csv files in a folder an adds them to a list
+csv_files = glob.glob('Training_output/*.csv')
 df_list = []
 for i in csv_files:
     temp_df = pd.read_csv(i)
     df_list.append(temp_df)
 
-#Rensar datan i alla dataframes i dataframe_list    
+#Cleans the data for all rows in the dataframe
 result_df = pd.concat([first_clean(df) for df in df_list], ignore_index=True)
 
-#sparar alla rensade dataframes
+#saves the cleaned dataframe
 filename = filepath + '.csv'
 result_df.to_csv(str(filename))

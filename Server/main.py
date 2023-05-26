@@ -1,11 +1,3 @@
-
-## MEMES
-# #(╯°□°)╯︵ ┻━┻ :^) ┬─┬ノ( º _ ºノ)
-# (╯°Д°)╯︵/(.□ . \)
-#HAHAHAHAHHA123
-# ( ͡° ͜ʖ ͡°)
-## THE VOICES
-#Wake up
 import os
 import sys
 import random
@@ -46,7 +38,7 @@ format = "%d-%m-%YT%H-%M-%S"
 
 # global variables
 # socket settings
-HOST_IP = "127.0.0.1" #lokala IPN, localhost
+HOST_IP = "127.0.0.1"
 PORT = 6969
 time_dict = {}
 eeg_data_dict = {}
@@ -56,8 +48,8 @@ full_data_dict = {}
 full_df = pd.DataFrame(dtype='object')
 session_on = False
 server_on = False
-bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json"  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
-SETTINGS_PATH = bad_path.replace("\\", "/")  # f'{os.path.dirname(os.path.abspath(__file__))}/settings.json'
+bad_path = os.path.dirname(os.path.realpath(__file__)) + "/settings.json" 
+SETTINGS_PATH = bad_path.replace("\\", "/") 
 session_id = 0
 
 #extension settings
@@ -193,8 +185,6 @@ def tcp_communication():
 
     # Commands
     while extension_connected:
-        #if time.time() - start < 200:
-        #   session_on = False
 
         try:
             recived_msg = conn.recv(1024).decode('utf-8')
@@ -365,7 +355,6 @@ def get_e4_data():
     Notes:
         -   The function keeps executing while the 'session_on' flag is True.
     """
-    #global calibration_done
     global e4_data_dict
 
     # init object
@@ -375,10 +364,6 @@ def get_e4_data():
     e4.start_subscriptions()
 
     calibration_done["E4"] = True
-    all_done = False                                                                     ######################
-    # while not all_done:
-    #     if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
-    #         all_done = True
     print("e4 start recording")
 
     while session_on:
@@ -391,14 +376,13 @@ def get_e4_data():
         if not hr == "":
             hr_string = hr[hr.find(":")+1:]
             if float(hr_string.replace(",", ".")) > 20:
-                e4_data_dict["Pulse"] = hr_string            ##### EJ TESTAT
+                e4_data_dict["Pulse"] = hr_string
         if not bvp == "":
             e4_data_dict["Bvp"] = bvp[bvp.find(":")+1:]
         if not gsr == "":
             e4_data_dict["Gsr"] = gsr[gsr.find(":")+1:]
         
-    # e4.e4_stop()                      # Printar resterande grejer i bufferten. Ta bort eller få den att sluta printa. Raden behövs tekniskt sätt inte.
-
+    e4.e4_stop()                      
 
 # ------------------------------------------ DataFrame ------------------------------------------ #
 def init_df():
@@ -469,7 +453,7 @@ def init_df():
             "Stress": 0
         }
         
-        training_dict["Name"] = Pop_up.get_name() #samlar ursprungliga värden
+        training_dict["Name"] = Pop_up.get_name() #collects original values
         training_dict["Age"] = Pop_up.get_age()
         training_dict["Gender"] = Pop_up.get_gender()
         training_dict["Arousal"] = Pop_up.test_arousal() + 1
@@ -511,7 +495,7 @@ def update_dataframe():
     mock = False
 
     calibration_done["Dataframe"] = True
-    all_done = False                                                                     ######################
+    all_done = False                                                                    
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -529,7 +513,7 @@ def update_dataframe():
             mock_all_dicts()
 
         # Clear terminal
-        # os.system('cls' if os.name == 'nt' else 'clear')                        ############################
+        os.system('cls' if os.name == 'nt' else 'clear')
 
         # time
         time_dict["time"] = datetime.datetime.now().strftime("%d-%m-%YT%H-%M-%S")
@@ -548,7 +532,7 @@ def update_dataframe():
         full_data_dict.update(prediction_dict)
         
         # Training
-        training_time = 3
+        training_time = 300
 
         if settings_dict["Training"] == True:
             if e4_data_dict["Pulse"] != 0 and training_dict["Initial pulse"] == None:
@@ -574,7 +558,7 @@ def update_dataframe():
         full_df = full_df.append(full_data_dict,ignore_index=True, sort=False)
 
         if print_it == True:
-            print(f"{full_df}\n--------------------------------")                                     ###########################
+            print(f"{full_df}\n--------------------------------")
 
 def mock_all_dicts():
     """
@@ -587,24 +571,21 @@ def mock_all_dicts():
     global eeg_data_dict
     global e4_data_dict
 
-    # eye_data_dict["x"] = random.random()
-    # eye_data_dict["y"] = random.random()
-    # eeg_data_dict = {
-    #         "Engagement":random.random(),
-    #         "Excitement":random.random(),
-    #         "Long term excitement":random.random(),
-    #         "Stress/Frustration":random.random(),
-    #         "Relaxation":random.random(),
-    #         "Interest/Affinity":random.random(),
-    #         "Focus":random.random()
-    # }
+    eye_data_dict["x"] = random.random()
+    eye_data_dict["y"] = random.random()
+    eeg_data_dict = {
+            "Engagement":random.random(),
+            "Excitement":random.random(),
+            "Long term excitement":random.random(),
+            "Stress/Frustration":random.random(),
+            "Relaxation":random.random(),
+            "Interest/Affinity":random.random(),
+            "Focus":random.random()
+    }
 
     e4_data_dict["Bvp"] = random.randrange(-100, 100)
     e4_data_dict["Gsr"] = random.randrange(1, 3) / 10
     e4_data_dict["Pulse"] = random.randrange(60, 100)
-    
-    # prediction_dict["Arousal"] = random.randrange(1, 5)
-    # prediction_dict["Valence"] = random.randrange(1, 5)
 
 # ------------------------------------------ AI ------------------------------------------ #
 def predict_series(full_data_dict):
@@ -639,21 +620,12 @@ def predict_series(full_data_dict):
     predict_frame= predict_frame.transpose()
 
     predict_frame = pd.get_dummies(predict_frame, columns=["Gender"])
-    # print(predict_frame)
 
     svm_dataset = svm_dataset.append(predict_frame)
-    # print(svm_dataset)
     scaled = scale(svm_dataset)
 
-
-    # svm_valence.predict(scaled)[0]
-    # print(svm_dataset)
-    # print(scaled)
     prediction_dict["Valence"] = svm_valence.predict([scaled[-1]])[0]
-    if random.randrange(0, 100) > 50:
-        prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
-    else:
-        prediction_dict["Arousal"] = svm_arousal.predict([[ 0.,  1., -1.,  0., -1., -1., -1., -1.,  0.]])[0]
+    prediction_dict["Arousal"] = svm_arousal.predict([scaled[-1]])[0]
 
 
 
@@ -713,14 +685,13 @@ def save_df(df, path, save_as_ext = '.csv'):
     if save_as_ext == '.pdf':
         filename = filename + save_as_ext
 
-        #Skapar ett table från dataframe
+        #Creates a table from a dataframe
         fig, ax =plt.subplots(figsize=(12,4))
         ax.axis('tight')
-        ax.axis('off') 
-        # osäker på vad denna gör men fungerar inte utan
+        ax.axis('off')
         the_table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
 
-        #Skapar ett tomt pdf dokument och sparar sedan figuren i det
+        #creates an empty pdf document and then adds the table
         pp = PdfPages(filename = str(path + "/" + filename))
         pp.savefig(fig, bbox_inches='tight')
         pp.close()
@@ -740,7 +711,7 @@ def save_df(df, path, save_as_ext = '.csv'):
 
     elif save_as_ext == '.ods':
         filename = filename + save_as_ext
-        with pd.ExcelWriter(str(path + "/" + filename)) as writer:          # module odf needed
+        with pd.ExcelWriter(str(path + "/" + filename)) as writer:
             df.to_excel(writer) 
 
     elif save_as_ext == '.xlsx':
@@ -914,7 +885,7 @@ def start_heatmap():
     global full_df
     global session_on
 
-    all_done = False                                                                     ######################
+    all_done = False                                                                     
     while not all_done:
         if all(sensor_calibration == True for sensor_calibration in calibration_done.values()):
             all_done = True
@@ -947,9 +918,6 @@ def start_heatmap():
             last_time = datetime.datetime.strptime(full_df["time"].iloc[-1], format)
         # Sleep 1 second to match up with dataframe update and to reduce CPU usage
         time.sleep(1)
-
-    # Creation of heatmap dashboard when the thread is about to join (maybe change this to use either flask or django)
-    # dashboard.create_heatmap_dashboard()
     return 0
 
 
@@ -1005,16 +973,6 @@ if __name__ == "__main__":
     tcp_thread = setup_server()
     threads = [tcp_thread]
     join_threads(threads)
-    
-
-    # Save dataframe to a path and with specified format
-    # save_format = settings_dict["FileFormat"]
-    # save_path = settings_dict["SaveLocation"]
-    # save_df(full_df, save_path, save_format)
-
-    #print(full_df.columns)
-
-    # make_dashboard(False)
     
     exit()
 

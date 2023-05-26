@@ -1,20 +1,10 @@
 import easygui as eg
-import tkinter as tk
-from tkinter import simpledialog
-# myvar = easygui.enterbox("What, is your favorite color?")
-# print(myvar)
 
 def get_name():
     '''Asks the user to enter their name and returns it as a string value'''
     title_name = "Name input"
     msg_name = "Please enter your name"
     return eg.enterbox(msg_name, title_name)
-    # root = tk.Tk()
-    # root.withdraw()  # Hide the main window
-
-    # # Create a simple dialog box with an input field
-    # user_input = simpledialog.askstring("Input Dialog", "Enter your name:")
-    # return user_input
 
 def get_gender():
     '''Asks the user to pick the option that corresponds to their gender and returns it as a string value'''
