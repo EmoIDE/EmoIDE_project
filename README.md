@@ -25,7 +25,8 @@ Before running this tool to its full extent, make sure you meet the following ne
   The [E4 Streaming Service](https://developer.empatica.com/windows-streaming-server-usage.html) provided by Empatica must be active and connected during a session to record data from the wristband.
 4. **EEG Launcher**:
   The [EEG Launcher](https://www.emotiv.com/emotiv-launcher/) provided by Emotiv must be active and connected during a session to record data from the EEG device.
-
+<p>4.Open visual studio code and go to Edit>Open folder>EmoIDE_project>Extension</p> 
+<p>5.run(f5) extension.js with the vscode developer enviroment selected</p>
 
 <h2>Getting Started</h2>
 To get started with the Emotionally-Aware IDE Plugin, follow these steps:
@@ -45,12 +46,21 @@ python main.py
 ```
 > Note: This will initiate the server, enabling it to listen for extension connection
 
-3. **Start using the product**:
-  - Once the server is up and running, you can start utilizing the Emotionally-Aware IDE Plugin.
-  - Follow these steps to integrate and utilize the plugin within Visual Studio Code (IDE):
-    - Install the IDE plugin in Visual Studio Code.
-    - Launch the IDE and open an existing project or create a new one.
-    - Utilize the plugin features to analyze and leverage emotional cues to enhance your programming experience.
+3. **Start the extension**:
+  Follow these steops to integrate and utilize the plugin within Visual Studio Code (IDE):
+  - Navigate to the extension folder using the following command:
+```
+cd Extension
+```
+> Note: You need to be in the source code root directory.
+  - Open the extension path in Visual Studio Code using the following command:
+```
+code .
+```
+  - Run the extension.js using the (f5) key with the VSCode developer environment selected.
+
+4. **Start using the product**:
+  - Once the server is up and running and the extension is running and connected to the server, you can start utilizing the Emotionally-Aware IDE Plugin.
   - Feel free to explore the various functionalities and features offered by the product.
 
 We hope that this tool significantly improves your software development process by incorporating emotions as a valuable asset. Should you encounter any issues, have suggestions please don't hesitate to create an issue or pull request on this repository. Happy coding!
