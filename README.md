@@ -40,14 +40,14 @@ pip install -r Requirements.txt
 > Note: Ensure that Python is installed on your system before proceeding with the installation of the modules.
 
 2. **Start the server**:
-  After installing the required modules, you can start the server and pen the command prompt or terminal and then run the following command to start the server:
+  After installing the required modules, you can start the server. Open the command prompt or terminal and then run the following command to start the server:
 ```
 python main.py
 ```
 > Note: This will initiate the server, enabling it to listen for extension connection
 
 3. **Start the extension**:
-  Follow these steops to integrate and utilize the plugin within Visual Studio Code (IDE):
+  Follow these steps to integrate and utilize the plugin within Visual Studio Code (IDE):
   - Navigate to the extension folder using the following command:
 ```
 cd Extension
@@ -61,6 +61,6 @@ code .
 
 4. **Start using the product**:
   - Once the server is up and running and the extension is running and connected to the server, you can start utilizing the Emotionally-Aware IDE Plugin.
-  - Feel free to explore the various functionalities and features offered by the product.
+  - Feel free to explore the various functionalities, settings, and features offered by the product.
 
 We hope that this tool significantly improves your software development process by incorporating emotions as a valuable asset. Should you encounter any issues, have suggestions please don't hesitate to create an issue or pull request on this repository. Happy coding!
