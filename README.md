@@ -14,20 +14,20 @@ The purpose of this tool is to develop an emotionally-aware IDE plugin that empo
 <h2>Requirements</h2>
 Before running this tool to its full extent, make sure you meet the following necessary requirements:
 
-1. Python Server:
+1. **Python Server**:
   Install the necessary requirements for the Python server. Refer to the **Getting Started** section for detailed instructions.
-2. Gazepoint Control:
+2. **Gazepoint Control**:
   The [Gazepoint Control](https://www.gazept.com/downloads/) provided by Gazepoint must be active during a session to record data from the eye tracker. Calibrating the eye tracker is recommended to enhance gaze accuracy.
-3. E4 Streaming Service:
+3. **E4 Streaming Service**:
   The [E4 Streaming Service](https://developer.empatica.com/windows-streaming-server-usage.html) provided by Empatica must be active and connected during a session to record data from the wristband.
-4. EEG Launcher:
+4. **EEG Launcher**:
   The [EEG Launcher](https://www.emotiv.com/emotiv-launcher/) provided by Emotiv must be active and connected during a session to record data from the EEG device.
 
 
 <h2>Getting Started</h2>
 To get started with the Emotionally-Aware IDE Plugin, follow these steps:
 
-1. Install the necessary Python modules:
+1. **Install the necessary Python modules**:
 Open the command prompt or terminal.
 Install the required Python modules by running the following command:
 ```
@@ -35,14 +35,14 @@ pip install -r Requirements.txt
 ```
 > Note: Ensure that Python is installed on your system before proceeding with the installation of the modules.
 
-2. Start the server:
+2. **Start the server**:
   After installing the required modules, you can start the server and pen the command prompt or terminal and then run the following command to start the server:
 ```
 python main.py
 ```
 > Note: This will initiate the server, enabling it to listen for extension connection
 
-3. Start using the product:
+3. **Start using the product**:
   - Once the server is up and running, you can start utilizing the Emotionally-Aware IDE Plugin.
   - Follow these steps to integrate and utilize the plugin within Visual Studio Code (IDE):
     - Install the IDE plugin in Visual Studio Code.
