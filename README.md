@@ -17,8 +17,9 @@ This the final product of a custom extension. It takes hardware data that runs t
 <h3>To get started, please follow the following steps:</h3>
 <p>1.Make sure you have <a href=https://nodejs.org/ennode.js>node.js</a> installed</p>
 <p>2.Open a console window at EmoIDE_project/Server and enter pip install -r requirements.txt to install all required packages and dependencies for python</p>
-<p>3.Start main.py in the "Server" directory of the project folder</p>
+<p>3.Start main.py at EmoIDE_project/Server</p>
 <p>4.Open visual studio code and go to Edit>Open folder>EmoIDE_project>Extension</p> 
 <p>5.run(f5) extension.js with the vscode developer enviroment selected</p>
 
-<h2>For additional documentation, please see the Documentation.html within the folder</h2>
+<h2>For additional documentation,</h2>
+<h3>please see the Documentation.html within the folder</h3>
