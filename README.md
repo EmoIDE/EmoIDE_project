@@ -21,5 +21,5 @@ This the final product of a custom extension. It takes hardware data that runs t
 <p>4.Open visual studio code and go to Edit>Open folder>EmoIDE_project>Extension</p> 
 <p>5.run(f5) extension.js with the vscode developer enviroment selected</p>
 
-<h2>For additional documentation,</h2>
+<h2>For additional documentation</h2>
 <h3>please see the Documentation.html within the folder</h3>
